@@ -150,7 +150,9 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
   applies only to cash-flow starts. Terminal value: perpetuity growth or exit multiple (per case). Share count change %/yr divides
   each year's per-share flow by (1+d)^t. Discount tooltip shows CAPM (rf + beta [0.6-2] x 5% ERP, clamped 7-14%).
 - 5x5 sensitivity (discount +-2pp x base growth +-5pp) at the bottom. `POST /api/stock/dcf/suggest` (AI, JSON out, clamped,
-  cached 30 min per symbol/start/tv) fills all three cases plus a one-sentence reason each.
+  cached 30 min per symbol/tv) fills all three cases plus a one-sentence reason each. It also picks the start metric
+  (fcf unless negative/capex-distorted -> fcf3 or rev; banks -> ni; validated against what's available) with a reason, and sets
+  share count to the ~3-year diluted-share trend. It never changes the discount rate or terminal value method.
 - Expected value badge = 25% bear + 50% base + 25% bull fair value. SBC box is hidden in earnings modes. Sensitivity cells
   show 2 decimals; clicking one sets the discount rate and the base case's years 1-5 growth.
 - Layout: Reset/AI suggest live in the card header (`#dHead`, shown once the DCF loads); 1Y/3Y/5Y sits on the chart header;

@@ -1904,15 +1904,17 @@ def _dcf_base(sym):
         if sbc is None and sr is not None and cols:
             sbc = _v(sr, cols[-1])
         rr, gr, orr = _row(inc, "Total Revenue"), _row(inc, "Gross Profit"), _row(inc, "Operating Income")
+        cxr = _row(cf, "Capital Expenditure")
         for c in sorted(inc.columns)[-4:]:
             rv = _v(rr, c)
             if not rv:
                 continue
             pct_ = lambda x: round(x / rv * 100, 1) if x is not None else None
             hist.append({"year": c.strftime("%Y"), "revenue": rv, "gross": pct_(_v(gr, c)), "op": pct_(_v(orr, c)),
-                         "fcf": pct_(_v(fr, c) if c in cf.columns else None), "sbc": pct_(_v(sr, c) if c in cf.columns else None)})
+                         "fcf": pct_(_v(fr, c) if c in cf.columns else None), "sbc": pct_(_v(sr, c) if c in cf.columns else None),
+                         "capex": pct_(abs(_v(cxr, c)) if c in cf.columns and _v(cxr, c) is not None else None)})
         shr = _row(inc, "Diluted Average Shares", "Basic Average Shares")
-        sv = [(c, v) for c in sorted(inc.columns) if (v := _v(shr, c))]
+        sv = [(c, v) for c in sorted(inc.columns) if (v := _v(shr, c))][-4:]  # last ~3 years
         if len(sv) >= 2:
             yrs = max(1.0, (sv[-1][0] - sv[0][0]).days / 365.25)
             dil = round(max(-6.0, min(6.0, ((sv[-1][1] / sv[0][1]) ** (1 / yrs) - 1) * 100)), 1)
@@ -1949,7 +1951,6 @@ def stock_dcf(symbol: str, key: str = Depends(current_user)):
 
 class DcfAiReq(BaseModel):
     symbol: str
-    start: str = "fcf"
     tv: str = "growth"
 
 
@@ -1983,13 +1984,25 @@ def stock_dcf_suggest(req: DcfAiReq, key: str = Depends(current_user)):
                 lines.append(f"{lab}: {v * 100:.1f}%")
         for h in b.get("hist", []):
             lines.append(f"FY{h['year']}: gross {h['gross']}%, operating {h['op']}%, FCF margin {h['fcf']}%, stock pay {h['sbc']}% of sales")
-        lines.append(f"Share count change per year (recent): {b.get('dilution')}%")
-        lines.append(f"Valuation method: starting from {req.start}; terminal value by {'exit multiple of year-10 cash flow' if req.tv == 'exit' else 'perpetual growth'}")
+        lines.append(f"Share count change per year (last ~3 years): {b.get('dilution')}%")
+        cur_ = b["currency"]
+        opts = {"fcf": ("free cash flow, past 12 months", b.get("fcfPs")), "fcf3": ("3-year average free cash flow", b.get("fcf3Ps")),
+                "rev": (f"revenue per share x a long-run FCF margin (revenue/share {b.get('revPs') or 0:.2f})", b.get("revPs")),
+                "ni": ("earnings, past 12 months", b.get("niPs")), "fwd": ("analysts' forward earnings", b.get("fwdPs"))}
+        avail = {k_: v for k_, v in opts.items() if v[1] is not None and v[1] > 0}
+        lines.append("Starting-point options (per share, " + cur_ + "): " + "; ".join(f"{k_} = {lab} {v:.2f}" for k_, (lab, v) in opts.items() if v is not None))
+        lines.append(f"Terminal value by {'exit multiple of year-10 cash flow' if req.tv == 'exit' else 'perpetual growth'}")
+        if b.get("financial"):
+            lines.append("This is a bank/insurer/financial: cash flow figures are distorted by customer money; use earnings.")
         txt = ask_claude(
             "You set realistic DCF assumptions for a stock. Consider consensus estimates, historical margins and growth, "
             "how cyclical the sector is (cyclicals: wider bear/bull spread and mean reversion; mature companies: low growth), and base rates "
             "(very few companies compound above 20% for 5 years). Reply with JSON only, no other text, exactly this shape: "
-            '{"bear":{"g1":n,"g2":n,"gt":n,"exit":n,"why":"..."},"base":{...},"bull":{...},"margin":n} where g1 = yearly growth % for years 1-5, '
+            '{"start":"fcf|fcf3|rev|ni|fwd","startWhy":"...","bear":{"g1":n,"g2":n,"gt":n,"exit":n,"why":"..."},"base":{...},"bull":{...},"margin":n} '
+            "First pick start: keep fcf (trailing free cash flow) unless it is negative or distorted (e.g. a capex surge or cyclical "
+            "peak/trough in the last year), then prefer fcf3 if the 3-year average is representative, else rev with a sensible margin; "
+            "use ni or fwd only for financials or when all cash-flow options are unusable. startWhy = one short sentence. "
+            "Growth rates apply to the chosen starting figure. g1 = yearly growth % for years 1-5, "
             "g2 = years 6-10, gt = perpetual growth % after year 10 (0-4), exit = year-10 multiple of free cash flow (or earnings) (5-40), "
             "margin = a sensible long-run free cash flow margin % of revenue, and why = one short plain-English sentence (max 25 words) explaining that case. "
             "Bear < base < bull for g1.",
@@ -2006,8 +2019,13 @@ def stock_dcf_suggest(req: DcfAiReq, key: str = Depends(current_user)):
                       "gt": round(clamp(x.get("gt"), 0, 4, 2.5) * 2) / 2, "exit": round(clamp(x.get("exit"), 5, 40, b["exit"][c])),
                       "why": str(x.get("why") or "")[:240]}
         out["margin"] = round(clamp(d.get("margin"), 1, 60, b["margin"]) * 2) / 2
+        st = d.get("start") if d.get("start") in avail else None
+        if st is None:
+            st = next((k_ for k_ in (("ni", "fwd") if b.get("financial") else ("fcf", "fcf3", "rev", "ni", "fwd")) if k_ in avail), "fcf")
+        out["start"], out["startWhy"] = st, str(d.get("startWhy") or "")[:240] if d.get("start") == st else ""
+        out["dil"] = b.get("dilution") or 0.0
         return out
-    return cached(("dcfai", sym, req.start, req.tv), 1800, f)
+    return cached(("dcfai2", sym, req.tv), 1800, f)
 
 
 # ---------- SEC filings ----------

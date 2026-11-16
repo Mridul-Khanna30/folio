@@ -307,6 +307,7 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .dfl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-height: 16px; }
 .dfl b { font-family: var(--mono); font-weight: 500; color: var(--ink); }
 .dfx { font-size: 12px; padding: 5px 0; }
+.dfld.dwide { grid-column: 1 / -1; }
 .dfld select { width: 100%; font: inherit; font-size: 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; }
 .dfld .tabs { width: fit-content; max-width: 100%; flex-wrap: wrap; }
 .dgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -2287,6 +2288,7 @@ function renderDcf() {
       <input type="range" id="dDisc" min="3" max="18" step="0.5" value="${s.disc}" aria-label="Discount rate"></label>`,
     `<label class="dfld dsl"><span class="dfl"><span>Share count / yr</span><b id="dv-dil">${(s.dil > 0 ? "+" : "") + s.dil.toFixed(1)}%</b></span>
       <input type="range" id="dDil" min="-6" max="6" step="0.1" value="${s.dil}" aria-label="Yearly change in share count" title="+ = new shares issued (dilution), − = buybacks. Recent trend: ${(b.dilution > 0 ? "+" : "") + (b.dilution ?? 0).toFixed(1)}% a year"></label>`,
+    s.startWhy ? `<div class="dfld dwide dwhy">✦ Start from: ${esc(s.startWhy)} Share count uses the ${(b.dilution > 0 ? "+" : "") + (b.dilution ?? 0).toFixed(1)}%/yr trend of the last ~3 years.</div>` : "",
   ].filter(Boolean);
   box.innerHTML = `
     <div class="dtop">
@@ -2318,7 +2320,7 @@ function renderDcf() {
   box.querySelector(".dmeth").ontoggle = e => { DCF.methOpen = e.target.open; };
   const hd = $("#dHead"); if (hd) { hd.hidden = false; $("#dAiMsg").textContent = ""; $("#dAi").disabled = false; }
   const re = () => { saveDcf(); renderDcf(); };
-  $("#dStart").onchange = e => { s.start = e.target.value; re(); };
+  $("#dStart").onchange = e => { s.start = e.target.value; s.startWhy = ""; re(); };
   if ($("#dSbc")) $("#dSbc").onchange = e => { s.sbc = e.target.checked; updDcf(); };
   if ($("#dMargin")) $("#dMargin").oninput = e => { s.margin = +e.target.value; $("#dv-margin").textContent = s.margin.toFixed(1) + "%"; updDcf(); };
   $("#dTv").onclick = e => { const bt = e.target.closest("button"); if (!bt) return; s.tv = bt.dataset.v; re(); };
@@ -2342,11 +2344,14 @@ async function dcfSuggest() {
   const b = DCF.base, s = DCF.set, sym = S.sym, btn = $("#dAi"), msg = $("#dAiMsg");
   btn.disabled = true; msg.innerHTML = `<span class="spin"></span> Claude is reading estimates, margins and the sector…`;
   try {
-    const r = await post("stock/dcf/suggest", { symbol: sym, start: s.start, tv: s.tv });
+    const r = await post("stock/dcf/suggest", { symbol: sym, tv: s.tv });
     if (S.sym !== sym || DCF.set !== s) return;
     for (const [k] of DCF_CASES) Object.assign(s[k], r[k], { g2auto: false });
-    if (s.start === "rev" && r.margin) s.margin = r.margin;
-    saveDcf(); renderDcf(); $("#dAiMsg").textContent = "Filled in by Claude. Drag any slider to adjust.";
+    if (r.start) { s.start = r.start; s.startWhy = r.startWhy || ""; }
+    if (r.margin) s.margin = r.margin;
+    if (r.dil != null) s.dil = r.dil;
+    saveDcf(); renderDcf();
+    $("#dAiMsg").textContent = `Filled in by Claude. Discount rate and terminal method kept as you set them.`;
   } catch (e) { btn.disabled = false; msg.textContent = e.message || "The AI couldn’t answer. Try again."; }
 }
 let dcfSaveT = null;
