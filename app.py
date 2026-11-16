@@ -13,6 +13,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import anthropic
+import numpy as np
+import pandas as pd
 import yfinance as yf
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Response
 from fastapi.responses import FileResponse
@@ -247,7 +249,8 @@ def set_session(resp: Response, key: str):
 
 def public(key):
     u = users[key]
-    return {"name": u["name"], "holdings": u["holdings"], "watchlist": u["watchlist"], "joined": u.get("joined")}
+    return {"name": u["name"], "holdings": u["holdings"], "watchlist": u["watchlist"], "joined": u.get("joined"),
+            "baskets": u.get("baskets", []), "shareActivity": bool(u.get("shareActivity"))}
 
 
 class Creds(BaseModel):
@@ -302,6 +305,9 @@ class Holding(BaseModel):
     symbol: str = Field(min_length=1, max_length=20)
     shares: float = Field(gt=0)
     cost: float = Field(ge=0)
+    date: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    cur: str | None = Field(None, max_length=5)
+    fx: dict[str, float] | None = None  # USD per unit of each currency when bought
 
 
 class State(BaseModel):
@@ -309,13 +315,128 @@ class State(BaseModel):
     watchlist: list[str] = Field(max_length=100)
 
 
+BASES = ["USD", "CAD", "EUR", "GBP"]
+ACTIVITY_FILE = DATA / "activity.json"
+activity = load_json(ACTIVITY_FILE, [])
+
+
+def fx_on(currencies, date=None):
+    """USD per unit of each currency, today or at the close on/before `date`."""
+    out = {"USD": 1.0}
+    need = sorted({c for c in currencies if c and c != "USD"})
+    if not need:
+        return out
+    if not date:
+        for c in need:
+            r = fx_to_usd(c)
+            if r:
+                out[c] = r
+        return out
+    def f():
+        d = pd.Timestamp(date)
+        df = yf.download([f"{c}USD=X" for c in need], start=(d - pd.Timedelta(days=10)).strftime("%Y-%m-%d"),
+                         end=(d + pd.Timedelta(days=1)).strftime("%Y-%m-%d"), progress=False, auto_adjust=True)["Close"]
+        if isinstance(df, pd.Series):
+            df = df.to_frame(f"{need[0]}USD=X")
+        res = {}
+        for c in need:
+            col = df.get(f"{c}USD=X")
+            if col is not None and len(col.dropna()):
+                res[c] = float(col.dropna().iloc[-1])
+        return res
+    try:
+        out.update(cached(("fxon", tuple(need), date), 86400, f))
+    except Exception:
+        pass
+    for c in need:  # fall back to today's rate
+        if c not in out and fx_to_usd(c):
+            out[c] = fx_to_usd(c)
+    return out
+
+
+def fill_fx(holdings):
+    """Give each holding its currency and an FX snapshot from when it was bought (or added)."""
+    for h in holdings:
+        if not h.get("cur"):
+            q = one_quote(h["symbol"])
+            if q.get("currency"):
+                h["cur"] = q["currency"]
+        if not h.get("fx") and h.get("cur"):
+            h["fx"] = fx_on([h["cur"], *BASES], h.get("date"))
+    return holdings
+
+
+def log_activity(key, old, new):
+    u = users[key]
+    if not u.get("shareActivity"):
+        return
+    o = {h["symbol"]: h["shares"] for h in old}
+    n = {h["symbol"]: h["shares"] for h in new}
+    vals = {}
+    for h in new:
+        q = one_quote(h["symbol"])
+        if q.get("price") and q.get("usdRate"):
+            vals[h["symbol"]] = q["price"] * h["shares"] * q["usdRate"]
+    tot = sum(vals.values()) or 0
+    w = lambda s: round(vals[s] / tot * 100, 1) if tot and s in vals else None
+    now = int(time.time())
+    for sym in n:
+        if sym not in o:
+            activity.append({"ts": now, "name": u["name"], "kind": "added", "symbol": sym, "weight": w(sym)})
+        elif abs(n[sym] - o[sym]) > 1e-9:
+            ch = (n[sym] / o[sym] - 1) * 100
+            activity.append({"ts": now, "name": u["name"], "kind": "added to" if ch > 0 else "trimmed", "symbol": sym,
+                             "change": round(ch, 1), "weight": w(sym)})
+    for sym in o:
+        if sym not in n:
+            activity.append({"ts": now, "name": u["name"], "kind": "sold", "symbol": sym})
+    del activity[:-300]
+    save_json(ACTIVITY_FILE, activity)
+
+
 @app.put("/api/state")
 def put_state(s: State, key: str = Depends(current_user)):
+    new = fill_fx([{**{k: v for k, v in h.model_dump().items() if v is not None}, "symbol": h.symbol.upper()} for h in s.holdings])
     with lock:
-        users[key]["holdings"] = [{**h.model_dump(), "symbol": h.symbol.upper()} for h in s.holdings]
+        old = users[key]["holdings"]
+        users[key]["holdings"] = new
         users[key]["watchlist"] = [w.upper()[:20] for w in s.watchlist]
+        log_activity(key, old, new)
         save_json(USERS_FILE, users)
     return public(key)
+
+
+class Prefs(BaseModel):
+    shareActivity: bool
+
+
+@app.put("/api/prefs")
+def put_prefs(p: Prefs, key: str = Depends(current_user)):
+    with lock:
+        users[key]["shareActivity"] = p.shareActivity
+        save_json(USERS_FILE, users)
+    return public(key)
+
+
+@app.get("/api/activity")
+def get_activity(key: str = Depends(current_user)):
+    return list(reversed(activity[-40:]))
+
+
+@app.get("/api/fx")
+def fx_rates(key: str = Depends(current_user)):
+    return fx_on(BASES)
+
+
+def backfill_fx():
+    changed = False
+    for k, u in list(users.items()):
+        if any(not h.get("fx") or not h.get("cur") for h in u["holdings"]):
+            fill_fx(u["holdings"])
+            changed = True
+    if changed:
+        with lock:
+            save_json(USERS_FILE, users)
 
 
 @app.get("/api/group")
@@ -554,6 +675,10 @@ def stock(symbol: str, key: str = Depends(current_user)):
                 "target": fnum(info.get("targetMeanPrice")), "rating": info.get("recommendationKey"),
                 "analysts": info.get("numberOfAnalystOpinions"), "dividendYield": fnum(info.get("dividendYield")),
                 "beta": fnum(info.get("beta")),
+                "eps": fnum(info.get("trailingEps")),
+                "feps": fnum(info.get("forwardEps")) or (q["price"] / fnum(info.get("forwardPE")) if q.get("price") and fnum(info.get("forwardPE")) else None),
+                "capCurrency": (info.get("currency") or q.get("currency") or "USD").replace("GBp", "GBP"),
+                "marketCapUsd": fnum(info.get("marketCap")) * (fx_to_usd((info.get("currency") or "USD").replace("GBp", "GBP")) or 0) if fnum(info.get("marketCap")) else None,
             },
             "calendar": cal,
             "news": news_for(sym),
@@ -599,8 +724,6 @@ def stock_why(req: WhyReq, key: str = Depends(current_user)):
 
 
 # ---------- sentiment ----------
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
 
 INDUSTRIES = [
     {"key": "tech", "name": "Technology", "etf": "XLK", "members": ["AAPL", "MSFT", "NVDA", "AVGO", "ORCL", "CRM", "ADBE"]},
@@ -744,6 +867,34 @@ def rating_label(mean):
     return "Strong buy" if mean < 1.5 else "Buy" if mean < 2.3 else "Hold" if mean < 3.2 else "Sell"
 
 
+def industry_card(ind, d, spy, an):
+    members = [m for m in ind["members"] if m in d]
+    px = d[ind["etf"]].dropna() if ind.get("etf") else basket(d, members)
+    score, df = series_score(px, spy)
+    summ = summarize(score, df, GROUP_LABELS) if score is not None else None
+    mem = []
+    raw = daily_closes(tuple(ind["members"]))  # un-filled, so markets on different calendars don't show fake 0% days
+    for m in ind["members"]:
+        a = an.get(m) or {"symbol": m}
+        col = [v for _, v in raw.get(m, [])]
+        mem.append({**a, "day": (col[-1] / col[-2] - 1) * 100 if len(col) > 1 else None,
+                    "month": (col[-1] / col[-22] - 1) * 100 if len(col) > 22 else None,
+                    "rating": rating_label(a.get("mean"))})
+    means = [x["mean"] for x in mem if x.get("mean")]
+    ups = [x["upside"] for x in mem if x.get("upside") is not None]
+    counts = {k: sum((x.get("counts") or {}).get(k, 0) for x in mem) for k in ("strongBuy", "buy", "hold", "sell", "strongSell")}
+    return {
+        "key": ind["key"], "name": ind["name"], "etf": ind.get("etf"),
+        "basis": f"{ind['etf']} fund" if ind.get("etf") else "equal-weight basket of " + ", ".join(ind["members"]),
+        "sentiment": summ,
+        "week": float(px.iloc[-1] / px.iloc[-6] - 1) * 100 if len(px) > 6 else None,
+        "month": float(px.iloc[-1] / px.iloc[-22] - 1) * 100 if len(px) > 22 else None,
+        "consensus": {"mean": float(np.mean(means)) if means else None, "rating": rating_label(float(np.mean(means))) if means else None,
+                      "upside": float(np.median(ups)) if ups else None, "counts": counts},
+        "members": mem,
+    }
+
+
 def industry_sentiment():
     def f():
         syms = {"SPY"} | {i["etf"] for i in INDUSTRIES if i["etf"]} | {m for i in INDUSTRIES for m in i["members"]}
@@ -751,32 +902,7 @@ def industry_sentiment():
         spy = d["SPY"].dropna()
         allm = sorted({m for i in INDUSTRIES for m in i["members"]})
         an = dict(zip(allm, pool.map(analyst, allm)))
-        out = []
-        for ind in INDUSTRIES:
-            px = d[ind["etf"]].dropna() if ind["etf"] else basket(d, ind["members"])
-            score, df = series_score(px, spy)
-            summ = summarize(score, df, GROUP_LABELS) if score is not None else None
-            mem = []
-            for m in ind["members"]:
-                a = an.get(m) or {}
-                col = d[m].dropna() if m in d else pd.Series(dtype=float)
-                mem.append({**a, "day": float(col.iloc[-1] / col.iloc[-2] - 1) * 100 if len(col) > 1 else None,
-                            "month": float(col.iloc[-1] / col.iloc[-22] - 1) * 100 if len(col) > 22 else None,
-                            "rating": rating_label(a.get("mean"))})
-            means = [x["mean"] for x in mem if x.get("mean")]
-            ups = [x["upside"] for x in mem if x.get("upside") is not None]
-            counts = {k: sum((x.get("counts") or {}).get(k, 0) for x in mem) for k in ("strongBuy", "buy", "hold", "sell", "strongSell")}
-            out.append({
-                "key": ind["key"], "name": ind["name"], "etf": ind["etf"],
-                "basis": f"{ind['etf']} fund" if ind["etf"] else "equal-weight basket of " + ", ".join(ind["members"]),
-                "sentiment": summ,
-                "week": float(px.iloc[-1] / px.iloc[-6] - 1) * 100 if len(px) > 6 else None,
-                "month": float(px.iloc[-1] / px.iloc[-22] - 1) * 100 if len(px) > 22 else None,
-                "consensus": {"mean": float(np.mean(means)) if means else None, "rating": rating_label(float(np.mean(means))) if means else None,
-                              "upside": float(np.median(ups)) if ups else None, "counts": counts},
-                "members": mem,
-            })
-        return out
+        return [industry_card(ind, d, spy, an) for ind in INDUSTRIES]
     return cached(("industries",), 1800, f)
 
 
@@ -902,10 +1028,369 @@ def stock_verdict(req: WhyReq, key: str = Depends(current_user)):
     return cached(("verdict", sym), 1800, f)
 
 
+# ---------- portfolio extras ----------
+def member_key(member):
+    k = ukey(member or "")
+    if k not in users:
+        raise HTTPException(404, "No such member")
+    return k
+
+
+@app.get("/api/moods")
+def moods(symbols: str, key: str = Depends(current_user)):
+    syms = sorted({s.strip().upper() for s in symbols.split(",") if s.strip()})[:60]
+    def one(sym):
+        se = stock_sentiment(sym)
+        return sym, se["score"] if se else None
+    return dict(pool.map(one, syms))
+
+
+def raw_currency(sym):
+    def f():
+        return yf.Ticker(sym).fast_info.currency or "USD"
+    try:
+        return cached(("rawcur", sym), 86400, f)
+    except Exception:
+        return "USD"
+
+
+PRANGES = {"1D": ("1d", "5m"), "1M": ("1mo", "1d"), "6M": ("6mo", "1d"), "YTD": ("ytd", "1d"), "1Y": ("1y", "1d")}
+
+
+def value_frame(holdings, period, interval, extra=()):
+    """Per-holding USD value over time for today's holdings (+ extra columns like benchmarks)."""
+    syms = sorted({h["symbol"] for h in holdings})
+    curs = {s: raw_currency(s) for s in syms}
+    fxs = sorted({c.replace("GBp", "GBP") for c in curs.values() if c not in ("USD",)})
+    tick = syms + [f"{c}USD=X" for c in fxs] + list(extra)
+    df = yf.download(tick, period=period, interval=interval, progress=False, auto_adjust=True)["Close"]
+    if isinstance(df, pd.Series):
+        df = df.to_frame(tick[0])
+    df = df.sort_index().ffill()
+    vals = pd.DataFrame(index=df.index)
+    for h in holdings:
+        s = h["symbol"]
+        if s not in df:
+            continue
+        c = curs[s]
+        px = df[s] / (100 if c == "GBp" else 1)
+        c = c.replace("GBp", "GBP")
+        if c == "USD":
+            rate = 1.0
+        elif interval == "1d" and f"{c}USD=X" in df:
+            rate = df[f"{c}USD=X"].bfill()
+        else:
+            rate = fx_to_usd(c) or 0
+        v = px * h["shares"] * rate
+        vals[s] = vals[s] + v if s in vals else v
+    return vals, df
+
+
+@app.get("/api/portfolio/history")
+def portfolio_history(member: str, range: str = "6M", bench: str = "^GSPC", key: str = Depends(current_user)):
+    if range not in PRANGES:
+        raise HTTPException(400, "bad range")
+    if bench not in ("^GSPC", "^IXIC", "none"):
+        raise HTTPException(400, "bad benchmark")
+    k = member_key(member)
+    holdings = users[k]["holdings"]
+    if not holdings:
+        return {"points": [], "bench": None}
+    sig = tuple(sorted((h["symbol"], h["shares"]) for h in holdings))
+    def f():
+        period, interval = PRANGES[range]
+        b = [] if bench == "none" else [bench]
+        vals, df = value_frame(holdings, period, interval, b)
+        vals = vals.bfill() if range == "1D" else vals
+        tot = vals.dropna().sum(axis=1)
+        if range == "1D":  # keep the latest trading day only
+            last_day = tot.index[-1].normalize() if len(tot) else None
+            tot = tot[tot.index.normalize() == last_day] if last_day is not None else tot
+        tot = tot[tot > 0]
+        if len(tot) < 2:
+            return {"points": [], "bench": None}
+        out = {"points": [[int(t.timestamp() * 1000), round(float(v), 2)] for t, v in tot.items()],
+               "ret": float(tot.iloc[-1] / tot.iloc[0] - 1) * 100, "bench": None, "benchName": None}
+        if b and bench in df:
+            bs = df[bench].reindex(tot.index).ffill().bfill()
+            if bs.notna().all() and bs.iloc[0]:
+                scaled = bs / bs.iloc[0] * tot.iloc[0]
+                out["bench"] = [[int(t.timestamp() * 1000), round(float(v), 2)] for t, v in scaled.items()]
+                out["benchRet"] = float(bs.iloc[-1] / bs.iloc[0] - 1) * 100
+                out["benchName"] = "S&P 500" if bench == "^GSPC" else "Nasdaq"
+        return out
+    return cached(("phist", sig, range, bench), 120 if range == "1D" else 900, f)
+
+
+@app.get("/api/group/returns")
+def group_returns(key: str = Depends(current_user)):
+    snap = {k: tuple(sorted((h["symbol"], h["shares"]) for h in u["holdings"])) for k, u in users.items()}
+    def f():
+        allh = [h for u in users.values() for h in u["holdings"]]
+        if not allh:
+            return {}
+        out = {}
+        for k, u in users.items():
+            if not u["holdings"]:
+                continue
+            try:
+                vals, _ = value_frame(u["holdings"], "3mo", "1d")
+                tot = vals.dropna().sum(axis=1)
+                tot = tot[tot > 0]
+                last = tot.index[-1]
+                r = {}
+                for lab, days in (("1W", 7), ("1M", 30)):
+                    then = tot.asof(last - pd.Timedelta(days=days))
+                    r[lab] = float(tot.iloc[-1] / then - 1) * 100 if then == then and then else None
+                out[u["name"]] = r
+            except Exception:
+                pass
+        return out
+    return cached(("greturns", tuple(sorted(snap.items()))), 900, f)
+
+
+class Basket(BaseModel):
+    name: str = Field(min_length=1, max_length=30)
+    members: list[str] = Field(min_length=2, max_length=10)
+
+
+class Baskets(BaseModel):
+    baskets: list[Basket] = Field(max_length=2)
+
+
+@app.put("/api/baskets")
+def put_baskets(b: Baskets, key: str = Depends(current_user)):
+    clean = []
+    for x in b.baskets:
+        mem = list(dict.fromkeys(m.strip().upper()[:20] for m in x.members if m.strip()))
+        if len(mem) < 2:
+            raise HTTPException(400, f"“{x.name}” needs at least 2 tickers.")
+        bad = [m for m in mem if one_quote(m).get("error")]
+        if bad:
+            raise HTTPException(400, "Couldn't find: " + ", ".join(bad) + ". Check the tickers (use the search box to look them up).")
+        clean.append({"name": x.name.strip(), "members": mem})
+    with lock:
+        users[key]["baskets"] = clean
+        save_json(USERS_FILE, users)
+    return public(key)
+
+
+@app.get("/api/sentiment/custom")
+def custom_sentiment(key: str = Depends(current_user)):
+    bs = users[key].get("baskets", [])
+    if not bs:
+        return []
+    def f():
+        mem = sorted({m for b in bs for m in b["members"]})
+        d = closes_df(mem + ["SPY"])
+        spy = d["SPY"].dropna()
+        an = dict(zip(mem, pool.map(analyst, mem)))
+        return [industry_card({"key": f"custom{i}", "name": b["name"], "etf": None, "members": b["members"]}, d, spy, an)
+                for i, b in enumerate(bs)]
+    return cached(("custom", json.dumps(bs, sort_keys=True)), 1800, f)
+
+
+# ---------- stock extras ----------
+@app.get("/api/stock/events")
+def stock_events(symbol: str, key: str = Depends(current_user)):
+    sym = symbol.strip().upper()[:20]
+    def f():
+        t = yf.Ticker(sym)
+        earn, divs = [], []
+        try:
+            e = t.get_earnings_dates(limit=24)
+            if e is not None:
+                for ts, r in e.iterrows():
+                    earn.append({"date": ts.strftime("%Y-%m-%d"), "est": fnum(r.get("EPS Estimate")),
+                                 "eps": fnum(r.get("Reported EPS")), "surprise": fnum(r.get("Surprise(%)"))})
+        except Exception:
+            pass
+        try:
+            dv = t.dividends
+            cut = pd.Timestamp.now(tz=dv.index.tz) - pd.Timedelta(days=5 * 366) if len(dv) else None
+            for ts, v in (dv[dv.index >= cut].items() if cut is not None else []):
+                divs.append({"date": ts.strftime("%Y-%m-%d"), "amount": float(v)})
+        except Exception:
+            pass
+        clean = lambda xs: [{k: (None if isinstance(v, float) and v != v else v) for k, v in x.items()} for x in xs]
+        return {"earnings": clean(earn), "dividends": divs}
+    return cached(("events", sym), 6 * 3600, f)
+
+
+PEER_HINTS = {"000660.KS": ["MU", "005930.KS", "NVDA", "TSM"], "005930.KS": ["000660.KS", "MU", "TSM", "AAPL"],
+              "TSM": ["NVDA", "AVGO", "ASML", "INTC"], "SKHY": ["MU", "005930.KS", "SNDK", "TSM"]}
+PEER_ORDER = ["memory", "neocloud", "semis", "finance", "consumer", "tech"]
+
+
+def peers_for(sym):
+    if sym in PEER_HINTS:
+        return PEER_HINTS[sym]
+    byk = {i["key"]: i for i in INDUSTRIES}
+    for k in PEER_ORDER:
+        if sym in byk[k]["members"]:
+            return [m for m in byk[k]["members"] if m != sym][:4]
+    def f():
+        ik = (yf.Ticker(sym).info or {}).get("industryKey")
+        if not ik:
+            return []
+        tc = yf.Industry(ik).top_companies
+        return [s for s in (list(tc.index) if tc is not None else []) if s != sym][:4]
+    try:
+        return cached(("peers", sym), 86400, f)
+    except Exception:
+        return []
+
+
+@app.get("/api/stock/peers")
+def stock_peers(symbol: str, key: str = Depends(current_user)):
+    sym = symbol.strip().upper()[:20]
+    def f():
+        ps = peers_for(sym)
+        allp = [sym] + ps
+        d = closes_df(allp + ["SPY"])
+        spy = d["SPY"].dropna()
+        an = dict(zip(allp, pool.map(analyst, allp)))
+        raw = daily_closes(tuple(allp))
+        rows = []
+        for s in allp:
+            if s not in d:
+                continue
+            sc, df = series_score(d[s].dropna(), spy)
+            col = pd.Series([v for _, v in raw.get(s, [])], dtype=float)
+            summ = summarize(sc, df, GROUP_LABELS) if sc is not None else None
+            a = an.get(s) or {}
+            rows.append({"symbol": s, "name": a.get("name") or s, "self": s == sym,
+                         "day": float(col.iloc[-1] / col.iloc[-2] - 1) * 100 if len(col) > 1 else None,
+                         "month": float(col.iloc[-1] / col.iloc[-22] - 1) * 100 if len(col) > 22 else None,
+                         "fpe": a.get("fpe"), "mood": summ["score"] if summ else None,
+                         "rating": rating_label(a.get("mean")), "upside": a.get("upside")})
+        return {"symbol": sym, "peers": rows}
+    try:
+        return cached(("speers", sym), 1800, f)
+    except Exception:
+        return {"symbol": sym, "peers": []}
+
+
+# ---------- markets extras ----------
+@app.get("/api/sector")
+def sector_detail(symbol: str, key: str = Depends(current_user)):
+    sym = symbol.upper()
+    names = dict(SECTORS)
+    if sym not in names:
+        raise HTTPException(404, "Unknown sector fund")
+    def f():
+        th = yf.Ticker(sym).funds_data.top_holdings
+        hold = [(s, str(r.get("Name") or s), float(r.get("Holding Percent") or 0) * 100) for s, r in th.head(10).iterrows()]
+        closes = daily_closes(tuple(s for s, _, _ in hold))
+        rows = []
+        for s, n, w in hold:
+            m = moves(closes.get(s, []))
+            rows.append({"symbol": s, "name": n, "weight": w, **({k: m[k] for k in ("price", "day", "week")} if m else {})})
+        return {"symbol": sym, "name": names[sym], "holdings": rows}
+    return cached(("sector", sym), 1800, f)
+
+
+# FOMC decision days (second day of each meeting). 2027 dates are the Fed's tentative schedule.
+FOMC = ["2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17", "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09",
+        "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-09", "2027-07-28", "2027-09-15", "2027-10-27", "2027-12-08"]
+MACRO = [("Non-Farm", "Jobs report", "Monthly US hiring and unemployment"), ("Unemployment Rate", "Jobs report", "Monthly US hiring and unemployment"),
+         ("CPI", "CPI inflation", "Consumer prices: the inflation number the Fed watches"),
+         ("PCE", "PCE inflation", "The Fed's preferred inflation gauge"), ("PPI", "Producer prices", "Wholesale inflation"),
+         ("GDP", "GDP", "How fast the US economy is growing"), ("Retail Sales", "Retail sales", "How much US consumers are spending"),
+         ("ISM", "ISM business survey", "Factory / service sector health")]
+
+
+def macro_events(days=28):
+    """Major US economic releases over the next few weeks (Yahoo's economic calendar, queried in small windows)."""
+    def f():
+        cal = yf.Calendars()
+        today = pd.Timestamp.now(tz="America/New_York").normalize().tz_localize(None)
+        res, ok = [], 0
+        for i in range(0, days, 2):
+            d = today + pd.Timedelta(days=i)
+            e = None
+            for _ in range(2):
+                try:
+                    e = cal.get_economic_events_calendar(start=d.strftime("%Y-%m-%d"), end=(d + pd.Timedelta(days=2)).strftime("%Y-%m-%d"), limit=100)
+                    break
+                except Exception:
+                    time.sleep(1)
+            if e is None:
+                continue
+            ok += 1
+            if e.empty:
+                continue
+            for name, r in e[e["Region"] == "US"].iterrows():
+                for kw, label, desc in MACRO:
+                    if kw.lower() in str(name).lower():
+                        ts = r["Event Time"].tz_convert("America/New_York")
+                        res.append({"date": ts.strftime("%Y-%m-%d"), "time": ts.strftime("%H:%M"), "title": label, "desc": desc,
+                                    "kind": "macro", "for": str(r.get("For") or "")})
+                        break
+        if ok < days // 4:
+            raise RuntimeError("economic calendar unavailable")
+        seen, out = set(), []
+        for x in sorted(res, key=lambda x: (x["date"], x["time"])):
+            if (x["date"], x["title"]) not in seen:
+                seen.add((x["date"], x["title"]))
+                out.append(x)
+        return out
+    try:
+        return cached(("macro",), 6 * 3600, f)
+    except Exception:
+        return []
+
+
+def big_earnings(days=21):
+    def f():
+        today = pd.Timestamp.now(tz="America/New_York").normalize()
+        e = yf.Calendars().get_earnings_calendar(start=today.strftime("%Y-%m-%d"), end=(today + pd.Timedelta(days=days)).strftime("%Y-%m-%d"), limit=100)
+        out = []
+        for s, r in e.iterrows():
+            cap = fnum(r.get("Marketcap")) or 0
+            ts = r["Event Start Date"]
+            out.append({"symbol": s, "name": r.get("Company"), "cap": cap, "timing": r.get("Timing"),
+                        "date": ts.tz_convert("America/New_York").strftime("%Y-%m-%d"), "est": fnum(r.get("EPS Estimate"))})
+        return out
+    try:
+        return cached(("bigearn",), 6 * 3600, f)
+    except Exception:
+        return []
+
+
+@app.get("/api/calendar")
+def calendar(key: str = Depends(current_user)):
+    def f():
+        today = time.strftime("%Y-%m-%d")
+        held = {h["symbol"] for u in users.values() for h in u["holdings"]}
+        ev = [{"date": d, "time": "14:00", "title": "Fed rate decision", "desc": "FOMC interest-rate decision and press conference", "kind": "fed"}
+              for d in FOMC if d >= today][:1]
+        ev += macro_events()
+        for x in big_earnings():
+            if x["cap"] >= 150e9 or x["symbol"] in held:
+                when = {"BMO": "before the open", "AMC": "after the close"}.get(x["timing"], "")
+                ev.append({"date": x["date"], "time": "08:00" if x["timing"] == "BMO" else "16:05", "title": f"{x['symbol']} earnings",
+                           "desc": f"{x['name']} reports {when}".strip(), "kind": "earnings", "symbol": x["symbol"],
+                           "held": x["symbol"] in held})
+        ev = [e for e in ev if e["date"] >= today]
+        ev.sort(key=lambda e: (e["date"], e["time"]))
+        # the strip shows 5: make sure the Fed, key inflation/jobs data and the group's holdings make the cut
+        rank = lambda e: (0 if e["kind"] == "fed" else 1 if e["title"] in ("CPI inflation", "Jobs report", "PCE inflation") else
+                          2 if e.get("held") else 3 if e["kind"] == "macro" else 4)
+        top = sorted(range(len(ev)), key=lambda i: (rank(ev[i]), ev[i]["date"]))[:5]
+        for i, e in enumerate(ev):
+            e["top"] = i in top
+        return {"events": ev[:16], "ts": time.time()}
+    return cached(("calendar",), 1800, f)
+
+
 @app.get("/")
 def index():
     return FileResponse(ROOT / "static" / "index.html")
 
+
+threading.Thread(target=backfill_fx, daemon=True).start()
+threading.Thread(target=macro_events, daemon=True).start()
 
 if __name__ == "__main__":
     import uvicorn

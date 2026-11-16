@@ -243,6 +243,64 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .pt th:nth-child(2), .pt th:nth-child(3), .pt th:nth-child(4), .pt td:nth-child(2), .pt td:nth-child(3), .pt td:nth-child(4) { text-align: left; }
 .pt .grade { font-size: 12px; color: var(--muted); }
 .pt-more { padding: 10px 16px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.summary.four { grid-template-columns: 1.3fr 1fr 1fr 1fr; }
+.prow { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.prow .seg button { padding: 4px 10px; font-family: var(--mono); font-size: 12px; }
+.moodbig { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+.moodbig b { font-family: var(--mono); font-size: 20px; font-weight: 500; }
+.ec-head { padding: 14px 16px 0; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.ec-ctrl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ec-ctrl .seg button { padding: 4px 10px; font-size: 12px; }
+.ec-sum { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.ec-sum b { font-family: var(--mono); font-weight: 500; }
+.note { font-size: 11px; color: var(--muted); padding: 0 16px 12px; }
+.feed { list-style: none; margin: 0; padding: 0 0 6px; max-height: 360px; overflow-y: auto; }
+.feed li { display: flex; gap: 10px; align-items: flex-start; padding: 9px 16px; border-top: 1px solid var(--line); font-size: 13px; }
+.feed li .meta { margin-top: 1px; }
+.feed .sym { cursor: pointer; }
+.toggle { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); padding: 0 16px 12px; }
+.toggle input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.stackav { display: inline-flex; }
+.stackav .avatar { width: 20px; height: 20px; font-size: 10px; margin-left: -5px; box-shadow: 0 0 0 2px var(--surface); }
+.stackav .avatar:first-child { margin-left: 0; }
+.gm { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; align-items: center; padding: 0 16px 12px; }
+.gm .sc { font-family: var(--mono); font-size: 28px; font-weight: 500; grid-row: span 2; }
+.cal { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cal > div { background: var(--surface); padding: 10px 14px; min-width: 0; display: grid; gap: 2px; align-content: start; }
+.cal .when { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; }
+.cal .what { font-weight: 600; font-size: 13px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.cal .why { font-size: 12px; color: var(--muted); }
+.cal .k { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex: none; }
+.cal-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cal-h h2 { margin: 0; font-size: 14px; font-weight: 600; }
+.linkbtn { border: 0; background: none; color: var(--accent); font-size: 12px; padding: 0; }
+.linkbtn:hover { text-decoration: underline; }
+.heat div { cursor: pointer; border: 1px solid transparent; }
+.heat div:hover, .heat div.on { border-color: var(--ink); }
+.drawer { margin: 0 16px 16px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.drawer .card-h { padding: 10px 14px; background: var(--bg); }
+.wbtn { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 2px 8px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.wbtn:hover { border-color: var(--accent); color: var(--accent); }
+.wbtn.on { border-color: transparent; background: var(--accent-soft); color: var(--accent); cursor: default; }
+.mv li { grid-template-columns: minmax(0, 1fr) auto auto; }
+.dl { list-style: none; margin: 0; padding: 0; }
+.dl li { display: grid; grid-template-columns: minmax(0, 1fr) 54px 70px auto; gap: 10px; align-items: center; padding: 7px 14px; border-top: 1px solid var(--line); cursor: pointer; font-size: 13px; }
+.dl li:hover { background: var(--bg); }
+.peers td, .peers th { padding: 8px 12px; }
+.peers tr.self { background: var(--accent-soft); }
+.wi { padding: 0 16px 16px; display: grid; gap: 10px; }
+.wi input[type=range] { width: 100%; accent-color: var(--accent); }
+.wi .out { font-size: 15px; max-width: 72ch; }
+.wi .out b { font-family: var(--mono); font-weight: 500; }
+.wi .presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.wi .presets button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 10px; font-size: 12px; }
+.wi .presets button:hover { border-color: var(--accent); color: var(--accent); }
+.ev-legend { display: flex; gap: 12px; font-size: 11px; color: var(--muted); padding: 0 16px 10px; }
+.ev-legend i { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; color: #fff; font-style: normal; font-size: 9px; font-weight: 600; margin-right: 4px; vertical-align: -2px; }
+.bform { padding: 14px 16px 16px; display: grid; gap: 8px; align-content: start; }
+.bform h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.bform p { margin: 0; font-size: 12px; color: var(--muted); }
+.ind-h .top .x { visibility: visible; }
 footer { font-size: 12px; color: var(--muted); text-align: center; }
 
 @media (max-width: 1100px) and (min-width: 881px) { .inds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -259,7 +317,8 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
   .vcols { grid-template-columns: 1fr; }
   .rets div:nth-child(4) { border-left: 0; }
   .rets div:nth-child(n+4) { border-top: 1px solid var(--line); }
-  .summary { grid-template-columns: 1fr 1fr; }
+  .summary, .summary.four { grid-template-columns: 1fr 1fr; }
+  .cal { grid-template-columns: minmax(0, 1fr); }
   .summary > div:first-child { grid-column: 1 / -1; }
 }
 @media (max-width: 520px) {
@@ -295,7 +354,11 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     <button class="btn" id="backMine" type="button">Back to my portfolio</button>
   </div>
 
-  <section class="summary" aria-label="Portfolio summary">
+  <div class="prow">
+    <span class="muted" style="font-size:12px" id="fxNote"></span>
+    <div class="seg" id="baseSeg" aria-label="Show amounts in"><button type="button" data-c="USD">USD</button><button type="button" data-c="CAD">CAD</button><button type="button" data-c="EUR">EUR</button><button type="button" data-c="GBP">GBP</button></div>
+  </div>
+  <section class="summary four" aria-label="Portfolio summary">
     <div>
       <div class="label" id="valLabel">Portfolio value (USD)</div>
       <div class="big num" id="total">—</div>
@@ -310,6 +373,12 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <div class="label">Total gain / loss</div>
       <div class="mid num" id="gain">—</div>
       <div class="sub num" id="gainPct"></div>
+      <div class="sub num" id="gainFx"></div>
+    </div>
+    <div>
+      <div class="label">Portfolio mood</div>
+      <div class="moodbig" id="pMood">—</div>
+      <div class="sub muted" id="pMoodSub">Fear &amp; greed of what’s held, weighted by value</div>
     </div>
     <div class="alloc">
       <div class="label">Allocation</div>
@@ -319,14 +388,43 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
   </section>
 
   <section class="card">
-    <div class="card-h"><h2>The group</h2><span class="muted" style="font-size:12px">Click someone to see their portfolio</span></div>
+    <div class="ec-head">
+      <div style="min-width:0"><div class="label" id="ecLabel">Portfolio value over time</div>
+        <div><span class="mid num" id="ecVal">—</span></div>
+        <div class="ec-sum" id="ecSum"></div></div>
+      <div class="ec-ctrl">
+        <div class="seg" id="ecBench"><button type="button" data-b="^GSPC" class="on">vs S&amp;P 500</button><button type="button" data-b="^IXIC">vs Nasdaq</button><button type="button" data-b="none">Off</button></div>
+        <div class="tabs" id="ecTabs"><button type="button" data-r="1D">1D</button><button type="button" data-r="1M">1M</button><button type="button" data-r="6M" class="on">6M</button><button type="button" data-r="YTD">YTD</button><button type="button" data-r="1Y">1Y</button></div>
+      </div>
+    </div>
+    <div class="chartbox"><canvas id="ecChart" aria-label="Portfolio value chart"></canvas><div class="empty" id="ecEmpty" hidden></div></div>
+    <div class="note">Uses the holdings as they are today (Folio doesn’t know when each was bought or sold), so it shows how today’s mix has done. The benchmark line starts at the same value for a fair comparison.</div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h2>The group</h2>
+      <div class="ec-ctrl"><span class="muted hide-sm" style="font-size:12px">Click someone to see their portfolio</span>
+      <div class="seg" id="lbSeg"><button type="button" data-t="day">Today</button><button type="button" data-t="1W">1W</button><button type="button" data-t="1M">1M</button><button type="button" data-t="all" class="on">All time</button></div></div></div>
     <div class="tablewrap">
       <table class="lb">
-        <thead><tr><th>Member</th><th>Value</th><th>Today</th><th>All time</th><th class="hide-sm" style="text-align:left">Biggest holdings</th></tr></thead>
+        <thead><tr><th>Member</th><th>Value</th><th id="lbCol">All time</th><th class="hide-sm">Mood</th><th class="hide-sm" style="text-align:left">Biggest holdings</th></tr></thead>
         <tbody id="group"></tbody>
       </table>
     </div>
   </section>
+
+  <div class="grid2">
+    <section class="card">
+      <div class="card-h"><h2>Group activity</h2></div>
+      <label class="toggle"><input type="checkbox" id="shareAct"> <span>Share my buys and sells here. Shows tickers and % of portfolio, never dollar amounts.</span></label>
+      <ul class="feed" id="feed"><li class="muted">Loading…</li></ul>
+    </section>
+    <section class="card">
+      <div class="card-h"><h2>Group consensus</h2><span class="muted" style="font-size:12px">What the group owns most</span></div>
+      <div class="gm" id="gMood"></div>
+      <div class="tablewrap"><table class="cmp" id="gHeld"><thead><tr><th>Stock</th><th>Held by</th><th title="Share of all the group’s money">Share</th><th>Today</th><th class="hide-sm">Mood</th></tr></thead><tbody></tbody></table></div>
+    </section>
+  </div>
 
   <div class="grid2">
     <section class="card">
@@ -343,6 +441,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
         <div class="ac"><input class="field" id="hSym" placeholder="Ticker or name (AAPL, bitcoin, gold)" aria-label="Ticker" required><ul id="hAc" hidden></ul></div>
         <input class="field num" id="hShares" type="number" step="any" min="0" placeholder="Shares" aria-label="Shares" style="width:96px" required>
         <input class="field num" id="hCost" type="number" step="any" min="0" placeholder="Price paid" aria-label="Average price paid per share" style="width:110px" required>
+        <input class="field num" id="hDate" type="date" aria-label="Date bought (optional)" title="Date bought (optional, used to work out currency gains)" style="width:140px">
         <button class="btn primary" type="submit">Add</button>
       </form>
     </section>
@@ -395,13 +494,18 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <div class="seg" id="mPeriod"><button type="button" data-p="day" class="on">Today</button><button type="button" data-p="week">This week</button></div>
     </div>
     <div class="tiles" id="mIdx"></div>
+    <div>
+      <div class="cal-h" style="margin-bottom:8px"><h2>Coming up</h2><span class="muted" style="font-size:12px" id="calNote">What the market is waiting on · <button class="linkbtn" id="calMore" type="button">Show more</button></span></div>
+      <div class="cal" id="mCal"><div class="empty" style="grid-column:1/-1"><span class="spin"></span> Loading the calendar…</div></div>
+    </div>
     <div class="ai big">
       <div class="ai-h"><span class="label" id="mBriefLabel">AI market brief · today</span><button class="btn" id="mBriefBtn" type="button">Write the brief</button></div>
       <div id="mBrief" class="muted" style="font-size:13px;margin-top:6px">Claude reads today’s index, sector and mover data plus the latest market headlines and explains what drove the market.</div>
     </div>
     <section class="card">
-      <div class="card-h"><h2>Sectors</h2><span class="muted" style="font-size:12px" id="mSecNote">Last session, by sector fund</span></div>
+      <div class="card-h"><h2>Sectors</h2><span class="muted" style="font-size:12px" id="mSecNote">Last session, by sector fund · click one to see what’s inside</span></div>
       <div class="heat" id="mSec"></div>
+      <div id="mSecDetail"></div>
     </section>
     <section class="card">
       <div class="card-h"><h2>Biggest movers</h2><span class="muted" style="font-size:12px" id="mMovNote">US stocks, latest session · click one for details</span></div>
@@ -441,6 +545,8 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     <div class="vhead"><div><h2 style="margin:0;font-size:17px;font-weight:600">Industries</h2><p>Mood from each group’s trend, momentum and volatility; consensus from Wall Street analysts covering its biggest names. Click a stock for details.</p></div>
       <div class="legend-c"><span><i style="background:var(--up)"></i>Strong buy</span><span><i style="background:color-mix(in srgb, var(--up) 50%, var(--surface))"></i>Buy</span><span><i style="background:var(--line)"></i>Hold</span><span><i style="background:color-mix(in srgb, var(--down) 50%, var(--surface))"></i>Sell</span><span><i style="background:var(--down)"></i>Strong sell</span></div></div>
     <div class="inds" id="fInds"></div>
+    <div class="vhead"><div><h2 style="margin:0;font-size:17px;font-weight:600">Your baskets</h2><p>Make up to two groups of your own (say “Canadian banks” or “Space &amp; defense”) and get the same mood score and analyst consensus.</p></div></div>
+    <div class="inds" id="fCustom"></div>
     <p class="muted" style="font-size:12px;margin:0;max-width:90ch">Folio computes its own fear &amp; greed index from Yahoo Finance data in the same spirit as the well-known one: six market signals, each ranked against the past year and averaged. It is not CNN’s index. Analyst ratings and targets come from Yahoo Finance. None of this is investment advice.</p>
   </div>
 
@@ -486,6 +592,9 @@ let group = [];           // everyone
 let viewing = null;       // null = me, else member name
 let Q = {};               // symbol -> quote
 let sel = null, range = "1M", chart = null, timers = [];
+let BASE = "USD", FX = { USD: 1 }, MOODS = {}, GR = {}, lbT = "all", ACT = [];
+try { BASE = localStorage.getItem("folio-base") || "USD"; } catch {}
+const EC = { range: "6M", bench: "^GSPC", data: null, chart: null, who: null };
 
 // ---------- theme ----------
 (() => {
@@ -496,7 +605,7 @@ let sel = null, range = "1M", chart = null, timers = [];
     const next = dark ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("folio-theme", next); } catch {}
-    drawChart();
+    drawChart(); drawEquity();
   };
 })();
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -512,6 +621,10 @@ function money(v, cur) {
 const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "");
 const pct = v => v == null || isNaN(v) ? "—" : sign(v) + Math.abs(v).toFixed(2) + "%";
 const sUsd = v => v == null || isNaN(v) ? "—" : sign(v) + usd(Math.abs(v));
+// amounts already converted to the chosen base currency
+const bm = (v, d = 2) => v == null || isNaN(v) ? "—" : money(v, BASE).replace(/\.\d+$/, m => d === 0 ? "" : m);
+const sBm = (v, d = 2) => v == null || isNaN(v) ? "—" : sign(v) + bm(Math.abs(v), d);
+const baseRate = () => FX[BASE] || 1;  // USD per 1 unit of base
 const cls = v => v > 0 ? "up" : v < 0 ? "down" : "muted";
 const qty = v => +v.toFixed(8) + "";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -577,17 +690,25 @@ async function loadQuotes() {
 }
 
 function stats(u) {
-  let total = 0, day = 0, cost = 0, byCls = {}, rows = [];
+  // All amounts in the base currency. Cost uses the exchange rate from when the holding was bought (if known),
+  // so gains split into the stock's own move and the currency move.
+  let total = 0, day = 0, cost = 0, fxGain = 0, byCls = {}, rows = [], moodW = 0, moodV = 0;
+  const B = baseRate();
   u.holdings.forEach((h, i) => {
-    const q = Q[h.symbol] || {}, r = q.usdRate ?? null;
-    const val = q.price != null && r != null ? q.price * h.shares * r : null;
-    const c = r != null ? h.cost * h.shares * r : null;
-    if (val != null) { total += val; cost += c; day += q.change * h.shares * r; byCls[q.cls || "Other"] = (byCls[q.cls || "Other"] || 0) + val; }
-    rows.push({ h, q, i, val, gain: val != null ? val - c : null, gainPct: val != null && c ? (val / c - 1) * 100 : null });
+    const q = Q[h.symbol] || {}, usdR = q.usdRate ?? null;
+    if (q.price == null || usdR == null) { rows.push({ h, q, i, val: null, gain: null, gainPct: null, fx: 0 }); return; }
+    const r1 = usdR / B;
+    const L = h.cur || q.currency, f = h.fx || {};
+    const r0 = f[L] && f[BASE] ? f[L] / f[BASE] : r1;
+    const val = q.price * h.shares * r1, c = h.cost * h.shares * r0, fxp = q.price * h.shares * (r1 - r0);
+    total += val; cost += c; fxGain += fxp; day += (q.change || 0) * h.shares * r1;
+    byCls[q.cls || "Other"] = (byCls[q.cls || "Other"] || 0) + val;
+    const m = MOODS[h.symbol]; if (m != null) { moodW += val; moodV += m * val; }
+    rows.push({ h, q, i, val, gain: val - c, gainPct: c ? (val / c - 1) * 100 : null, fx: fxp });
   });
   rows.sort((a, b) => (b.val ?? -1) - (a.val ?? -1));
   const dayPct = total - day ? day / (total - day) * 100 : 0, allPct = cost ? (total / cost - 1) * 100 : 0;
-  return { total, day, cost, byCls, rows, dayPct, allPct };
+  return { total, day, cost, fxGain, byCls, rows, dayPct, allPct, mood: moodW ? moodV / moodW : null, moodCover: total ? moodW / total : 0 };
 }
 
 // ---------- render ----------
@@ -598,30 +719,35 @@ function render() {
   $("#who").innerHTML = `${avatar(me.name)}<span>${esc(me.name)}</span>`;
   $("#banner").hidden = mine;
   if (!mine) $("#bannerText").innerHTML = `You’re looking at <b>${esc(u.name)}’s</b> portfolio. Only they can change it.`;
-  $("#valLabel").textContent = mine ? "Your portfolio (USD)" : `${u.name}’s portfolio (USD)`;
+  $("#valLabel").textContent = mine ? `Your portfolio (${BASE})` : `${u.name}’s portfolio (${BASE})`;
+  for (const b of $("#baseSeg").children) b.classList.toggle("on", b.dataset.c === BASE);
   $("#holdTitle").textContent = mine ? "Your holdings" : `${u.name}’s holdings`;
   $("#addH").hidden = !mine; $("#addW").hidden = !mine;
 
   const st = stats(u);
-  $("#total").textContent = usd(st.total);
+  $("#total").textContent = bm(st.total);
   $("#count").textContent = u.holdings.length + (u.holdings.length === 1 ? " holding" : " holdings");
-  $("#day").innerHTML = `<span class="${cls(st.day)}">${sUsd(st.day)}</span>`;
+  $("#day").innerHTML = `<span class="${cls(st.day)}">${sBm(st.day)}</span>`;
   $("#dayPct").innerHTML = `<span class="${cls(st.day)}">${pct(st.dayPct)}</span>`;
-  $("#gain").innerHTML = `<span class="${cls(st.total - st.cost)}">${sUsd(st.total - st.cost)}</span>`;
-  $("#gainPct").innerHTML = `<span class="${cls(st.total - st.cost)}">${pct(st.allPct)}</span> <span class="muted">on ${usd(st.cost, 0)} invested</span>`;
+  $("#gain").innerHTML = `<span class="${cls(st.total - st.cost)}">${sBm(st.total - st.cost)}</span>`;
+  $("#gainPct").innerHTML = `<span class="${cls(st.total - st.cost)}">${pct(st.allPct)}</span> <span class="muted">on ${bm(st.cost, 0)} invested</span>`;
+  const foreign = u.holdings.some(h => (h.cur || Q[h.symbol]?.currency) && (h.cur || Q[h.symbol]?.currency) !== BASE);
+  $("#gainFx").innerHTML = foreign && st.rows.length ? `<span class="muted">Stocks</span> <span class="${cls(st.total - st.cost - st.fxGain)}">${sBm(st.total - st.cost - st.fxGain, 0)}</span> <span class="muted">· Currency</span> <span class="${cls(st.fxGain)}">${sBm(st.fxGain, 0)}</span>` : "";
+  $("#fxNote").textContent = foreign ? `Foreign holdings converted to ${BASE} at today’s rate; gains use the rate on the day bought (or the day added to Folio).` : "";
+  $("#pMood").innerHTML = st.mood == null ? `<span class="muted">${u.holdings.length ? "Working it out…" : "—"}</span>` : `<b>${Math.round(st.mood)}</b>${mchip(st.mood)}`;
 
   const parts = Object.entries(st.byCls).sort((a, b) => b[1] - a[1]);
   $("#bar").innerHTML = parts.map(([k, v], i) => `<span title="${k}" style="width:${v / st.total * 100}%;background:var(${HUES[i % 6]})"></span>`).join("");
-  $("#legend").innerHTML = parts.length ? parts.map(([k, v], i) => `<span><i style="background:var(${HUES[i % 6]})"></i>${k} <b class="num">${(v / st.total * 100).toFixed(1)}%</b> <span class="num">${usd(v, 0)}</span></span>`).join("") : `<span>${mine ? "Add a holding to see your allocation." : "No holdings yet."}</span>`;
+  $("#legend").innerHTML = parts.length ? parts.map(([k, v], i) => `<span><i style="background:var(${HUES[i % 6]})"></i>${k} <b class="num">${(v / st.total * 100).toFixed(1)}%</b> <span class="num">${bm(v, 0)}</span></span>`).join("") : `<span>${mine ? "Add a holding to see your allocation." : "No holdings yet."}</span>`;
 
-  $("#holdings").innerHTML = st.rows.length ? st.rows.map(({ h, q, i, val, gain, gainPct }) => `
+  $("#holdings").innerHTML = st.rows.length ? st.rows.map(({ h, q, i, val, gain, gainPct, fx }) => `
     <tr data-s="${esc(h.symbol)}" class="${sel === h.symbol ? "sel" : ""}">
       <td><div class="sym">${esc(h.symbol)}</div><div class="nm">${esc(q.name && q.name !== h.symbol ? q.name : "")}${q.error ? '<span class="down">price unavailable</span>' : ""}</div></td>
       <td class="num hide-sm">${money(q.price, q.currency)}</td>
       <td><span class="pill ${cls(q.pct)}">${pct(q.pct)}</span></td>
       <td class="num hide-sm">${qty(h.shares)}</td>
-      <td class="num">${usd(val)}</td>
-      <td class="num ${cls(gain)}">${sUsd(gain)}<div class="sub">${pct(gainPct)}</div></td>
+      <td class="num">${bm(val)}</td>
+      <td class="num ${cls(gain)}">${sBm(gain)}<div class="sub">${pct(gainPct)}${Math.abs(fx) >= 0.5 ? ` <span class="muted" title="Part of the gain from the exchange rate">FX ${sBm(fx, 0)}</span>` : ""}</div></td>
       <td>${mine ? `<button class="x" type="button" data-del="${i}" aria-label="Remove ${esc(h.symbol)}">×</button>` : ""}</td>
     </tr>`).join("") : `<tr><td colspan="7" class="empty">${mine ? "No holdings yet. Add what you own below: the ticker (or search by name), how many shares, and the average price you paid per share." : "No holdings yet."}</td></tr>`;
 
@@ -635,20 +761,149 @@ function render() {
       ${mine ? `<button class="x" type="button" data-wdel="${i}" aria-label="Stop watching ${esc(s)}">×</button>` : "<span></span>"}</li>`;
   }).join("") : `<li class="empty" style="display:block;cursor:default">Nothing on this watchlist yet.</li>`;
 
-  const board = group.map(g => ({ g, st: stats(g) })).sort((a, b) => (b.g.holdings.length > 0) - (a.g.holdings.length > 0) || b.st.allPct - a.st.allPct);
-  $("#group").innerHTML = board.map(({ g, st }, i) => {
+  const ret = (g, st) => lbT === "day" ? st.dayPct : lbT === "all" ? st.allPct : GR[g.name]?.[lbT] ?? null;
+  const board = group.map(g => ({ g, st: stats(g) })).map(x => ({ ...x, r: ret(x.g, x.st) }))
+    .sort((a, b) => (b.g.holdings.length > 0) - (a.g.holdings.length > 0) || (b.r ?? -1e9) - (a.r ?? -1e9));
+  $("#lbCol").textContent = { day: "Today", "1W": "Past week", "1M": "Past month", all: "All time" }[lbT];
+  for (const b of $("#lbSeg").children) b.classList.toggle("on", b.dataset.t === lbT);
+  $("#group").innerHTML = board.map(({ g, st, r }, i) => {
     const top = st.rows.slice(0, 3).filter(r => r.val).map(r => `${esc(r.h.symbol)} ${(r.val / st.total * 100).toFixed(0)}%`).join(" · ");
     const empty = !g.holdings.length;
     return `<tr data-m="${esc(g.name)}" class="${(viewing ? viewing === g.name : isMe(g.name)) ? "sel" : ""}">
       <td><span class="rank">${empty ? "" : i + 1}</span>${avatar(g.name)}<span>${esc(g.name)}</span>${isMe(g.name) ? '<span class="you">you</span>' : ""}</td>
-      <td class="num">${empty ? "—" : usd(st.total, 0)}</td>
-      <td>${empty ? '<span class="muted">—</span>' : `<span class="pill ${cls(st.dayPct)}">${pct(st.dayPct)}</span>`}</td>
-      <td class="num ${empty ? "muted" : cls(st.allPct)}">${empty ? "no holdings yet" : pct(st.allPct)}</td>
+      <td class="num">${empty ? "—" : bm(st.total, 0)}</td>
+      <td>${empty ? '<span class="muted">no holdings yet</span>' : r == null ? '<span class="muted">…</span>' : `<span class="pill ${cls(r)}">${pct(r)}</span>`}</td>
+      <td class="hide-sm">${empty || st.mood == null ? '<span class="muted">—</span>' : mchip(st.mood)}</td>
       <td class="tops hide-sm" style="text-align:left">${top || ""}</td></tr>`;
   }).join("") || `<tr><td colspan="5" class="empty">Nobody here yet.</td></tr>`;
-
+  renderConsensus(board);
+  renderFeed();
+  if (EC.data && EC.who === cur().name) drawEquity();
   updateChartHead();
 }
+
+// ---------- portfolio extras ----------
+async function loadFx() { try { FX = await api("fx"); } catch {} }
+async function loadMoods() {
+  const syms = [...new Set([me, ...group].filter(Boolean).flatMap(u => u.holdings.map(h => h.symbol)))];
+  if (!syms.length) return;
+  try { Object.assign(MOODS, await api("moods?symbols=" + encodeURIComponent(syms.join(",")))); render(); } catch {}
+}
+async function loadReturns() { try { GR = await api("group/returns"); if (lbT !== "day" && lbT !== "all") render(); } catch {} }
+async function loadActivity() { try { ACT = await api("activity"); renderFeed(); } catch {} }
+
+function renderFeed() {
+  if (!me) return;
+  $("#shareAct").checked = !!me.shareActivity;
+  const verb = e => e.kind === "added" ? `bought <b class="sym" data-s="${esc(e.symbol)}">${esc(e.symbol)}</b>${e.weight != null ? ` <span class="muted">· now ${e.weight}% of their portfolio</span>` : ""}`
+    : e.kind === "sold" ? `sold all of <b class="sym" data-s="${esc(e.symbol)}">${esc(e.symbol)}</b>`
+    : `${e.kind === "trimmed" ? "trimmed" : "added to"} <b class="sym" data-s="${esc(e.symbol)}">${esc(e.symbol)}</b> <span class="${e.change > 0 ? "up" : "down"}">${pct(e.change)}</span> <span class="muted">shares${e.weight != null ? ` · now ${e.weight}% of their portfolio` : ""}</span>`;
+  $("#feed").innerHTML = ACT.length ? ACT.map(e => `<li>${avatar(e.name)}<div style="min-width:0"><div><b>${esc(e.name)}</b> ${verb(e)}</div><div class="meta">${ago(new Date(e.ts * 1000).toISOString())}</div></div></li>`).join("")
+    : `<li class="muted" style="display:block">No moves shared yet. Tick the box above to share yours; everyone else can opt in too.</li>`;
+}
+$("#shareAct").onchange = async e => {
+  try { me = await post("prefs", { shareActivity: e.target.checked }, "PUT"); } catch { e.target.checked = !e.target.checked; }
+};
+$("#feed").onclick = e => { const s = e.target.closest("[data-s]"); if (s) openStock(s.dataset.s); };
+
+function renderConsensus(board) {
+  const live = board.filter(x => x.g.holdings.length && x.st.total > 0);
+  const moods = live.map(x => x.st.mood).filter(v => v != null);
+  const gm = moods.length ? moods.reduce((a, b) => a + b, 0) / moods.length : null;
+  $("#gMood").innerHTML = `<span class="sc">${gm == null ? "—" : Math.round(gm)}</span>
+    <div class="top" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="label">Group mood</span>${gm == null ? "" : mchip(gm)}</div>
+    <span class="muted" style="font-size:12px">Average portfolio fear &amp; greed across ${live.length} member${live.length === 1 ? "" : "s"} with holdings</span>`;
+  const by = {}; let all = 0;
+  for (const { g, st } of live) for (const r of st.rows) {
+    if (!r.val) continue;
+    const s = r.h.symbol; by[s] = by[s] || { s, who: [], val: 0 }; by[s].who.push(g.name); by[s].val += r.val; all += r.val;
+  }
+  const rows = Object.values(by).sort((a, b) => b.who.length - a.who.length || b.val - a.val).slice(0, 8);
+  $("#gHeld tbody").innerHTML = rows.length ? rows.map(x => `<tr data-s="${esc(x.s)}" style="cursor:pointer">
+    <td><span class="sym">${esc(x.s)}</span></td>
+    <td><span class="stackav" title="${esc(x.who.join(", "))}">${x.who.slice(0, 5).map(avatar).join("")}</span> <span class="muted num">${x.who.length}</span></td>
+    <td class="num">${(x.val / all * 100).toFixed(1)}%</td>
+    <td><span class="pill ${cls(Q[x.s]?.pct)}">${pct(Q[x.s]?.pct)}</span></td>
+    <td class="hide-sm">${MOODS[x.s] == null ? '<span class="muted">—</span>' : mchip(MOODS[x.s])}</td></tr>`).join("")
+    : `<tr><td colspan="5" class="empty">Nobody has holdings yet.</td></tr>`;
+}
+$("#gHeld").onclick = e => { const r = e.target.closest("tr[data-s]"); if (r) openStock(r.dataset.s); };
+
+$("#baseSeg").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  BASE = b.dataset.c; try { localStorage.setItem("folio-base", BASE); } catch {}
+  render(); drawEquity();
+};
+$("#lbSeg").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  lbT = b.dataset.t; render(); if ((lbT === "1W" || lbT === "1M") && !Object.keys(GR).length) loadReturns();
+};
+
+// equity curve
+async function loadEquity() {
+  const u = cur(); if (!u) return;
+  const want = u.name + EC.range + EC.bench + u.holdings.map(h => h.symbol + h.shares).join();
+  EC.want = want;
+  if (!u.holdings.length) { EC.data = { points: [] }; EC.who = u.name; drawEquity(); return; }
+  $("#ecEmpty").hidden = false; $("#ecEmpty").innerHTML = `<span class="spin"></span> Working out the history…`; $("#ecChart").hidden = true;
+  try {
+    const d = await api(`portfolio/history?member=${encodeURIComponent(u.name)}&range=${EC.range}&bench=${encodeURIComponent(EC.bench)}`);
+    if (EC.want !== want) return;
+    EC.data = d; EC.who = u.name;
+  } catch { EC.data = { points: [] }; EC.who = u.name; }
+  drawEquity();
+}
+function drawEquity() {
+  const d = EC.data; if (!d) return;
+  const B = baseRate(), pts = d.points || [];
+  const mine = !viewing;
+  $("#ecLabel").textContent = (mine ? "Your portfolio" : `${cur().name}’s portfolio`) + " over time";
+  if (EC.chart) { EC.chart.destroy(); EC.chart = null; }
+  if (pts.length < 2 || !window.Chart) {
+    $("#ecVal").textContent = "—"; $("#ecSum").textContent = "";
+    $("#ecEmpty").hidden = false; $("#ecChart").hidden = true;
+    $("#ecEmpty").textContent = cur().holdings.length ? "No history for this range yet." : "Add holdings to see how your portfolio has done over time.";
+    return;
+  }
+  $("#ecEmpty").hidden = true; $("#ecChart").hidden = false;
+  const val = pts.map(p => p[1] / B), bench = d.bench ? d.bench.map(p => p[1] / B) : null;
+  const ch = val[val.length - 1] - val[0];
+  $("#ecVal").innerHTML = `${bm(val[val.length - 1])} <span class="${cls(ch)}" style="font-size:14px">${sBm(ch)} (${pct(d.ret)})</span>`;
+  const lbl = { "1D": "today", "1M": "past month", "6M": "past 6 months", YTD: "this year", "1Y": "past year" }[EC.range];
+  if (bench) {
+    const diff = d.ret - d.benchRet;
+    $("#ecSum").innerHTML = `${lbl[0].toUpperCase() + lbl.slice(1)}: ${d.benchName} <b class="${cls(d.benchRet)}">${pct(d.benchRet)}</b>. ` +
+      (Math.abs(diff) < 0.05 ? "Neck and neck with the market." : `${mine ? "You’re" : "They’re"} <b class="${cls(diff)}">${diff > 0 ? "beating" : "trailing"}</b> it by <b>${Math.abs(diff).toFixed(1)}</b> percentage points.`);
+  } else $("#ecSum").textContent = lbl[0].toUpperCase() + lbl.slice(1);
+  const intraday = EC.range === "1D";
+  const labels = pts.map(([t]) => new Date(t).toLocaleString([], intraday ? { hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", year: EC.range === "1Y" ? "2-digit" : undefined }));
+  const col = css(ch >= 0 ? "--up" : "--down");
+  const ctx = $("#ecChart").getContext("2d");
+  const g = ctx.createLinearGradient(0, 0, 0, 240); g.addColorStop(0, col + "33"); g.addColorStop(1, col + "00");
+  const ds = [{ label: mine ? "You" : cur().name, data: val, borderColor: col, backgroundColor: g, fill: true, borderWidth: 1.75, pointRadius: 0, pointHoverRadius: 4, tension: 0.15 }];
+  if (bench) ds.push({ label: d.benchName, data: bench, borderColor: css("--muted"), borderDash: [4, 4], borderWidth: 1.25, pointRadius: 0, pointHoverRadius: 3, fill: false, tension: 0.15 });
+  EC.chart = new Chart(ctx, { type: "line", data: { labels, datasets: ds }, options: {
+    responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
+    plugins: { legend: { display: !!bench, position: "top", align: "start", labels: { color: css("--muted"), boxWidth: 14, boxHeight: 2, font: { size: 11 } } },
+      tooltip: { backgroundColor: css("--surface"), titleColor: css("--muted"), bodyColor: css("--ink"), borderColor: css("--line"), borderWidth: 1,
+        callbacks: { label: c => `${c.dataset.label}: ${bm(c.parsed.y)} (${pct((c.parsed.y / c.dataset.data[0] - 1) * 100)})` } } },
+    scales: { x: { grid: { display: false }, border: { color: css("--line") }, ticks: { color: css("--muted"), maxTicksLimit: 6, maxRotation: 0, font: { size: 11 } } },
+      y: { position: "right", grid: { color: css("--line") }, border: { display: false }, ticks: { color: css("--muted"), maxTicksLimit: 5, font: { size: 11 }, callback: v => bm(v, 0) } } } } });
+}
+$("#ecTabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; EC.range = b.dataset.r; for (const x of $("#ecTabs").children) x.classList.toggle("on", x === b); loadEquity(); };
+$("#ecBench").onclick = e => { const b = e.target.closest("button"); if (!b) return; EC.bench = b.dataset.b; for (const x of $("#ecBench").children) x.classList.toggle("on", x === b); loadEquity(); };
+
+// one "+ Watch" button used across Markets, sectors and peers
+const watchBtn = s => me && me.watchlist.includes(s) ? `<button type="button" class="wbtn on" data-watch="${esc(s)}" aria-label="On your watchlist">✓ Watching</button>` : `<button type="button" class="wbtn" data-watch="${esc(s)}" aria-label="Add ${esc(s)} to watchlist">+ Watch</button>`;
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-watch]"); if (!b) return;
+  e.stopPropagation(); e.preventDefault();
+  const s = b.dataset.watch;
+  if (!me || me.watchlist.includes(s)) return;
+  me.watchlist.unshift(s);
+  document.querySelectorAll(`[data-watch="${CSS.escape(s)}"]`).forEach(x => x.outerHTML = watchBtn(s));
+  await saveMe(); loadQuotes();
+}, true);
 
 // ---------- chart ----------
 let hist = [];
@@ -675,7 +930,15 @@ async function loadHistory() {
   } catch { hist = []; }
   updateChartHead(); drawChart();
 }
-function lineChart(cv, box, hist, q, range, old) {
+function eventMarks(hist, range, events) {
+  if (!events || range === "1D" || range === "5D" || hist.length < 2) return [];
+  const tol = (range === "5Y" ? 4 : 2) * 864e5, t0 = hist[0][0], t1 = hist[hist.length - 1][0], out = [];
+  const near = t => { let best = -1, bd = Infinity; for (let i = 0; i < hist.length; i++) { const dd = Math.abs(hist[i][0] - t); if (dd < bd) { bd = dd; best = i; } } return bd <= tol ? best : -1; };
+  for (const e of events.earnings || []) { const t = new Date(e.date + "T16:00:00").getTime(); if (t < t0 - tol || t > t1 + tol) continue; const i = near(t); if (i >= 0) out.push({ i, k: "E", e }); }
+  for (const e of events.dividends || []) { const t = new Date(e.date + "T12:00:00").getTime(); if (t < t0 - tol || t > t1 + tol) continue; const i = near(t); if (i >= 0) out.push({ i, k: "D", e }); }
+  return out;
+}
+function lineChart(cv, box, hist, q, range, old, events) {
   if (old) old.destroy();
   if (!window.Chart) { box.hidden = false; box.textContent = "Chart library didn’t load."; return null; }
   if (hist.length < 2) { box.hidden = false; box.textContent = "No price history for this range."; cv.hidden = true; return null; }
@@ -689,22 +952,41 @@ function lineChart(cv, box, hist, q, range, old) {
   g.addColorStop(0, col + "33"); g.addColorStop(1, col + "00");
   const data = { labels, datasets: [{ data: hist.map(d => d[1]), borderColor: col, backgroundColor: g, fill: true, borderWidth: 1.75, pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: col, tension: 0.15 }] };
   if (range === "1D" && q.prev) data.datasets.push({ data: hist.map(() => q.prev), borderColor: css("--muted"), borderDash: [3, 4], borderWidth: 1, pointRadius: 0, pointHoverRadius: 0, fill: false });
-  return new Chart(ctx, { type: "line", data, options: {
+  const marks = eventMarks(hist, range, events);
+  const ecol = { E: css("--accent"), D: css("--a3") };
+  const markPlugin = { id: "marks", afterDatasetsDraw(ch) {
+    if (!marks.length) return;
+    const { ctx: c, chartArea: a, scales: { x } } = ch;
+    c.save();
+    for (const m of marks) {
+      const px = x.getPixelForValue(m.i), py = a.bottom - 9;
+      if (m.k === "E") { c.strokeStyle = ecol.E + "66"; c.setLineDash([2, 3]); c.beginPath(); c.moveTo(px, a.top); c.lineTo(px, py - 8); c.stroke(); c.setLineDash([]); }
+      c.fillStyle = ecol[m.k]; c.beginPath(); c.arc(px, py, 7, 0, Math.PI * 2); c.fill();
+      c.fillStyle = "#fff"; c.font = "600 9px " + css("--sans"); c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(m.k, px, py + 0.5);
+    }
+    c.restore();
+  } };
+  const markAt = i => marks.filter(m => Math.abs(m.i - i) <= (range === "1M" ? 0 : 1));
+  const fmtEPS = v => v == null ? "—" : money(v, q.currency);
+  return new Chart(ctx, { type: "line", data, plugins: [markPlugin], options: {
     responsive: true, maintainAspectRatio: false, animation: false,
     interaction: { mode: "index", intersect: false },
     plugins: { legend: { display: false }, tooltip: {
       filter: i => i.datasetIndex === 0, displayColors: false,
       backgroundColor: css("--surface"), titleColor: css("--muted"), bodyColor: css("--ink"), borderColor: css("--line"), borderWidth: 1,
-      callbacks: { label: c => money(c.parsed.y, q.currency) } } },
+      callbacks: { label: c => money(c.parsed.y, q.currency),
+        footer: items => markAt(items[0]?.dataIndex ?? -99).map(m => m.k === "E"
+          ? `Earnings ${m.e.date}: EPS ${fmtEPS(m.e.eps)} vs ${fmtEPS(m.e.est)} expected${m.e.surprise != null ? ` (${pct(m.e.surprise)} surprise)` : ""}`
+          : `Dividend ${m.e.date}: ${money(m.e.amount, q.currency)} per share`) } } },
     scales: {
       x: { grid: { display: false }, border: { color: css("--line") }, ticks: { color: css("--muted"), maxTicksLimit: 5, maxRotation: 0, font: { size: 11 } } },
-      y: { position: "right", grid: { color: css("--line") }, border: { display: false }, ticks: { color: css("--muted"), maxTicksLimit: 5, font: { size: 11 }, callback: v => money(v, q.currency) } }
+      y: { position: "right", grid: { color: css("--line") }, border: { display: false }, ticks: { color: css("--muted"), maxTicksLimit: 5, font: { size: 11 }, callback: v => Math.abs(v) >= 1000 ? money(v, q.currency).replace(/\.\d+$/, "") : money(v, q.currency) } }
     } } });
 }
 function drawChart() {
   if (!sel) { $("#cEmpty").hidden = false; $("#cEmpty").textContent = "Pick an asset to chart."; $("#chart").hidden = true; if (chart) chart.destroy(); chart = null; }
   else chart = lineChart($("#chart"), $("#cEmpty"), hist, Q[sel] || {}, range, chart);
-  if (S.data) S.chart = lineChart($("#sChart"), $("#sEmpty"), S.hist, S.data.quote, S.range, S.chart);
+  if (S.data) S.chart = lineChart($("#sChart"), $("#sEmpty"), S.hist, S.data.quote, S.range, S.chart, S.events);
 }
 $("#tabs").onclick = e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -720,14 +1002,14 @@ function view(name) {
   sel = u.holdings[0]?.symbol || u.watchlist[0] || null;
   $("#sumOut").className = "muted"; $("#sumOut").textContent = "A short rundown of what today’s headlines mean for these holdings. Written by Claude from the headlines below.";
   $("#sumBtn").textContent = "Summarize headlines";
-  render(); loadHistory(); loadNews();
+  render(); loadHistory(); loadNews(); loadEquity();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $("#group").onclick = e => { const r = e.target.closest("tr[data-m]"); if (r) view(r.dataset.m); };
 $("#backMine").onclick = () => view(null);
 $("#holdings").onclick = async e => {
   const d = e.target.closest("[data-del]");
-  if (d && !viewing) { me.holdings.splice(+d.dataset.del, 1); render(); await saveMe(); render(); loadNews(); return; }
+  if (d && !viewing) { me.holdings.splice(+d.dataset.del, 1); render(); await saveMe(); render(); loadNews(); loadEquity(); loadActivity(); return; }
   const r = e.target.closest("tr[data-s]"); if (r) select(r.dataset.s);
 };
 $("#watch").onclick = async e => {
@@ -735,7 +1017,7 @@ $("#watch").onclick = async e => {
   if (d && !viewing) { me.watchlist.splice(+d.dataset.wdel, 1); render(); await saveMe(); return; }
   const r = e.target.closest("li[data-s]"); if (r) select(r.dataset.s);
 };
-$("#refresh").onclick = async () => { await loadGroup(); loadQuotes(); loadHistory(); };
+$("#refresh").onclick = async () => { await loadGroup(); loadQuotes(); loadHistory(); loadEquity(); loadActivity(); };
 
 function autocomplete(input, list) {
   let t, items = [], on = -1;
@@ -769,13 +1051,13 @@ $("#hSym").addEventListener("picked", () => $("#hShares").focus());
 
 $("#addH").onsubmit = async e => {
   e.preventDefault();
-  const symbol = $("#hSym").value.trim().toUpperCase(), shares = +$("#hShares").value, cost = +$("#hCost").value;
+  const symbol = $("#hSym").value.trim().toUpperCase(), shares = +$("#hShares").value, cost = +$("#hCost").value, date = $("#hDate").value;
   if (!symbol || !(shares > 0)) return;
   const ex = me.holdings.find(h => h.symbol === symbol);
   if (ex) { ex.cost = (ex.cost * ex.shares + cost * shares) / (ex.shares + shares); ex.shares += shares; }
-  else me.holdings.push({ symbol, shares, cost });
+  else me.holdings.push(date ? { symbol, shares, cost, date } : { symbol, shares, cost });
   e.target.reset();
-  await saveMe(); await loadQuotes(); select(symbol); loadNews();
+  await saveMe(); await loadQuotes(); select(symbol); loadNews(); loadEquity(); loadMoods(); loadActivity();
 };
 $("#addW").onsubmit = async e => {
   e.preventDefault();
@@ -856,6 +1138,7 @@ const newsList = items => items.length ? items.map(n => `<li>
 let M = null, mPeriod = "day", mLoaded = 0;
 async function loadMarket(force) {
   if (!force && M && Date.now() - mLoaded < 120000) return renderMarket();
+  loadCal();
   try { M = await api("market"); mLoaded = Date.now(); renderMarket(); }
   catch (err) { $("#mAsof").textContent = "Couldn’t load market data. " + err.message; }
 }
@@ -879,16 +1162,72 @@ function renderMarket() {
   const maxAbs = Math.max(1, ...M.sectors.map(r => Math.abs(r[k] || 0)));
   $("#mSec").innerHTML = [...M.sectors].sort((a, b) => (b[k] ?? -99) - (a[k] ?? -99)).map(r => {
     const v = r[k] || 0, amt = Math.round(8 + Math.abs(v) / maxAbs * 40);
-    return `<div style="background:color-mix(in srgb, var(${v >= 0 ? "--up" : "--down"}) ${amt}%, var(--surface))">
+    return `<div data-sec="${esc(r.symbol)}" role="button" tabindex="0" class="${secOpen === r.symbol ? "on" : ""}" style="background:color-mix(in srgb, var(${v >= 0 ? "--up" : "--down"}) ${amt}%, var(--surface))">
       <b>${esc(r.label)}</b><span class="${cls(v)}">${pct(r[k])}</span><small>${esc(r.symbol)}</small></div>`;
   }).join("");
   $("#mSecNote").textContent = wk ? "Past 5 sessions, by sector fund" : "Latest session, by sector fund";
   $("#mMovNote").textContent = wk ? "US stocks, latest session only (Yahoo lists daily movers) · click one for details" : "US stocks, latest session · click one for details";
-  const mv = list => list.length ? list.map(x => `<li data-s="${esc(x.symbol)}"><div style="min-width:0"><div class="sym">${esc(x.symbol)}</div><div class="nm">${esc(x.name)}</div></div><span class="pill ${cls(x.pct)}">${pct(x.pct)}</span></li>`).join("") : `<li class="muted" style="cursor:default">Not available right now.</li>`;
+  const mv = list => list.length ? list.map(x => `<li data-s="${esc(x.symbol)}"><div style="min-width:0"><div class="sym">${esc(x.symbol)}</div><div class="nm">${esc(x.name)}</div></div><span class="pill ${cls(x.pct)}">${pct(x.pct)}</span>${watchBtn(x.symbol)}</li>`).join("") : `<li class="muted" style="cursor:default">Not available right now.</li>`;
   $("#mUp").innerHTML = mv(M.movers.day_gainers); $("#mDown").innerHTML = mv(M.movers.day_losers); $("#mAct").innerHTML = mv(M.movers.most_actives);
   $("#mNews").innerHTML = newsList(M.news);
   $("#mBriefLabel").textContent = "AI market brief · " + (wk ? "this week" : "today");
+  if (secOpen) renderSector();
 }
+
+// calendar strip
+let CAL = null, calAll = false;
+async function loadCal() {
+  if (CAL && Date.now() - CAL.got < 1800000) return renderCal();
+  try { CAL = await api("calendar"); CAL.got = Date.now(); renderCal(); }
+  catch { $("#mCal").innerHTML = `<div class="empty" style="grid-column:1/-1">Couldn’t load upcoming events.</div>`; }
+}
+function renderCal() {
+  const ev = CAL.events || [];
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  const when = e => {
+    const d = new Date(e.date + "T12:00:00"), days = Math.round((d - today) / 864e5);
+    const day = days === 0 ? "Today" : days === 1 ? "Tomorrow" : d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+    const [h, m] = (e.time || "").split(":").map(Number);
+    const t = e.kind === "earnings" ? (h < 12 ? "before open" : "after close") : (h != null && !isNaN(h) ? new Date(2000, 0, 1, h, m).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + " ET" : "");
+    return `${day}${t ? " · " + t : ""}`;
+  };
+  const dot = { fed: "var(--a4)", macro: "var(--a3)", earnings: "var(--accent)" };
+  const list = calAll ? ev : ev.some(e => e.top) ? ev.filter(e => e.top) : ev.slice(0, 5);
+  $("#mCal").innerHTML = list.length ? list.map(e => `<div${e.symbol ? ` data-s="${esc(e.symbol)}" style="cursor:pointer"` : ""}>
+    <span class="when">${when(e)}</span>
+    <span class="what"><i class="k" style="background:${dot[e.kind]}"></i>${esc(e.title)}${e.for ? ` <span class="muted" style="font-weight:400">(${esc(e.for)})</span>` : ""}${e.held ? '<span class="you">group holds</span>' : ""}</span>
+    <span class="why">${esc(e.desc)}</span></div>`).join("") : `<div class="empty" style="grid-column:1/-1">Nothing big on the calendar.</div>`;
+  $("#calMore").hidden = ev.length <= 5;
+  $("#calMore").textContent = calAll ? "Show less" : `Show all ${ev.length}`;
+}
+$("#calMore").onclick = () => { calAll = !calAll; renderCal(); };
+$("#mCal").onclick = e => { const d = e.target.closest("[data-s]"); if (d) openStock(d.dataset.s); };
+
+// sector drill-down
+let secOpen = null, SEC = {};
+async function openSector(sym) {
+  if (secOpen === sym) { secOpen = null; $("#mSecDetail").innerHTML = ""; renderMarket(); return; }
+  secOpen = sym; renderMarket();
+  if (!SEC[sym]) {
+    $("#mSecDetail").innerHTML = `<div class="drawer"><div class="empty"><span class="spin"></span> Loading what’s inside…</div></div>`;
+    try { SEC[sym] = await api("sector?symbol=" + encodeURIComponent(sym)); }
+    catch { $("#mSecDetail").innerHTML = `<div class="drawer"><div class="empty">Couldn’t load this sector’s holdings.</div></div>`; return; }
+  }
+  if (secOpen === sym) renderSector();
+}
+function renderSector() {
+  const d = SEC[secOpen]; if (!d) return;
+  const k = mPeriod;
+  $("#mSecDetail").innerHTML = `<div class="drawer">
+    <div class="card-h"><h2 style="font-size:13px">${esc(d.name)}: biggest companies in ${esc(d.symbol)}</h2><button class="x" style="visibility:visible" type="button" id="secClose" aria-label="Close">×</button></div>
+    <ul class="dl">${d.holdings.map(x => `<li data-s="${esc(x.symbol)}"><div style="min-width:0"><span class="sym">${esc(x.symbol)}</span> <span class="nm" style="display:inline">${esc(x.name)}</span></div>
+      <span class="num muted" style="text-align:right;font-size:12px" title="Share of the fund">${x.weight.toFixed(1)}%</span>
+      <span class="pill ${cls(x[k])}" style="text-align:right">${pct(x[k])}</span>${watchBtn(x.symbol)}</li>`).join("")}</ul></div>`;
+  $("#secClose").onclick = () => openSector(secOpen);
+}
+$("#mSec").onclick = e => { const d = e.target.closest("[data-sec]"); if (d) openSector(d.dataset.sec); };
+$("#mSec").onkeydown = e => { if (e.key === "Enter" || e.key === " ") { const d = e.target.closest("[data-sec]"); if (d) { e.preventDefault(); openSector(d.dataset.sec); } } };
+$("#mSecDetail").onclick = e => { const li = e.target.closest("li[data-s]"); if (li) openStock(li.dataset.s); };
 $("#mPeriod").onclick = e => {
   const b = e.target.closest("button"); if (!b || b.dataset.p === mPeriod) return;
   mPeriod = b.dataset.p;
@@ -916,12 +1255,17 @@ $("#sForm").onsubmit = e => { e.preventDefault(); const v = $("#sSym").value.tri
 $("#cIntel").onclick = () => sel && openStock(sel);
 
 const big = v => v == null ? "—" : v >= 1e12 ? "$" + (v / 1e12).toFixed(2) + "T" : v >= 1e9 ? "$" + (v / 1e9).toFixed(1) + "B" : v >= 1e6 ? "$" + (v / 1e6).toFixed(0) + "M" : usd(v, 0);
+function bigCur(v, cur) {
+  if (v == null) return "—";
+  try { return new Intl.NumberFormat("en-US", { style: "currency", currency: cur || "USD", notation: "compact", maximumFractionDigits: 2 }).format(v); }
+  catch { return big(v); }
+}
 const vol = v => v == null ? "—" : v >= 1e9 ? (v / 1e9).toFixed(2) + "B" : v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1e3 ? (v / 1e3).toFixed(0) + "K" : String(v);
 const RATING = { strong_buy: "Strong buy", buy: "Buy", hold: "Hold", underperform: "Underperform", sell: "Sell", none: "—" };
 
 async function openStock(sym, go = true) {
   sym = sym.trim().toUpperCase();
-  S.sym = sym; S.data = null;
+  S.sym = sym; S.data = null; S.events = null; S.peers = null;
   try { localStorage.setItem("folio-stock", sym); } catch {}
   if (go && location.hash !== "#stock") location.hash = "stock";
   $("#sSym").value = "";
@@ -930,7 +1274,7 @@ async function openStock(sym, go = true) {
     const d = await api("stock?symbol=" + encodeURIComponent(sym));
     if (S.sym !== sym) return;
     S.data = d; Q[sym] = { ...(Q[sym] || {}), ...d.quote };
-    renderStock(); loadStockHist(); loadStockSent(sym);
+    renderStock(); loadStockHist(); loadStockSent(sym); loadEvents(sym); loadPeers(sym);
   } catch (err) {
     if (S.sym === sym) $("#sOut").innerHTML = `<div class="card empty">${esc(err.message)}</div>`;
   }
@@ -939,7 +1283,18 @@ async function loadStockHist() {
   const want = S.sym + S.range;
   try { const h = await api(`history?symbol=${encodeURIComponent(S.sym)}&range=${S.range}`); if (want !== S.sym + S.range) return; S.hist = h; }
   catch { S.hist = []; }
-  S.chart = lineChart($("#sChart"), $("#sEmpty"), S.hist, S.data.quote, S.range, S.chart);
+  S.chart = lineChart($("#sChart"), $("#sEmpty"), S.hist, S.data.quote, S.range, S.chart, S.events);
+  evLegend();
+}
+function evLegend() {
+  const el = $("#sEvLeg"); if (!el) return;
+  const m = eventMarks(S.hist, S.range, S.events);
+  el.innerHTML = m.length ? `<span><i style="background:var(--accent)">E</i>Earnings report</span>${m.some(x => x.k === "D") ? `<span><i style="background:var(--a3)">D</i>Dividend</span>` : ""}<span>Hover a marker for details</span>`
+    : (S.range === "1D" || S.range === "5D" ? "" : S.events ? "<span>No earnings or dividends in this range</span>" : "");
+}
+async function loadEvents(sym) {
+  try { const ev = await api("stock/events?symbol=" + encodeURIComponent(sym)); if (S.sym !== sym) return; S.events = ev;
+    if (S.data) { S.chart = lineChart($("#sChart"), $("#sEmpty"), S.hist, S.data.quote, S.range, S.chart, S.events); evLegend(); } } catch {}
 }
 function renderStock() {
   const d = S.data, q = d.quote, st = d.stats, c = d.changes, vs = d.vs;
@@ -981,18 +1336,29 @@ function renderStock() {
         <div class="chart-head"><div class="row"><span class="label">Price</span>
           <div class="tabs" id="sTabs">${["1D", "5D", "1M", "6M", "1Y", "5Y"].map(r => `<button type="button" data-r="${r}" class="${r === S.range ? "on" : ""}">${r}</button>`).join("")}</div></div></div>
         <div class="chartbox"><canvas id="sChart" aria-label="Price chart"></canvas><div class="empty" id="sEmpty" hidden></div></div>
+        <div class="ev-legend" id="sEvLeg"></div>
       </section>
     </div>
+
+    <section class="card">
+      <div class="card-h"><h2>Compare with peers</h2><span class="muted" style="font-size:12px">Similar companies side by side · click one to open it</span></div>
+      <div id="sPeers"><div class="empty"><span class="spin"></span> Finding peers…</div></div>
+    </section>
 
     <section class="card">
       <div class="card-h"><h2>Sentiment &amp; analyst consensus</h2></div>
       <div id="sSent"><div class="empty"><span class="spin"></span> Loading sentiment…</div></div>
     </section>
 
+    ${st.feps > 0 && q.price ? `<section class="card">
+      <div class="card-h"><h2>What-if valuation</h2><span class="muted" style="font-size:12px">Drag to try a different price-to-earnings ratio</span></div>
+      <div class="wi" id="sWi"></div>
+    </section>` : ""}
+
     <section class="card">
       <div class="card-h"><h2>Key numbers</h2></div>
       <div class="stats">
-        ${stat("Market value", big(st.marketCap))}
+        ${stat("Market value", bigCur(st.marketCap, st.capCurrency), st.capCurrency && st.capCurrency !== "USD" && st.marketCapUsd ? `<div class="muted" style="font-size:12px">≈ ${big(st.marketCapUsd)}</div>` : "")}
         ${stat("P/E (past year)", st.pe ? st.pe.toFixed(1) : "—")}
         ${stat("P/E (next year)", st.fpe ? st.fpe.toFixed(1) : "—")}
         ${stat("52-week range", st.low52 != null ? `${money(st.low52, q.currency)} – ${money(st.high52, q.currency)}` : "—", pos52 != null ? `<div class="range52"><i style="left:${pos52}%"></i></div>` : "")}
@@ -1011,12 +1377,56 @@ function renderStock() {
       <ul class="news">${newsList(d.news)}</ul>
     </section>
   </div>`;
+  renderWhatIf(); renderPeers();
   $("#sTabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; S.range = b.dataset.r; for (const x of $("#sTabs").children) x.classList.toggle("on", x === b); loadStockHist(); };
   $("#sWhyBtn").onclick = () => aiInto($("#sWhyBtn"), $("#sWhy"), "stock/why", { symbol: d.symbol }, "Explain again");
   $("#sWatch").onclick = async () => {
     if (me.watchlist.includes(d.symbol)) return;
     me.watchlist.unshift(d.symbol); await saveMe(); renderStock(); loadStockHist(); loadStockSent(d.symbol); render();
   };
+}
+
+async function loadPeers(sym) {
+  try { const r = await api("stock/peers?symbol=" + encodeURIComponent(sym)); if (S.sym !== sym) return; S.peers = r.peers; renderPeers(); renderWhatIf(); }
+  catch { S.peers = []; renderPeers(); }
+}
+function renderPeers() {
+  const box = $("#sPeers"); if (!box || S.peers == null) return;
+  const P = S.peers;
+  if (P.length < 2) { box.innerHTML = `<div class="empty">No peer group found for ${esc(S.sym)}.</div>`; return; }
+  box.innerHTML = `<div class="tablewrap"><table class="cmp peers"><thead><tr><th>Stock</th><th>Today</th><th>1 month</th><th>Forward P/E</th><th>Mood</th><th class="hide-sm">Analysts</th><th class="hide-sm"></th></tr></thead><tbody>
+    ${P.map(x => `<tr data-s="${esc(x.symbol)}" class="${x.self ? "self" : ""}" style="cursor:${x.self ? "default" : "pointer"}">
+      <td><span class="sym">${esc(x.symbol)}</span><div class="nm">${esc(x.name)}</div></td>
+      <td><span class="pill ${cls(x.day)}">${pct(x.day)}</span></td>
+      <td><span class="pill ${cls(x.month)}">${pct(x.month)}</span></td>
+      <td class="num">${x.fpe ? x.fpe.toFixed(1) + "×" : "—"}</td>
+      <td>${x.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:6px">${x.mood}</span>${mchip(x.mood)}`}</td>
+      <td class="hide-sm">${ratingChip(x.rating)}${x.upside != null ? ` <span class="muted" style="font-size:12px">${pct(x.upside)}</span>` : ""}</td>
+      <td class="hide-sm">${x.self ? "" : watchBtn(x.symbol)}</td></tr>`).join("")}</tbody></table></div>
+    <div class="note" style="padding-top:8px">Forward P/E = price ÷ next year’s expected earnings per share (lower = cheaper relative to profits). Analyst column shows consensus and average target vs today. Today’s moves are each market’s latest session.</div>`;
+  box.onclick = e => { const r = e.target.closest("tr[data-s]"); if (r && !r.classList.contains("self")) openStock(r.dataset.s); };
+}
+function renderWhatIf() {
+  const box = $("#sWi"); if (!box || !S.data) return;
+  const q = S.data.quote, st = S.data.stats, eps = st.feps, now = q.price / eps;
+  const peerPE = (S.peers || []).filter(x => !x.self && x.fpe > 0).map(x => x.fpe);
+  const peerAvg = peerPE.length ? peerPE.reduce((a, b) => a + b, 0) / peerPE.length : null;
+  const hi = Math.max(40, Math.ceil(now * 2.5), Math.ceil((peerAvg || 0) * 1.5));
+  const cur0 = box.dataset.pe ? +box.dataset.pe : Math.round(now * 10) / 10;
+  box.innerHTML = `
+    <p class="muted" style="margin:0;font-size:13px;max-width:80ch">Analysts expect <b class="num" style="color:var(--ink)">${money(eps, q.currency)}</b> of earnings per share next year. At today’s price of ${money(q.price, q.currency)} the market is paying <b class="num" style="color:var(--ink)">${now.toFixed(1)}×</b> those earnings.</p>
+    <input type="range" id="wiR" min="1" max="${hi}" step="0.1" value="${Math.min(hi, cur0)}" aria-label="Forward P/E">
+    <div class="presets"><button type="button" data-pe="${now.toFixed(2)}">Today ${now.toFixed(1)}×</button>${peerAvg ? `<button type="button" data-pe="${peerAvg.toFixed(2)}">Peer average ${peerAvg.toFixed(1)}×</button>` : ""}<button type="button" data-pe="15">15×</button><button type="button" data-pe="25">25×</button></div>
+    <div class="out" id="wiOut"></div>
+    <div class="note" style="padding:0">A simple what-if, not a forecast. It assumes the analysts’ earnings estimate is right and only the multiple changes.</div>`;
+  const upd = pe => {
+    box.dataset.pe = pe;
+    const px = eps * pe, ch = (px / q.price - 1) * 100;
+    $("#wiOut").innerHTML = `If the market paid <b>${(+pe).toFixed(1)}×</b> next year’s earnings, ${esc(S.data.symbol)} would trade at <b>${money(px, q.currency)}</b> <span class="pill ${cls(ch)}">${pct(ch)}</span> vs today.`;
+  };
+  $("#wiR").oninput = e => upd(+e.target.value);
+  box.querySelector(".presets").onclick = e => { const b = e.target.closest("button"); if (!b) return; $("#wiR").value = Math.min(hi, +b.dataset.pe); upd(+b.dataset.pe); };
+  upd(Math.min(hi, cur0));
 }
 
 // ---------- sentiment ----------
@@ -1101,11 +1511,14 @@ function renderSent() {
             ticks: { color: css("--muted"), font: { size: 10 }, stepSize: 5, autoSkip: false, callback: v => ({ 12.5: "Ext. fear", 35: "Fear", 50: "Neutral", 65: "Greed", 87.5: "Ext. greed" })[v] ?? (([25, 45, 55, 75].includes(v)) ? "" : null) },
             afterBuildTicks: ax => { ax.ticks = [0, 12.5, 25, 35, 45, 50, 55, 65, 75, 87.5, 100].map(v => ({ value: v })); } } } } });
   }
-  $("#fInds").innerHTML = F.industries.map(i => {
+  $("#fInds").innerHTML = F.industries.map(i => indCard(i)).join("");
+  loadCustom();
+}
+function indCard(i, ci) {
     const se = i.sentiment || {}, co = i.consensus;
     return `<section class="card ind">
       <div class="ind-h">
-        <div class="top"><h3>${esc(i.name)}</h3><span class="sc">${se.score ?? "—"}</span></div>
+        <div class="top"><h3>${esc(i.name)}</h3><span style="display:flex;gap:6px;align-items:center"><span class="sc">${se.score ?? "—"}</span>${ci != null ? `<button class="x" type="button" data-bdel="${ci}" aria-label="Delete basket ${esc(i.name)}" title="Delete this basket">×</button>` : ""}</span></div>
         <div class="top">${mchip(se.score)}<span class="muted" style="font-size:12px">a week ago ${se.weekAgo == null ? "—" : Math.round(se.weekAgo)} · a month ago ${se.monthAgo == null ? "—" : Math.round(se.monthAgo)}</span></div>
         ${meter(se.score)}
         <div class="facts"><span>1 week <b class="${cls(i.week)}">${pct(i.week)}</b></span><span>1 month <b class="${cls(i.month)}">${pct(i.month)}</b></span></div>
@@ -1115,8 +1528,45 @@ function renderSent() {
       <ul class="mem">${i.members.map(x => `<li data-s="${esc(x.symbol)}"><span class="sym">${esc(x.symbol)}</span><span class="r">${x.rating || "—"}${x.upside != null ? ` · target ${pct(x.upside)}` : ""}</span><span class="pill ${cls(x.month)}" title="1 month">${pct(x.month)}</span><span></span></li>`).join("")}</ul>
       <div class="basis">Mood based on the ${esc(i.basis)} · stock moves are 1 month</div>
     </section>`;
-  }).join("");
 }
+let CUSTOM = null;
+async function loadCustom(force) {
+  if (!me) return;
+  if (!(me.baskets || []).length) { CUSTOM = []; return renderCustom(); }
+  if (!force && CUSTOM && CUSTOM.length === me.baskets.length) return renderCustom();
+  $("#fCustom").innerHTML = `<div class="card empty"><span class="spin"></span> Scoring your baskets…</div>`;
+  try { CUSTOM = await api("sentiment/custom"); } catch { CUSTOM = []; }
+  renderCustom();
+}
+function renderCustom() {
+  const n = (me.baskets || []).length;
+  $("#fCustom").innerHTML = (CUSTOM || []).map((c, i) => indCard(c, i)).join("") + (n < 2 ? `
+    <section class="card"><form class="bform" id="bForm" autocomplete="off">
+      <h3>New basket</h3>
+      <p>Give it a name and 2–10 tickers, separated by commas. Look tickers up in Stock lookup if you’re not sure.</p>
+      <input class="field" id="bName" maxlength="30" placeholder="Name, e.g. Canadian banks" required aria-label="Basket name">
+      <input class="field" id="bSyms" placeholder="Tickers, e.g. RY, TD, BMO, BNS, CM" required aria-label="Tickers">
+      <button class="btn primary" type="submit" id="bBtn">Create basket</button>
+      <div class="err" id="bErr" role="alert"></div>
+    </form></section>` : "");
+  const f = $("#bForm");
+  if (f) f.onsubmit = async e => {
+    e.preventDefault();
+    const members = $("#bSyms").value.split(/[\s,;]+/).map(x => x.trim().toUpperCase()).filter(Boolean);
+    $("#bErr").textContent = ""; $("#bBtn").disabled = true; $("#bBtn").textContent = "Checking tickers…";
+    try { me = await post("baskets", { baskets: [...(me.baskets || []), { name: $("#bName").value.trim(), members }] }, "PUT"); await loadCustom(true); }
+    catch (err) { $("#bErr").textContent = err.message; $("#bBtn").disabled = false; $("#bBtn").textContent = "Create basket"; }
+  };
+}
+$("#fCustom").onclick = async e => {
+  const d = e.target.closest("[data-bdel]");
+  if (d) {
+    const i = +d.dataset.bdel, b = me.baskets[i];
+    if (!confirm(`Delete the “${b.name}” basket?`)) return;
+    me = await post("baskets", { baskets: me.baskets.filter((_, j) => j !== i) }, "PUT"); CUSTOM = null; loadCustom(true); return;
+  }
+  const li = e.target.closest("li[data-s]"); if (li) openStock(li.dataset.s);
+};
 $("#fInds").onclick = e => { const li = e.target.closest("li[data-s]"); if (li) openStock(li.dataset.s); };
 $("#fAiBtn").onclick = () => verdictInto($("#fAiBtn"), $("#fAi"), "sentiment/brief", {});
 
@@ -1194,16 +1644,17 @@ function renderTargets(r, q, limit) {
 
 // ---------- boot ----------
 async function start() {
-  await loadGroup();
+  await Promise.all([loadGroup(), loadFx()]);
   viewing = null;
   sel = me.holdings[0]?.symbol || me.watchlist[0] || null;
   render();
   await loadQuotes();
-  loadHistory(); loadNews();
+  loadHistory(); loadNews(); loadEquity(); loadMoods(); loadReturns(); loadActivity();
   route();
   timers.push(setInterval(() => { if (!document.hidden) loadQuotes(); }, 30000));
   timers.push(setInterval(() => { if (!document.hidden && location.hash === "#markets") loadMarket(true); }, 120000));
-  timers.push(setInterval(() => { if (!document.hidden) loadGroup(); }, 60000));
+  timers.push(setInterval(() => { if (!document.hidden) { loadGroup(); loadActivity(); } }, 60000));
+  timers.push(setInterval(() => { if (!document.hidden) { loadMoods(); loadReturns(); loadFx(); } }, 900000));
   timers.push(setInterval(() => { if (!document.hidden && (range === "1D" || range === "5D")) loadHistory(); }, 120000));
 }
 (async () => {

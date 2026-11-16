@@ -57,6 +57,23 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
   Industry cards: Technology (XLK), Semiconductors (SMH), Memory & storage (MU, WDC, STX, SNDK basket), Neoclouds (CRWV, NBIS, IREN, APLD basket), Financials (XLF), Consumer (XLY). Each gets a mood score, analyst consensus and member list.
 - `#stock`: search any ticker. Returns (1D-1Y), vs S&P and sector, "Why is it moving?" AI, chart, **Sentiment & analyst consensus** (stock mood score, rating breakdown, average target, "Buy now or wait?" AI, then the **analyst price target table**: every rating action in the past 12 months with date, firm, action, rating change, target (and previous target), upside vs today, and target date = rating date + 12 months), key numbers, about, headlines.
 
+### Added 16 Nov 2026 (second feature batch)
+- Portfolio: base currency switch USD/CAD/EUR/GBP (localStorage `folio-base`; `/api/fx`). Holdings now store `cur` + `fx`
+  (USD per unit of the holding's currency and each base currency on the purchase date, or the day added). Optional "date bought"
+  in the add form. Gains split into stock vs currency (`stats()` in the front end). `backfill_fx()` fills old holdings at startup.
+- Portfolio mood = value-weighted stock mood (`/api/moods`). Value-over-time chart with S&P/Nasdaq overlay (`/api/portfolio/history`,
+  uses today's holdings: no transaction history exists).
+- Group: leaderboard Today/1W/1M/All time (`/api/group/returns`), mood column, opt-in activity feed (`shareActivity` pref,
+  `data/activity.json`, `/api/activity`, logged in `put_state`; shows % of portfolio, never dollars), group consensus (most held + group mood).
+- Stock: earnings (E) / dividend (D) markers on the price chart (`/api/stock/events`), peers table (`/api/stock/peers`: `PEER_HINTS`,
+  then our industry lists, then Yahoo industry top companies), what-if forward P/E slider (uses `feps`), market value in the stock's
+  own currency + USD equivalent (was wrongly shown with $).
+- Markets: "Coming up" strip (`/api/calendar`: hardcoded FOMC dates incl. tentative 2027, Yahoo economic calendar filtered to big US
+  releases, Yahoo earnings calendar for >$150B companies or anything the group holds; top 5 prioritised). Clickable sector tiles open
+  the fund's top 10 holdings (`/api/sector`). "+ Watch" buttons on movers, sector holdings and peers (global `[data-watch]` handler).
+- Sentiment: up to 2 custom baskets per user (`PUT /api/baskets`, `/api/sentiment/custom`), same card as industries (`industry_card()`).
+- Yahoo's economic calendar fails when hit in parallel ("Invalid Crumb"): query it sequentially (see `macro_events`).
+
 ### Known data limits (tell the user honestly; don't invent data)
 - Yahoo lists the **firm**, not the individual analyst's name, for ratings.
 - Top movers are daily only; "this week" figures are the past 5 trading sessions.
@@ -78,4 +95,4 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 
 ## Open items / ideas offered to the user
 - Not backed up online: offer to create a private GitHub repo and push (needs `gh auth status`; log in via device code if needed).
-- Ideas mentioned but not built: price alerts, logging buys/sells, dividends, portfolio value over time.
+- Ideas mentioned but not built: price alerts, a real buy/sell log (would make the value-over-time chart and FX split exact).
