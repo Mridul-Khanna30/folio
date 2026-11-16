@@ -163,7 +163,8 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 - `peCls`/`peFmt`: forward P/E green <15x, amber >40x, red if negative (Key numbers, watchlist).
 - Valuation history dots/labels: good/warn/bad classes. Analyst action pills `.act a-up|a-down|a-init|a-keep`.
 - Financials: YoY margin delta badges (same quarter a year earlier, else the last two fiscal years).
-- Stock page sticky jump bar `#sJump` (anchors jOver, jFin, jSent, jVal, jNotes; active tab follows scroll).
+- Stock page sticky jump bar `#sJump` (anchors jOver, jFin, jSent, jVal = valuation history card, jNotes; active tab follows scroll).
+- Key numbers: analyst rating pill `.rpill r-<key>` (green to red); 52-week range drawn as a gradient line `.r52` with a today marker.
 - Portfolio: best/worst contributor under Total gain; holdings + chart side by side at >=1180px (`.holdgrid`;
   the Shares column and mood number hide there, shares show under Value).
 - Yahoo hiccups: `tinfo` and `analyst` drop blank answers from the cache; analyst mean is rebuilt from vote counts if missing.

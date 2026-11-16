@@ -193,6 +193,20 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
 .stats div { background: var(--surface); padding: 10px 16px; min-width: 0; }
 .stats b { display: block; font-weight: 500; font-family: var(--mono); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.r52 { margin-top: 2px; width: 100%; }
+.stats .r52, .stats .r52 div { padding: 0; background: none; }
+.stats .r52 .r52-bar { background: color-mix(in srgb, var(--muted) 28%, transparent); }
+.r52-bar { position: relative; height: 6px; background: color-mix(in srgb, var(--muted) 28%, transparent); border-radius: 3px; margin: 8px 0 5px; }
+.r52-bar span { position: absolute; inset: 0; border-radius: 3px; background: linear-gradient(90deg, var(--down), var(--a3) 50%, var(--up)); opacity: 0.5; }
+.r52-bar i { position: absolute; top: -4px; width: 4px; height: 14px; border-radius: 2px; background: var(--ink); transform: translateX(-50%); box-shadow: 0 0 0 2px var(--surface); }
+.r52-lab { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.r52-note { font-size: 12px; color: var(--muted); margin-top: 3px; } .r52-note span { font-family: var(--mono); font-weight: 600; }
+.rpill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 13px; font-weight: 600; font-family: var(--sans); }
+.rpill.r-strong_buy { background: var(--up); color: var(--surface); }
+.rpill.r-buy { background: var(--up-soft); color: var(--up); }
+.rpill.r-hold, .rpill.r-none { background: color-mix(in srgb, var(--muted) 22%, transparent); color: var(--ink); }
+.rpill.r-underperform { background: var(--down-soft); color: var(--down); }
+.rpill.r-sell, .rpill.r-strong_sell { background: var(--down); color: var(--surface); }
 .range52 { position: relative; height: 4px; background: var(--line); border-radius: 2px; margin-top: 8px; }
 .range52 i { position: absolute; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: translateX(-50%); }
 .cmp { width: 100%; }
@@ -2153,7 +2167,7 @@ function bigCur(v, cur) {
   catch { return big(v); }
 }
 const vol = v => v == null ? "—" : v >= 1e9 ? (v / 1e9).toFixed(2) + "B" : v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1e3 ? (v / 1e3).toFixed(0) + "K" : String(v);
-const RATING = { strong_buy: "Strong buy", buy: "Buy", hold: "Hold", underperform: "Underperform", sell: "Sell", none: "—" };
+const RATING = { strong_buy: "Strong buy", buy: "Buy", hold: "Hold", underperform: "Underperform", sell: "Sell", strong_sell: "Strong sell", none: "—" };
 
 async function openStock(sym, go = true) {
   sym = sym.trim().toUpperCase();
@@ -2245,10 +2259,14 @@ function renderStock() {
         ${stat("Market value", bigCur(st.marketCap, st.capCurrency), st.capCurrency && st.capCurrency !== "USD" && st.marketCapUsd ? `<div class="muted" style="font-size:12px">≈ ${big(st.marketCapUsd)}</div>` : "")}
         ${stat("P/E (past year)", st.pe ? st.pe.toFixed(1) : "—")}
         ${stat("P/E (next year)", st.fpe ? peFmt(st.fpe) : "—")}
-        ${stat("52-week range", st.low52 != null ? `${money(st.low52, q.currency)} – ${money(st.high52, q.currency)}` : "—", pos52 != null ? `<div class="range52"><i style="left:${pos52}%"></i></div>` : "")}
+        ${pos52 == null ? stat("52-week range", st.low52 != null ? `${money(st.low52, q.currency)} – ${money(st.high52, q.currency)}` : "—") : stat("52-week range", "", `<div class="r52" title="Today ${money(q.price, q.currency)}">
+            <div class="r52-bar"><span></span><i style="left:${pos52}%"></i></div>
+            <div class="r52-lab"><span>${money(st.low52, q.currency)}</span><span>${money(st.high52, q.currency)}</span></div>
+            <div class="r52-note">${q.price >= st.high52 ? `<span class="up">At its 52-week high</span>` : q.price <= st.low52 ? `<span class="down">At its 52-week low</span>`
+              : pos52 >= 50 ? `<span class="down">${((q.price / st.high52 - 1) * 100).toFixed(1)}%</span> from high` : `<span class="up">+${((q.price / st.low52 - 1) * 100).toFixed(1)}%</span> from low`}</div></div>`)}
         ${stat("Volume vs average", st.volRatio ? `<span class="${st.volRatio > 1.5 ? "up" : ""}">${st.volRatio.toFixed(1)}×</span> <span class="muted" style="font-size:12px">${vol(st.volume)} / ${vol(st.avgVolume)}</span>` : "—")}
         ${stat("Analyst target", st.target ? `${money(st.target, q.currency)} <span class="${cls(upside)}" style="font-size:12px">${pct(upside)}</span>` : "—")}
-        ${stat("Analyst rating", st.rating ? `${RATING[st.rating] || esc(st.rating)}${st.analysts ? ` <span class="muted" style="font-size:12px">${st.analysts} analysts</span>` : ""}` : "—")}
+        ${stat("Analyst rating", st.rating ? `<span class="rpill r-${esc(st.rating)}">${RATING[st.rating] || esc(st.rating)}</span>${st.analysts ? ` <span class="muted" style="font-size:12px">${st.analysts} analysts</span>` : ""}` : "—")}
         ${stat("Next earnings", ed ? `${ed.toLocaleDateString([], { month: "short", day: "numeric" })} <span class="muted" style="font-size:12px">${edDays >= 0 ? `in ${edDays} day${edDays === 1 ? "" : "s"}` : "reported"}</span>` : "—")}
         ${stat("Dividend yield", st.dividendYield ? st.dividendYield.toFixed(2) + "%" : "—")}
         ${stat("Beta (volatility vs market)", st.beta ? st.beta.toFixed(2) : "—")}
@@ -2271,6 +2289,11 @@ function renderStock() {
       <div id="sSent"><div class="empty"><span class="spin"></span> Loading sentiment…</div></div>
     </section>
 
+    <section class="card">
+      <div class="card-h"><h2>Valuation vs its own history</h2><span class="muted" style="font-size:12px" id="sValNote">Where today’s multiples sit in their past-5-year range</span></div>
+      <div id="sVal"><div class="empty"><span class="spin"></span> Working out valuation history…</div></div>
+    </section>
+
     ${st.feps > 0 && q.price ? `<section class="card">
       <div class="card-h"><h2>What-if valuation</h2><span class="muted" style="font-size:12px">Drag to try a different price-to-earnings ratio</span></div>
       <div class="wi" id="sWi"></div>
@@ -2280,11 +2303,6 @@ function renderStock() {
       <div class="card-h"><div><h2>Discounted cash flow (DCF): bear, base &amp; bull</h2><div class="muted" style="font-size:12px;margin-top:2px">What the business is worth from the cash it should make · drag to change growth</div></div>
         <div class="dhead" id="dHead" hidden><span class="muted" id="dAiMsg"></span><button class="btn" type="button" id="dReset">Reset</button><button class="btn primary" type="button" id="dAi">AI suggest</button></div></div>
       <div id="sDcf"><div class="empty"><span class="spin"></span> Gathering cash flow, debt and growth estimates…</div></div>
-    </section>
-
-    <section class="card">
-      <div class="card-h"><h2>Valuation vs its own history</h2><span class="muted" style="font-size:12px" id="sValNote">Where today’s multiples sit in their past-5-year range</span></div>
-      <div id="sVal"><div class="empty"><span class="spin"></span> Working out valuation history…</div></div>
     </section>
 
     <section class="card">
@@ -2305,7 +2323,7 @@ function renderStock() {
     </section>
   </div>`;
   renderWhatIf(); renderPeers(); renderNotes(); loadVal(d.symbol); loadFin(d.symbol); loadDcf(d.symbol);
-  ($("#sWi") || $("#sDcf")).closest("section").id = "jVal";
+  $("#sVal").closest("section").id = "jVal";
   $("#sJump").onclick = e => { const b = e.target.closest("button[data-j]"); if (b) document.getElementById(b.dataset.j)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   $("#sFilBtn").onclick = () => runFilings(d.symbol);
   $("#sAlertBtn").onclick = () => openAlerts(d.symbol, "price_below");
