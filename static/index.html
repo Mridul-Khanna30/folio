@@ -42,7 +42,7 @@ button { cursor: pointer; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .brand { font-weight: 600; font-size: 18px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
 .brand i { width: 10px; height: 10px; border-radius: 2px; background: var(--accent); display: inline-block; }
-.status { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+.status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); flex-wrap: wrap; justify-content: flex-end; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--up); display: inline-block; }
 .dot.stale { background: var(--muted); }
 .btn { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; font-size: 13px; }
@@ -150,6 +150,7 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .nav a:hover { color: var(--ink); }
 .nav a.on { background: var(--accent-soft); color: var(--accent); }
 .view { display: grid; gap: 16px; min-width: 0; }
+.view > *, .wrap > * { min-width: 0; }
 .vhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
 .vhead h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
 .vhead p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
@@ -301,6 +302,83 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .bform h3 { margin: 0; font-size: 15px; font-weight: 600; }
 .bform p { margin: 0; font-size: 12px; color: var(--muted); }
 .ind-h .top .x { visibility: visible; }
+.alloc-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.alloc-h .tabs button { font-family: var(--sans); }
+.warns { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.warns li { font-size: 12px; padding: 7px 10px; border-radius: 8px; background: color-mix(in srgb, var(--a3) 14%, var(--surface)); display: flex; gap: 8px; align-items: flex-start; }
+.warns li.ok { background: var(--up-soft); }
+.warns b { font-weight: 600; }
+.evs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+.evs > div { flex: none; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: grid; gap: 1px; min-width: 170px; max-width: 260px; cursor: pointer; }
+.evs > div:hover { border-color: var(--muted); }
+.evs .when { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+.evs .what { font-size: 13px; font-weight: 600; }
+.evs .why { font-size: 12px; color: var(--muted); }
+.presetrow { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.presetrow button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 11px; font-size: 12px; }
+.presetrow button:hover, .presetrow button.on { border-color: var(--accent); color: var(--accent); }
+.stress-in { display: flex; gap: 8px; margin-top: 8px; }
+.stress-in .field { flex: 1; background: var(--surface); }
+.hits td { white-space: normal; vertical-align: top; }
+.hits td:first-child { white-space: nowrap; }
+.jl { list-style: none; margin: 0; padding: 0; }
+.jl li { padding: 10px 16px; border-top: 1px solid var(--line); display: grid; gap: 4px; font-size: 13px; }
+.jl .jh { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.jl .q { color: var(--muted); font-size: 12px; }
+.jl .q b { color: var(--ink); font-weight: 500; }
+.jl textarea, .notes textarea { width: 100%; resize: vertical; font: inherit; font-size: 13px; }
+.wt td { padding: 8px 10px; }
+.wt .tg { border: 1px dashed var(--line); background: none; border-radius: 6px; padding: 2px 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.wt .tg:hover { border-color: var(--accent); color: var(--accent); }
+.wt .tg.set { border-style: solid; color: var(--ink); }
+.tldr { margin: 0 16px 12px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+.tldr .h { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin-bottom: 4px; }
+.tldr dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; }
+.tldr dt { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; padding-top: 2px; }
+.tldr dd { margin: 0; }
+.bell { position: relative; }
+.bell .cnt { position: absolute; top: -6px; right: -6px; background: var(--down); color: #fff; border-radius: 999px; font-size: 10px; min-width: 16px; height: 16px; display: grid; place-items: center; padding: 0 4px; font-weight: 600; }
+dialog { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); padding: 0; width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); }
+dialog::backdrop { background: rgb(0 0 0 / 0.35); }
+.dlg-h { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.dlg-h h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.dlg-b { padding: 14px 16px; display: grid; gap: 12px; }
+.af { display: grid; grid-template-columns: 1.4fr 1fr 0.8fr auto; gap: 8px; }
+.inbox, .rules { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.inbox li, .rules li { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.inbox li:first-child, .rules li:first-child { border-top: 0; }
+.inbox li.new { background: var(--accent-soft); }
+.fin-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 0; border-top: 1px solid var(--line); }
+.fin-grid > div { min-width: 0; padding: 10px 12px 12px; }
+.fin-grid > div + div { border-left: 1px solid var(--line); }
+.mults { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
+.mults > div { background: var(--surface); padding: 10px 16px 12px; min-width: 0; }
+.mults b { display: block; font-family: var(--mono); font-weight: 500; margin-top: 2px; }
+.rbar { position: relative; height: 4px; background: var(--line); border-radius: 2px; margin: 10px 0 4px; }
+.rbar .md { position: absolute; top: -3px; width: 2px; height: 10px; background: var(--muted); transform: translateX(-50%); }
+.rbar .nw { position: absolute; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: translateX(-50%); }
+.rlab { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); font-family: var(--mono); }
+.fil dl { margin: 10px 0 0; }
+.fil h4 { margin: 12px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+.fil ul { margin: 0; padding-left: 18px; }
+.fil li { margin: 3px 0; max-width: 80ch; }
+.kpis td { white-space: normal; vertical-align: top; text-align: left; }
+.cmpbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 0 16px 12px; }
+.cmpbar .chip2 { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--line); border-radius: 999px; padding: 3px 6px 3px 10px; font-family: var(--mono); font-size: 12px; }
+.cmpbar .chip2 i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.cmpbar .chip2 button { border: 0; background: none; color: var(--muted); padding: 0 4px; font-size: 14px; line-height: 1; }
+.notes { padding: 0 16px 16px; display: grid; gap: 8px; }
+.notes .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.md-out { font-size: 14px; max-width: 80ch; }
+.md-out h1, .md-out h2, .md-out h3 { font-size: 15px; margin: 10px 0 4px; }
+.md-out p { margin: 6px 0; } .md-out ul { margin: 4px 0; padding-left: 20px; }
+.md-out a { color: var(--accent); }
+.scr { display: flex; gap: 8px; }
+.scr .field { flex: 1; padding: 10px 14px; font-size: 14px; background: var(--surface); }
+.scr-ex { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 16px 12px; }
+.scr-ex button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--muted); }
+.scr-ex button:hover { color: var(--accent); border-color: var(--accent); }
+.srt td { padding: 8px 10px; }
 footer { font-size: 12px; color: var(--muted); text-align: center; }
 
 @media (max-width: 1100px) and (min-width: 881px) { .inds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -319,6 +397,9 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
   .rets div:nth-child(n+4) { border-top: 1px solid var(--line); }
   .summary, .summary.four { grid-template-columns: 1fr 1fr; }
   .cal { grid-template-columns: minmax(0, 1fr); }
+  .fin-grid { grid-template-columns: minmax(0, 1fr); } .fin-grid > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  .mults { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .af { grid-template-columns: 1fr 1fr; }
   .summary > div:first-child { grid-column: 1 / -1; }
 }
 @media (max-width: 520px) {
@@ -335,6 +416,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     <div class="status">
       <span><span class="dot stale" id="dot"></span> <span id="updated">Loading prices…</span></span>
       <span class="who" id="who" hidden></span>
+      <button class="btn bell" id="bell" type="button" hidden aria-label="Alerts">Alerts<span class="cnt" id="bellCnt" hidden></span></button>
       <button class="btn" id="logout" type="button" hidden>Sign out</button>
       <button class="btn" id="refresh" type="button">Refresh</button>
       <button class="btn" id="theme" type="button" aria-label="Toggle theme">Theme</button>
@@ -381,11 +463,18 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <div class="sub muted" id="pMoodSub">Fear &amp; greed of what’s held, weighted by value</div>
     </div>
     <div class="alloc">
-      <div class="label">Allocation</div>
+      <div class="alloc-h"><div class="label">Exposure</div>
+        <div class="tabs" id="allocTabs"><button type="button" data-a="cls" class="on">Asset type</button><button type="button" data-a="sector">Sector</button><button type="button" data-a="country">Country</button><button type="button" data-a="currency">Currency</button></div></div>
       <div class="bar" id="bar"></div>
       <div class="legend" id="legend"></div>
+      <ul class="warns" id="warns"></ul>
     </div>
   </section>
+
+  <div id="myEvWrap" hidden>
+    <div class="cal-h" style="margin-bottom:8px"><h2 id="myEvTitle">Your upcoming events</h2><span class="muted" style="font-size:12px">Earnings and dividends for holdings and watchlist</span></div>
+    <div class="evs" id="myEv"></div>
+  </div>
 
   <section class="card">
     <div class="ec-head">
@@ -400,6 +489,20 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     <div class="chartbox"><canvas id="ecChart" aria-label="Portfolio value chart"></canvas><div class="empty" id="ecEmpty" hidden></div></div>
     <div class="note">Uses the holdings as they are today (Folio doesn’t know when each was bought or sold), so it shows how today’s mix has done. The benchmark line starts at the same value for a fair comparison.</div>
   </section>
+
+  <div class="ai big verdict" id="stressBox">
+    <div class="ai-h"><span class="label">Portfolio stress test</span><span class="muted" style="font-size:12px">How exposed are these holdings to a what-if?</span></div>
+    <div class="presetrow" id="stressPre">
+      <button type="button">AI spending slowdown: big tech cuts data-center capex 30%</button>
+      <button type="button">The Fed hikes rates by 0.5%</button>
+      <button type="button">US recession next year</button>
+      <button type="button">Oil spikes to $120</button>
+      <button type="button">US dollar jumps 10%</button>
+      <button type="button">China–Taiwan tensions disrupt chip supply</button>
+    </div>
+    <form class="stress-in" id="stressForm" autocomplete="off"><input class="field" id="stressQ" maxlength="300" placeholder="Or describe your own scenario…" aria-label="Scenario"><button class="btn primary" id="stressBtn" type="submit">Ask Claude</button></form>
+    <div id="stressOut" class="muted" style="font-size:13px;margin-top:8px">Claude looks at each holding’s business, sector, country, currency, valuation, debt and volatility, plus today’s market, and says how the portfolio would likely hold up.</div>
+  </div>
 
   <section class="card">
     <div class="card-h"><h2>The group</h2>
@@ -442,6 +545,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
         <input class="field num" id="hShares" type="number" step="any" min="0" placeholder="Shares" aria-label="Shares" style="width:96px" required>
         <input class="field num" id="hCost" type="number" step="any" min="0" placeholder="Price paid" aria-label="Average price paid per share" style="width:110px" required>
         <input class="field num" id="hDate" type="date" aria-label="Date bought (optional)" title="Date bought (optional, used to work out currency gains)" style="width:140px">
+        <input class="field" id="hThesis" maxlength="600" placeholder="Why are you buying? (optional note for your journal)" aria-label="Why are you buying" style="flex:1 1 100%">
         <button class="btn primary" type="submit">Add</button>
       </form>
     </section>
@@ -463,9 +567,19 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     </section>
   </div>
 
+  <section class="card">
+    <div class="card-h"><h2>Watchlist</h2><span class="muted" style="font-size:12px">Set a target buy price to see how far away it is</span></div>
+    <form class="addrow" id="addW" autocomplete="off" style="border-top:0;padding-top:0">
+      <div class="ac"><input class="field" id="wSym" placeholder="Add a ticker to watch" aria-label="Watch ticker"><ul id="wAc" hidden></ul></div>
+      <button class="btn" type="submit">Watch</button>
+    </form>
+    <div class="tablewrap"><table class="wt"><thead><tr><th>Asset</th><th>Price</th><th>Today</th><th>Target buy</th><th>Away</th><th class="hide-sm">Fwd P/E</th><th class="hide-sm">Mood</th><th class="hide-sm">Earnings</th><th></th></tr></thead><tbody id="watch"></tbody></table></div>
+  </section>
+
   <div class="grid2">
     <section class="card">
       <div class="card-h"><h2>News for your holdings</h2></div>
+      <div id="tldr"></div>
       <div class="ai">
         <div class="ai-h">
           <span class="label">AI briefing</span>
@@ -476,13 +590,9 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <ul class="news" id="news"><li class="muted">Loading headlines…</li></ul>
     </section>
 
-    <section class="card">
-      <div class="card-h"><h2>Watchlist</h2></div>
-      <form class="addrow" id="addW" autocomplete="off" style="border-top:0;padding-top:0">
-        <div class="ac"><input class="field" id="wSym" placeholder="Add a ticker to watch" aria-label="Watch ticker"><ul id="wAc" hidden></ul></div>
-        <button class="btn" type="submit">Watch</button>
-      </form>
-      <ul class="wl" id="watch"></ul>
+    <section class="card" id="journalCard">
+      <div class="card-h"><h2>Trade journal</h2><span class="muted" style="font-size:12px">Only you can see this</span></div>
+      <div id="journal"><div class="empty">Loading…</div></div>
     </section>
   </div>
 
@@ -493,6 +603,12 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <div><h1>Markets</h1><p id="mAsof">Loading market data…</p></div>
       <div class="seg" id="mPeriod"><button type="button" data-p="day" class="on">Today</button><button type="button" data-p="week">This week</button></div>
     </div>
+    <section class="card">
+      <div class="card-h"><h2>Find stocks</h2><span class="muted" style="font-size:12px">Describe what you want in plain English</span></div>
+      <form class="scr" id="scrForm" autocomplete="off" style="padding:0 16px"><input class="field" id="scrQ" maxlength="300" placeholder="e.g. Semiconductor stocks with Strong Buy consensus, forward P/E under 25, and mood in fear" aria-label="Describe a stock screen"><button class="btn primary" type="submit" id="scrBtn">Search</button></form>
+      <div class="scr-ex" id="scrEx"><button type="button">Semiconductor stocks with Strong Buy consensus, forward P/E under 25, and mood in fear</button><button type="button">Cheap large caps with dividends over 2%</button><button type="button">Stocks in extreme greed with less than 10% analyst upside</button><button type="button">Fast-growing companies (revenue growth over 30%) rated Buy</button></div>
+      <div id="scrOut"></div>
+    </section>
     <div class="tiles" id="mIdx"></div>
     <div>
       <div class="cal-h" style="margin-bottom:8px"><h2>Coming up</h2><span class="muted" style="font-size:12px" id="calNote">What the market is waiting on · <button class="linkbtn" id="calMore" type="button">Show more</button></span></div>
@@ -574,6 +690,36 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     </form>
   </div>
 
+  <dialog id="alertDlg">
+    <div class="dlg-h"><h2>Alerts</h2><button class="x" style="visibility:visible" type="button" id="alertClose" aria-label="Close">×</button></div>
+    <div class="dlg-b">
+      <form class="af" id="alertForm" autocomplete="off">
+        <select class="field" id="aKind" aria-label="Alert type">
+          <option value="price_below">Price falls below</option><option value="price_above">Price rises above</option>
+          <option value="mood_below">Stock Mood drops below</option><option value="mood_above">Stock Mood rises above</option>
+          <option value="fng_above">Market fear &amp; greed rises above</option><option value="fng_below">Market fear &amp; greed drops below</option>
+        </select>
+        <input class="field" id="aSym" placeholder="Ticker" aria-label="Ticker" maxlength="20">
+        <input class="field num" id="aVal" type="number" step="any" placeholder="Value" aria-label="Value" required>
+        <button class="btn primary" type="submit">Add</button>
+      </form>
+      <div class="presetrow" id="alertPre" style="margin:0"><button type="button" data-k="fng_above" data-v="75">Market hits Extreme greed</button><button type="button" data-k="fng_below" data-v="25">Market hits Extreme fear</button></div>
+      <div class="err" id="alertErr" role="alert"></div>
+      <div><div class="label" style="margin-bottom:6px">Triggered</div><ul class="inbox" id="inbox"></ul></div>
+      <div><div class="label" style="margin-bottom:6px">Your alerts</div><ul class="rules" id="rules"></ul></div>
+      <div class="muted" style="font-size:12px">Folio checks every 5 minutes, even when the site is closed. Triggered alerts show up here and on the Alerts button. While Folio is open in a browser tab it can also pop up a notification. <button class="linkbtn" id="notifBtn" type="button">Turn on pop-ups</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="closeDlg">
+    <div class="dlg-h"><h2 id="closeTitle">Close position</h2><button class="x" style="visibility:visible" type="button" id="closeX" aria-label="Cancel">×</button></div>
+    <form class="dlg-b" id="closeForm">
+      <div class="muted" style="font-size:13px" id="closeThesis"></div>
+      <label class="muted" style="font-size:12px;display:grid;gap:4px">One-sentence takeaway for your journal (optional)<input class="field" id="closeTake" maxlength="300" placeholder="What did you learn from this trade?"></label>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" type="button" id="closeCancel">Cancel</button><button class="btn primary" type="submit">Remove holding</button></div>
+    </form>
+  </dialog>
+
   <footer>Prices from Yahoo Finance; some exchanges are delayed up to 15 minutes. Not investment advice.</footer>
 </div>
 
@@ -605,7 +751,7 @@ const EC = { range: "6M", bench: "^GSPC", data: null, chart: null, who: null };
     const next = dark ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("folio-theme", next); } catch {}
-    drawChart(); drawEquity();
+    drawChart(); drawEquity(); renderFin(); if (CMP.data && !$("#sCmpBox")?.hidden) renderCompare();
   };
 })();
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -667,8 +813,8 @@ $("#logout").onclick = async () => { await post("logout", {}).catch(() => {}); l
 
 // ---------- data ----------
 const cur = () => viewing ? (group.find(g => g.name === viewing) || { name: viewing, holdings: [], watchlist: [] }) : me;
-async function saveMe() {
-  me = await post("state", { holdings: me.holdings, watchlist: me.watchlist }, "PUT");
+async function saveMe(takeaways) {
+  me = await post("state", { holdings: me.holdings, watchlist: me.watchlist, takeaways: takeaways || null }, "PUT");
   const g = group.find(x => isMe(x.name)); if (g) Object.assign(g, me);
 }
 const allSyms = () => [...new Set([me, ...group].filter(Boolean).flatMap(u => [...u.holdings.map(h => h.symbol), ...u.watchlist]))];
@@ -715,14 +861,14 @@ function stats(u) {
 function render() {
   if (!me) return;
   const u = cur(), mine = !viewing;
-  $("#who").hidden = false; $("#logout").hidden = false;
+  $("#who").hidden = false; $("#logout").hidden = false; $("#bell").hidden = false;
   $("#who").innerHTML = `${avatar(me.name)}<span>${esc(me.name)}</span>`;
   $("#banner").hidden = mine;
   if (!mine) $("#bannerText").innerHTML = `You’re looking at <b>${esc(u.name)}’s</b> portfolio. Only they can change it.`;
   $("#valLabel").textContent = mine ? `Your portfolio (${BASE})` : `${u.name}’s portfolio (${BASE})`;
   for (const b of $("#baseSeg").children) b.classList.toggle("on", b.dataset.c === BASE);
   $("#holdTitle").textContent = mine ? "Your holdings" : `${u.name}’s holdings`;
-  $("#addH").hidden = !mine; $("#addW").hidden = !mine;
+  $("#addH").hidden = !mine; $("#addW").hidden = !mine; $("#journalCard").hidden = !mine;
 
   const st = stats(u);
   $("#total").textContent = bm(st.total);
@@ -736,7 +882,9 @@ function render() {
   $("#fxNote").textContent = foreign ? `Foreign holdings converted to ${BASE} at today’s rate; gains use the rate on the day bought (or the day added to Folio).` : "";
   $("#pMood").innerHTML = st.mood == null ? `<span class="muted">${u.holdings.length ? "Working it out…" : "—"}</span>` : `<b>${Math.round(st.mood)}</b>${mchip(st.mood)}`;
 
-  const parts = Object.entries(st.byCls).sort((a, b) => b[1] - a[1]);
+  const by = allocBy(st, u);
+  const parts = Object.entries(by).sort((a, b) => b[1] - a[1]);
+  renderWarns(st, u, by);
   $("#bar").innerHTML = parts.map(([k, v], i) => `<span title="${k}" style="width:${v / st.total * 100}%;background:var(${HUES[i % 6]})"></span>`).join("");
   $("#legend").innerHTML = parts.length ? parts.map(([k, v], i) => `<span><i style="background:var(${HUES[i % 6]})"></i>${k} <b class="num">${(v / st.total * 100).toFixed(1)}%</b> <span class="num">${bm(v, 0)}</span></span>`).join("") : `<span>${mine ? "Add a holding to see your allocation." : "No holdings yet."}</span>`;
 
@@ -753,13 +901,20 @@ function render() {
 
   const wl = u.watchlist;
   $("#watch").innerHTML = wl.length ? wl.map((s, i) => {
-    const q = Q[s] || {};
-    return `<li data-s="${esc(s)}" class="${sel === s ? "sel" : ""}">
-      <div style="min-width:0"><div class="sym">${esc(s)}</div><div class="nm">${esc(q.name && q.name !== s ? q.name : q.error ? "price unavailable" : "")}</div></div>
-      <span class="num">${money(q.price, q.currency)}</span>
-      <span class="pill ${cls(q.pct)}">${pct(q.pct)}</span>
-      ${mine ? `<button class="x" type="button" data-wdel="${i}" aria-label="Stop watching ${esc(s)}">×</button>` : "<span></span>"}</li>`;
-  }).join("") : `<li class="empty" style="display:block;cursor:default">Nothing on this watchlist yet.</li>`;
+    const q = Q[s] || {}, w = WI[s] || {}, tg = mine ? NOTES[s]?.target : null;
+    const away = tg && q.price ? (q.price / tg - 1) * 100 : null;
+    const ed = w.earnings ? new Date(w.earnings + "T12:00:00") : null;
+    return `<tr data-s="${esc(s)}" class="${sel === s ? "sel" : ""}">
+      <td><div class="sym">${esc(s)}</div><div class="nm">${esc(q.name && q.name !== s ? q.name : q.error ? "price unavailable" : "")}</div></td>
+      <td class="num">${money(q.price, q.currency)}</td>
+      <td><span class="pill ${cls(q.pct)}">${pct(q.pct)}</span></td>
+      <td>${mine ? `<button type="button" class="tg${tg ? " set" : ""}" data-tg="${esc(s)}">${tg ? money(tg, q.currency) : "+ set"}</button>` : '<span class="muted">—</span>'}</td>
+      <td>${away == null ? '<span class="muted">—</span>' : away <= 0 ? '<span class="pill up">at target</span>' : `<span class="num muted">${pct(away)}</span>`}</td>
+      <td class="num hide-sm">${w.fpe ? w.fpe.toFixed(1) + "×" : "—"}</td>
+      <td class="hide-sm">${w.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:4px">${w.mood}</span>${mchip(w.mood)}`}</td>
+      <td class="hide-sm num muted">${ed ? ed.toLocaleDateString([], { month: "short", day: "numeric" }) : "—"}</td>
+      <td>${mine ? `<button class="x" type="button" data-wdel="${i}" aria-label="Stop watching ${esc(s)}">×</button>` : ""}</td></tr>`;
+  }).join("") : `<tr><td colspan="9" class="empty">Nothing on this watchlist yet.</td></tr>`;
 
   const ret = (g, st) => lbT === "day" ? st.dayPct : lbT === "all" ? st.allPct : GR[g.name]?.[lbT] ?? null;
   const board = group.map(g => ({ g, st: stats(g) })).map(x => ({ ...x, r: ret(x.g, x.st) }))
@@ -905,6 +1060,209 @@ document.addEventListener("click", async e => {
   await saveMe(); loadQuotes();
 }, true);
 
+// ---------- batch 3: portfolio diagnostics, events, stress, journal, watchlist research, alerts ----------
+let ALLOC = "cls", DIAG = {}, WI = {}, NOTES = {}, MYEV = [], JOURNAL = null, ALERTS = { rules: [], inbox: [] };
+function allocBy(st, u) {
+  if (ALLOC === "cls") return st.byCls;
+  const d = DIAG[u.name]?.symbols || {}, out = {};
+  for (const r of st.rows) {
+    if (!r.val) continue;
+    const k = ALLOC === "currency" ? (r.q.currency || "USD") : (d[r.h.symbol]?.[ALLOC] || (DIAG[u.name] ? "Other" : "Loading…"));
+    out[k] = (out[k] || 0) + r.val;
+  }
+  return out;
+}
+function renderWarns(st, u, by) {
+  const box = $("#warns"); if (!st.total) { box.innerHTML = ""; return; }
+  const out = [], d = DIAG[u.name];
+  if (d) {
+    const sec = {};
+    for (const r of st.rows) if (r.val) { const k = d.symbols[r.h.symbol]?.sector || "Other"; sec[k] = (sec[k] || 0) + r.val; }
+    for (const [k, v] of Object.entries(sec).sort((a, b) => b[1] - a[1])) {
+      const w = v / st.total * 100;
+      if (w > 35 && !/^(Funds|Index)/.test(k)) out.push(`⚠️ <span><b>${esc(k)}</b> is <b>${w.toFixed(0)}%</b> of the portfolio. A common rule of thumb is to keep any one sector under 35%, so a bad stretch for ${esc(k.toLowerCase())} hits ${viewing ? "it" : "you"} hard.</span>`);
+    }
+    for (const p of d.pairs.filter(p => p.corr >= 0.85)) out.push(`⚠️ <span><b>${esc(p.a)}</b> and <b>${esc(p.b)}</b> move in lockstep (correlation ${p.corr.toFixed(2)} over 6 months), so they act more like one bet than two.</span>`);
+    const top = st.rows.find(r => r.val);
+    if (!out.length && st.rows.length > 1) out.push(`<span>✓ No sector above 35% and no pair of holdings moving in lockstep.</span>`);
+    if (top && top.val / st.total > 0.5) out.push(`ℹ️ <span><b>${esc(top.h.symbol)}</b> alone is ${(top.val / st.total * 100).toFixed(0)}% of the portfolio.</span>`);
+  }
+  box.innerHTML = out.map(x => `<li class="${x.startsWith("<span>✓") ? "ok" : ""}">${x}</li>`).join("");
+}
+$("#allocTabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; ALLOC = b.dataset.a; for (const x of $("#allocTabs").children) x.classList.toggle("on", x === b); render(); };
+async function loadDiag() {
+  const u = cur(); if (!u || !u.holdings.length) return;
+  try { DIAG[u.name] = await api("portfolio/diagnostics?member=" + encodeURIComponent(u.name)); render(); } catch {}
+}
+
+// personal events
+async function loadMyEvents() {
+  const u = cur(); if (!u) return;
+  try { MYEV = await api("myevents?member=" + encodeURIComponent(u.name)); } catch { MYEV = []; }
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  const dd = s => { const d = new Date(s + "T12:00:00"), n = Math.round((d - today) / 864e5); return n === 0 ? "Today" : n === 1 ? "Tomorrow" : d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }); };
+  $("#myEvWrap").hidden = !MYEV.length;
+  $("#myEvTitle").textContent = viewing ? `${cur().name}’s upcoming events` : "Your upcoming events";
+  $("#myEv").innerHTML = MYEV.map(e => `<div data-s="${esc(e.symbol)}">
+    <span class="when">${e.projected ? "≈ " : ""}${dd(e.date)}${e.held ? "" : " · watchlist"}</span>
+    <span class="what">${esc(e.symbol)} ${e.kind === "earnings" ? "earnings" : e.kind === "exdiv" ? "ex-dividend" : "dividend paid"}</span>
+    <span class="why">${e.kind === "earnings" ? (e.est != null ? `EPS expected ${money(e.est, Q[e.symbol]?.currency)}` : "Quarterly results")
+      : `${e.amount != null ? money(e.amount, e.currency) + "/share" : ""}${e.payout != null ? ` · ≈ ${money(e.payout, e.currency)} for ${viewing ? "them" : "you"}` : ""}${e.projected ? " (projected from past pattern)" : e.payDate ? ` · paid ${dd(e.payDate)}` : ""}`}</span></div>`).join("");
+}
+$("#myEv").onclick = e => { const d = e.target.closest("[data-s]"); if (d) openStock(d.dataset.s); };
+
+// stress test
+function stressHtml(text) {
+  const L = text.split("\n").map(l => l.trim()).filter(Boolean);
+  const get = k => L.filter(l => l.toUpperCase().startsWith(k + ":")).map(l => l.slice(k.length + 1).trim().replace(/\*\*/g, ""));
+  const ex = get("EXPOSURE")[0], sum = get("SUMMARY").join(" "), hold = get("HOLDING"), cush = get("CUSHION"), watch = get("WATCH");
+  if (!ex && !sum) return bullets(text);
+  const sc = /high/i.test(ex) ? ["var(--down-soft)", "var(--down)"] : /low/i.test(ex) ? ["var(--up-soft)", "var(--up)"] : ["var(--line)", "var(--ink)"];
+  const imp = t => /hard/i.test(t) ? "down" : /benefit/i.test(t) ? "up" : "";
+  return `<span class="sig" style="background:${sc[0]};color:${sc[1]}">Exposure: ${esc(ex || "—")}</span>
+    ${sum ? `<p class="lead">${esc(sum)}</p>` : ""}
+    ${hold.length ? `<div class="tablewrap" style="margin-top:8px"><table class="cmp hits"><thead><tr><th>Holding</th><th style="text-align:left">Likely impact</th><th style="text-align:left">Why</th></tr></thead><tbody>${hold.map(h => { const [s, i, ...r] = h.split("|").map(x => x.trim()); return `<tr><td class="sym">${esc(s)}</td><td style="text-align:left" class="${imp(i)}">${esc(i || "")}</td><td style="text-align:left">${esc(r.join(" | "))}</td></tr>`; }).join("")}</tbody></table></div>` : ""}
+    <div class="vcols">${cush.length ? `<div><h4 class="up">What would cushion it</h4><ul>${cush.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}${watch.length ? `<div><h4>Early warning signs</h4><ul>${watch.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}</div>`;
+}
+async function runStress(q) {
+  const out = $("#stressOut"), b = $("#stressBtn");
+  if (!cur().holdings.length) { out.className = "muted"; out.textContent = "Add holdings first."; return; }
+  b.disabled = true; out.className = "muted"; out.innerHTML = `<span class="spin"></span> Testing “${esc(q)}” against ${viewing ? esc(cur().name) + "’s" : "your"} holdings…`;
+  try {
+    const r = await post("portfolio/stress", { member: cur().name, scenario: q });
+    out.className = ""; out.innerHTML = stressHtml(r.text) + `<div class="meta">Scenario: ${esc(q)} · written by Claude at ${new Date(r.ts * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}. A rough what-if, not a prediction or advice.</div>`;
+  } catch (err) { out.className = "down"; out.textContent = err.message; }
+  b.disabled = false;
+}
+$("#stressPre").onclick = e => { const b = e.target.closest("button"); if (!b) return; $("#stressQ").value = b.textContent; for (const x of $("#stressPre").children) x.classList.toggle("on", x === b); runStress(b.textContent); };
+$("#stressForm").onsubmit = e => { e.preventDefault(); const q = $("#stressQ").value.trim(); if (q.length >= 3) runStress(q); };
+
+// journal
+async function loadJournal() { try { JOURNAL = await api("journal"); renderJournal(); } catch {} }
+function renderJournal() {
+  const J = JOURNAL; if (!J) return;
+  const dt = d => d ? new Date(d + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "—";
+  const open = J.open.map(o => `<li><div class="jh"><span><b class="sym">${esc(o.symbol)}</b> <span class="muted" style="font-size:12px">open since ${dt(o.opened)}</span></span>
+      <button class="linkbtn" type="button" data-th="${esc(o.symbol)}">${o.thesis ? "Edit note" : "+ Add why you bought"}</button></div>
+      ${o.thesis ? `<div class="q"><b>Bought because:</b> ${esc(o.thesis)}</div>` : ""}</li>`).join("");
+  const closed = J.closed.map(c => {
+    const r = c.price && c.cost ? (c.price / c.cost - 1) * 100 : null;
+    return `<li><div class="jh"><span><b class="sym">${esc(c.symbol)}</b> <span class="muted" style="font-size:12px">${dt(c.opened)} → ${dt(c.closed)}</span></span>${r == null ? "" : `<span class="pill ${cls(r)}">${pct(r)}</span>`}</div>
+      ${c.thesis ? `<div class="q"><b>Bought because:</b> ${esc(c.thesis)}</div>` : ""}
+      <div class="q"><b>Takeaway:</b> ${c.takeaway ? esc(c.takeaway) : `<button class="linkbtn" type="button" data-tk="${esc(c.id)}">+ add one</button>`}</div></li>`;
+  }).join("");
+  $("#journal").innerHTML = (open || closed) ? `${open ? `<div class="label" style="padding:0 16px 6px">Open positions</div><ul class="jl">${open}</ul>` : ""}
+    ${closed ? `<div class="label" style="padding:12px 16px 6px">Closed positions</div><ul class="jl">${closed}</ul>` : ""}`
+    : `<div class="empty">Add a note when you buy something (“Bought because…”). When you remove a holding, Folio asks for a one-line takeaway so you can look back on your decisions.</div>`;
+}
+$("#journal").onclick = async e => {
+  const th = e.target.closest("[data-th]"), tk = e.target.closest("[data-tk]");
+  if (th) {
+    const o = JOURNAL.open.find(x => x.symbol === th.dataset.th);
+    const li = th.closest("li");
+    li.innerHTML = `<div class="jh"><b class="sym">${esc(o.symbol)}</b></div><textarea class="field" rows="3" maxlength="600" placeholder="Bought because…">${esc(o.thesis)}</textarea><div><button class="btn primary" type="button" data-save>Save</button> <button class="btn" type="button" data-cancel>Cancel</button></div>`;
+    li.querySelector("textarea").focus();
+    li.querySelector("[data-cancel]").onclick = renderJournal;
+    li.querySelector("[data-save]").onclick = async () => { JOURNAL = await put("journal/thesis", { symbol: o.symbol, text: li.querySelector("textarea").value }); const h = me.holdings.find(x => x.symbol === o.symbol); if (h) h.thesis = li.querySelector("textarea").value; renderJournal(); };
+  }
+  if (tk) {
+    const li = tk.closest("div");
+    li.innerHTML = `<input class="field" maxlength="300" placeholder="What did you learn?" style="width:100%"> <button class="btn primary" type="button" style="margin-top:4px">Save</button>`;
+    li.querySelector("input").focus();
+    li.querySelector("button").onclick = async () => { JOURNAL = await put("journal/takeaway", { id: tk.dataset.tk, text: li.querySelector("input").value }); renderJournal(); };
+  }
+};
+const put = (p, body) => post(p, body, "PUT");
+
+// closing a position asks for a takeaway
+let closing = null;
+function askClose(i) {
+  closing = i; const h = me.holdings[i];
+  $("#closeTitle").textContent = `Remove ${h.symbol}`;
+  $("#closeThesis").innerHTML = h.thesis ? `<b>You bought because:</b> ${esc(h.thesis)}` : "This moves it to the closed section of your trade journal.";
+  $("#closeTake").value = ""; $("#closeDlg").showModal(); $("#closeTake").focus();
+}
+const closeClose = () => { $("#closeDlg").close(); closing = null; };
+$("#closeX").onclick = closeClose; $("#closeCancel").onclick = closeClose;
+$("#closeForm").onsubmit = async e => {
+  e.preventDefault(); if (closing == null) return;
+  const h = me.holdings[closing], take = $("#closeTake").value.trim();
+  me.holdings.splice(closing, 1); closeClose(); render();
+  await saveMe(take ? { [h.symbol]: take } : null);
+  render(); loadNews(); loadEquity(); loadActivity(); loadJournal(); loadDiag(); loadMyEvents();
+};
+
+// watchlist research columns
+async function loadWatchInfo() {
+  const syms = cur()?.watchlist || []; if (!syms.length) return;
+  try { Object.assign(WI, await api("watchinfo?symbols=" + encodeURIComponent(syms.join(",")))); render(); } catch {}
+}
+async function loadNotes() { try { NOTES = await api("notes"); render(); } catch {} }
+function editTarget(btn) {
+  const s = btn.dataset.tg, q = Q[s] || {}, td = btn.parentNode;
+  td.innerHTML = `<form style="display:flex;gap:4px"><input class="field num" type="number" step="any" min="0" style="width:90px" value="${NOTES[s]?.target ?? ""}" placeholder="${q.price ? q.price.toFixed(2) : ""}" aria-label="Target buy price"><button class="btn" type="submit">OK</button></form>`;
+  const f = td.querySelector("form"), inp = f.querySelector("input"); inp.focus();
+  f.onclick = e => e.stopPropagation();
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const v = inp.value === "" ? null : +inp.value;
+    const r = await put("notes", { symbol: s, text: NOTES[s]?.text || "", target: v });
+    if (r && (r.text || r.target != null)) NOTES[s] = r; else delete NOTES[s];
+    render();
+  };
+}
+
+// earnings TL;DR
+let tldrTimer = null;
+async function loadTldr() {
+  const u = cur(); if (!u) return;
+  const syms = [...new Set([...u.holdings.map(h => h.symbol), ...u.watchlist])];
+  if (!syms.length) { $("#tldr").innerHTML = ""; return; }
+  try {
+    const r = await api("earnings/tldr?symbols=" + encodeURIComponent(syms.join(",")));
+    const get = (t, k) => (t.split("\n").find(l => l.trim().toUpperCase().startsWith(k + ":")) || "").split(":").slice(1).join(":").trim().replace(/\*\*/g, "");
+    $("#tldr").innerHTML = r.items.map(x => `<div class="tldr"><div class="h"><span class="label" style="color:var(--accent)">Earnings TL;DR</span><b class="sym">${esc(x.symbol)}</b><span class="muted" style="font-size:12px">reported ${new Date(x.date + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric" })} · EPS ${x.eps} vs ${x.est} expected</span></div>
+      <dl><dt>Result</dt><dd>${esc(get(x.text, "RESULT"))}</dd><dt>Guidance</dt><dd>${esc(get(x.text, "GUIDANCE"))}</dd><dt>Tone</dt><dd>${esc(get(x.text, "TONE"))}</dd></dl></div>`).join("") +
+      (r.pending ? `<div class="tldr muted"><span class="spin"></span> A company you follow just reported. Claude is summarizing the results…</div>` : "");
+    clearTimeout(tldrTimer); if (r.pending) tldrTimer = setTimeout(loadTldr, 30000);
+  } catch {}
+}
+
+// alerts
+let lastUnread = null;
+async function loadAlerts() {
+  try { ALERTS = await api("alerts"); } catch { return; }
+  const unread = ALERTS.inbox.filter(m => !m.read);
+  $("#bellCnt").hidden = !unread.length; $("#bellCnt").textContent = unread.length;
+  if (lastUnread != null && unread.length > lastUnread && window.Notification && Notification.permission === "granted")
+    unread.slice(0, unread.length - lastUnread).forEach(m => new Notification("Folio alert", { body: `${m.text} (now ${m.now})` }));
+  lastUnread = unread.length;
+  if ($("#alertDlg").open) renderAlerts();
+}
+function renderAlerts() {
+  $("#inbox").innerHTML = ALERTS.inbox.length ? ALERTS.inbox.map(m => `<li class="${m.read ? "" : "new"}"><span>${esc(m.text)} <span class="muted">· now ${esc(m.now)}</span></span><span class="muted" style="font-size:12px;white-space:nowrap">${ago(new Date(m.ts * 1000).toISOString())}</span></li>`).join("") : `<li class="muted">Nothing has triggered yet.</li>`;
+  $("#rules").innerHTML = ALERTS.rules.length ? ALERTS.rules.map(r => `<li><span>${esc(r.text)}${r.active ? "" : ' <span class="you">triggered</span>'}</span><button class="x" style="visibility:visible" type="button" data-adel="${esc(r.id)}" aria-label="Delete alert">×</button></li>`).join("") : `<li class="muted">No alerts yet. Add one above, or use “Set alert” on any stock page.</li>`;
+  $("#notifBtn").hidden = !window.Notification || Notification.permission === "granted";
+  const k = $("#aKind").value; $("#aSym").hidden = k.startsWith("fng");
+}
+function openAlerts(sym, kind) {
+  $("#alertErr").textContent = "";
+  if (sym) { $("#aSym").value = sym; $("#aKind").value = kind || "price_below"; $("#aVal").value = ""; }
+  renderAlerts(); $("#alertDlg").showModal();
+  if (ALERTS.inbox.some(m => !m.read)) post("alerts/read", {}).then(r => { ALERTS = r; lastUnread = 0; $("#bellCnt").hidden = true; }).catch(() => {});
+}
+$("#bell").onclick = () => openAlerts();
+$("#alertClose").onclick = () => $("#alertDlg").close();
+$("#aKind").onchange = renderAlerts;
+$("#alertPre").onclick = e => { const b = e.target.closest("button"); if (!b) return; $("#aKind").value = b.dataset.k; $("#aVal").value = b.dataset.v; renderAlerts(); };
+$("#alertForm").onsubmit = async e => {
+  e.preventDefault(); $("#alertErr").textContent = "";
+  try { ALERTS = await post("alerts", { kind: $("#aKind").value, symbol: $("#aSym").value.trim().toUpperCase() || null, value: +$("#aVal").value }); $("#aVal").value = ""; renderAlerts(); }
+  catch (err) { $("#alertErr").textContent = err.message; }
+};
+$("#rules").onclick = async e => { const b = e.target.closest("[data-adel]"); if (b) { ALERTS = await api("alerts/" + b.dataset.adel, { method: "DELETE" }); renderAlerts(); } };
+$("#notifBtn").onclick = async () => { if (window.Notification) { await Notification.requestPermission(); renderAlerts(); } };
+
 // ---------- chart ----------
 let hist = [];
 function select(s) { sel = s; render(); loadHistory(); }
@@ -1002,20 +1360,23 @@ function view(name) {
   sel = u.holdings[0]?.symbol || u.watchlist[0] || null;
   $("#sumOut").className = "muted"; $("#sumOut").textContent = "A short rundown of what today’s headlines mean for these holdings. Written by Claude from the headlines below.";
   $("#sumBtn").textContent = "Summarize headlines";
-  render(); loadHistory(); loadNews(); loadEquity();
+  render(); loadHistory(); loadNews(); loadEquity(); loadDiag(); loadMyEvents(); loadWatchInfo(); loadTldr();
+  $("#stressOut").className = "muted"; $("#stressOut").textContent = "Pick a scenario above to see how these holdings would likely hold up.";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $("#group").onclick = e => { const r = e.target.closest("tr[data-m]"); if (r) view(r.dataset.m); };
 $("#backMine").onclick = () => view(null);
 $("#holdings").onclick = async e => {
   const d = e.target.closest("[data-del]");
-  if (d && !viewing) { me.holdings.splice(+d.dataset.del, 1); render(); await saveMe(); render(); loadNews(); loadEquity(); loadActivity(); return; }
+  if (d && !viewing) { askClose(+d.dataset.del); return; }
   const r = e.target.closest("tr[data-s]"); if (r) select(r.dataset.s);
 };
 $("#watch").onclick = async e => {
   const d = e.target.closest("[data-wdel]");
   if (d && !viewing) { me.watchlist.splice(+d.dataset.wdel, 1); render(); await saveMe(); return; }
-  const r = e.target.closest("li[data-s]"); if (r) select(r.dataset.s);
+  const t = e.target.closest("[data-tg]");
+  if (t && !viewing) { editTarget(t); return; }
+  const r = e.target.closest("tr[data-s]"); if (r) select(r.dataset.s);
 };
 $("#refresh").onclick = async () => { await loadGroup(); loadQuotes(); loadHistory(); loadEquity(); loadActivity(); };
 
@@ -1055,16 +1416,16 @@ $("#addH").onsubmit = async e => {
   if (!symbol || !(shares > 0)) return;
   const ex = me.holdings.find(h => h.symbol === symbol);
   if (ex) { ex.cost = (ex.cost * ex.shares + cost * shares) / (ex.shares + shares); ex.shares += shares; }
-  else me.holdings.push(date ? { symbol, shares, cost, date } : { symbol, shares, cost });
+  else { const h = { symbol, shares, cost }; if (date) h.date = date; const th = $("#hThesis").value.trim(); if (th) h.thesis = th; me.holdings.push(h); }
   e.target.reset();
-  await saveMe(); await loadQuotes(); select(symbol); loadNews(); loadEquity(); loadMoods(); loadActivity();
+  await saveMe(); await loadQuotes(); select(symbol); loadNews(); loadEquity(); loadMoods(); loadActivity(); loadJournal(); loadDiag(); loadMyEvents();
 };
 $("#addW").onsubmit = async e => {
   e.preventDefault();
   const s = $("#wSym").value.trim().toUpperCase();
   if (!s || me.watchlist.includes(s)) return;
   me.watchlist.unshift(s); e.target.reset();
-  await saveMe(); await loadQuotes(); select(s);
+  await saveMe(); await loadQuotes(); select(s); loadWatchInfo();
 };
 $("#wSym").addEventListener("picked", () => $("#addW").requestSubmit());
 
@@ -1315,10 +1676,16 @@ function renderStock() {
           <div class="muted" style="font-size:13px">${esc([d.sector, d.industry].filter(Boolean).join(" · ") || q.exchange || "")}</div>
           <div style="margin-top:8px"><span class="big num">${money(q.price, q.currency)}</span> <span class="num ${cls(q.change)}">${sign(q.change)}${money(Math.abs(q.change ?? 0), q.currency)} (${pct(q.pct)})</span> <span class="muted">latest session</span></div>
         </div>
-        <button class="btn${watching ? "" : " primary"}" id="sWatch" type="button">${watching ? "On your watchlist ✓" : "Add to watchlist"}</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn${watching ? "" : " primary"}" id="sWatch" type="button">${watching ? "On your watchlist ✓" : "Add to watchlist"}</button>
+          <button class="btn" id="sCmpBtn" type="button">Compare</button>
+          <button class="btn" id="sAlertBtn" type="button">Set alert</button>
+        </div>
       </div>
       <div class="rets">${Object.entries(c).map(([k, v]) => `<div><span class="label">${k}</span><b class="${cls(v)}">${pct(v)}</b></div>`).join("")}</div>
     </section>
+
+    <section class="card" id="sCmpBox" hidden></section>
 
     <div class="grid2">
       <section class="card">
@@ -1373,11 +1740,37 @@ function renderStock() {
     </section>
 
     <section class="card">
+      <div class="card-h"><h2>Valuation vs its own history</h2><span class="muted" style="font-size:12px" id="sValNote">Where today’s multiples sit in their past-5-year range</span></div>
+      <div id="sVal"><div class="empty"><span class="spin"></span> Working out valuation history…</div></div>
+    </section>
+
+    <section class="card">
+      <div class="card-h"><h2>Financials &amp; margins</h2><div class="tabs" id="sFinTabs"><button type="button" data-f="quarterly" class="on">Quarterly</button><button type="button" data-f="annual">Yearly</button></div></div>
+      <div id="sFin"><div class="empty"><span class="spin"></span> Loading financials…</div></div>
+    </section>
+
+    <section class="card">
+      <div class="ai big fil" style="border:0;background:none">
+        <div class="ai-h"><span class="label">Latest SEC filing, summarized</span><button class="btn primary" id="sFilBtn" type="button">Read the latest 10-Q / 10-K</button></div>
+        <div id="sFil" class="muted" style="font-size:13px;margin-top:6px">Claude reads ${esc(d.symbol)}’s most recent quarterly or annual report from the SEC (plus the earnings press release when there is one) and pulls out changes to guidance, the business numbers that matter, and newly added risks. Takes about 15 seconds. US-listed companies only; earnings call transcripts aren’t freely available.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h"><h2>Your research notes</h2><span class="muted" style="font-size:12px" id="sNoteSaved">Only you can see these</span></div>
+      <div class="notes" id="sNotes"></div>
+    </section>
+
+    <section class="card">
       <div class="card-h"><h2>${esc(d.symbol)} headlines</h2></div>
       <ul class="news">${newsList(d.news)}</ul>
     </section>
   </div>`;
-  renderWhatIf(); renderPeers();
+  renderWhatIf(); renderPeers(); renderNotes(); loadVal(d.symbol); loadFin(d.symbol);
+  $("#sFilBtn").onclick = () => runFilings(d.symbol);
+  $("#sAlertBtn").onclick = () => openAlerts(d.symbol, "price_below");
+  $("#sCmpBtn").onclick = () => openCompare([d.symbol]);
+  $("#sFinTabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; S.finMode = b.dataset.f; for (const x of $("#sFinTabs").children) x.classList.toggle("on", x === b); renderFin(); };
   $("#sTabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; S.range = b.dataset.r; for (const x of $("#sTabs").children) x.classList.toggle("on", x === b); loadStockHist(); };
   $("#sWhyBtn").onclick = () => aiInto($("#sWhyBtn"), $("#sWhy"), "stock/why", { symbol: d.symbol }, "Explain again");
   $("#sWatch").onclick = async () => {
@@ -1428,6 +1821,208 @@ function renderWhatIf() {
   box.querySelector(".presets").onclick = e => { const b = e.target.closest("button"); if (!b) return; $("#wiR").value = Math.min(hi, +b.dataset.pe); upd(+b.dataset.pe); };
   upd(Math.min(hi, cur0));
 }
+
+
+// ---------- batch 3: stock research ----------
+const rangeBar = (now, r, fmt) => {
+  if (!r || r.low == null || now == null) return "";
+  const lo = Math.min(r.low, now), hi = Math.max(r.high, now), sp = hi - lo || 1, P = v => ((v - lo) / sp * 100).toFixed(1);
+  return `<div class="rbar"><span class="md" style="left:${P(r.median)}%" title="5-year median ${fmt(r.median)}"></span><span class="nw" style="left:${P(now)}%" title="Today ${fmt(now)}"></span></div>
+    <div class="rlab"><span>${fmt(r.low)}</span><span>med ${fmt(r.median)}</span><span>${fmt(r.high)}</span></div>`;
+};
+async function loadVal(sym) {
+  try {
+    const v = await api("stock/valuation?symbol=" + encodeURIComponent(sym)); if (S.sym !== sym || !$("#sVal")) return;
+    const c = v.current, r = v.ranges, x = n => n == null ? "—" : n.toFixed(1) + "×", dx = n => n == null ? "—" : n.toFixed(2);
+    const verdict = (now, rg) => { if (now == null || !rg || rg.low == null) return ""; const p = (now - rg.low) / ((rg.high - rg.low) || 1); return `<div class="muted" style="font-size:11px">${p < 0.2 ? "near the cheap end of its range" : p > 0.8 ? "near the expensive end" : now < rg.median ? "below its usual level" : "above its usual level"}</div>`; };
+    const cell = (label, now, rg, f) => `<div><span class="label">${label}</span><b>${f(now)}</b>${rg ? rangeBar(rg.now ?? now, rg, f) + verdict(rg.now ?? now, rg) : `<div class="muted" style="font-size:11px;margin-top:8px">${now == null ? "not available" : "no 5-year history"}</div>`}</div>`;
+    $("#sVal").innerHTML = `<div class="mults">
+      ${cell("P/E (past 12 months)", c.pe ?? r.pe?.now, r.pe, x)}
+      ${cell("P/E (next year)", c.fpe, null, x)}
+      ${cell("EV / EBITDA", c.evEbitda ?? r.evEbitda?.now, r.evEbitda, x)}
+      ${cell("Price / free cash flow", c.pfcf, r.pfcf, x)}
+      ${cell("Debt / equity", c.de, r.de, dx)}</div>
+      <div class="note" style="padding-top:10px">Dot = today, tick = 5-year median. History uses each month’s price against the latest reported 12 months of profits, cash flow and debt. EV/EBITDA compares the whole company’s value (including debt) with its operating profit. Lower usually means cheaper.</div>`;
+  } catch { if ($("#sVal")) $("#sVal").innerHTML = `<div class="empty">Valuation history isn’t available for this one.</div>`; }
+}
+let finCharts = [];
+async function loadFin(sym) {
+  S.fin = null; S.finMode = S.finMode || "quarterly";
+  try { const f = await api("stock/financials?symbol=" + encodeURIComponent(sym)); if (S.sym !== sym) return; S.fin = f; renderFin(); }
+  catch { if ($("#sFin")) $("#sFin").innerHTML = `<div class="empty">Financials aren’t available.</div>`; }
+}
+function renderFin() {
+  const box = $("#sFin"); if (!box || !S.fin) return;
+  finCharts.forEach(c => c.destroy()); finCharts = [];
+  const rows = S.fin[S.finMode] || [], cur = S.fin.currency;
+  if (!rows.length) { box.innerHTML = `<div class="empty">No ${S.finMode === "annual" ? "yearly" : "quarterly"} financial statements found.</div>`; return; }
+  const cmp = v => v == null ? "—" : bigCur(v, cur);
+  const last = rows[rows.length - 1], prev = rows.length > 1 ? rows[rows.length - 2] : null, first = rows[0];
+  const g = (a, b) => a != null && b ? (a / Math.abs(b) - (b < 0 ? -1 : 1)) * 100 * (b < 0 ? -1 : 1) : null;
+  box.innerHTML = `<div class="facts" style="padding:0 16px 10px">
+      <span>Latest revenue <b>${cmp(last.revenue)}</b> ${prev ? `<span class="${cls(g(last.revenue, prev.revenue))}">${pct(g(last.revenue, prev.revenue))} vs prior ${S.finMode === "annual" ? "year" : "quarter"}</span>` : ""}</span>
+      <span>Net income <b>${cmp(last.netIncome)}</b></span><span>Free cash flow <b>${cmp(last.fcf)}</b></span></div>
+    <div class="fin-grid"><div><div class="chartbox" style="height:220px;padding:0"><canvas id="finBar" aria-label="Revenue, net income and free cash flow"></canvas></div></div>
+      <div><div class="label">Margins</div><div class="chartbox" style="height:190px;padding:0"><canvas id="finMar" aria-label="Gross and operating margin"></canvas></div>
+        <div class="facts" style="margin-top:4px"><span>Gross <b>${last.grossMargin == null ? "—" : last.grossMargin.toFixed(1) + "%"}</b></span><span>Operating <b>${last.opMargin == null ? "—" : last.opMargin.toFixed(1) + "%"}</b></span><span class="muted">${esc(first.period)} → ${esc(last.period)}</span></div></div></div>
+    <div class="note" style="padding-top:8px">Amounts in ${esc(cur)}${S.finMode === "quarterly" ? ", by quarter-end month" : ", by fiscal year"}. Free cash flow = cash from operations minus capital spending.</div>`;
+  if (!window.Chart) return;
+  const tip = { backgroundColor: css("--surface"), titleColor: css("--muted"), bodyColor: css("--ink"), borderColor: css("--line"), borderWidth: 1 };
+  const ax = { grid: { display: false }, border: { color: css("--line") }, ticks: { color: css("--muted"), font: { size: 11 } } };
+  finCharts.push(new Chart($("#finBar"), { type: "bar", data: { labels: rows.map(r => r.period), datasets: [
+      { label: "Revenue", data: rows.map(r => r.revenue), backgroundColor: css("--a1"), borderRadius: 3 },
+      { label: "Net income", data: rows.map(r => r.netIncome), backgroundColor: css("--a2"), borderRadius: 3 },
+      { label: "Free cash flow", data: rows.map(r => r.fcf), backgroundColor: css("--a3"), borderRadius: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { position: "top", align: "start", labels: { color: css("--muted"), boxWidth: 10, boxHeight: 10, font: { size: 11 } } }, tooltip: { ...tip, callbacks: { label: c => `${c.dataset.label}: ${cmp(c.parsed.y)}` } } },
+      scales: { x: ax, y: { position: "right", grid: { color: css("--line") }, border: { display: false }, ticks: { color: css("--muted"), maxTicksLimit: 5, font: { size: 10 }, callback: v => bigCur(v, cur) } } } } }));
+  finCharts.push(new Chart($("#finMar"), { type: "line", data: { labels: rows.map(r => r.period), datasets: [
+      { label: "Gross margin", data: rows.map(r => r.grossMargin), borderColor: css("--a1"), pointRadius: 3, borderWidth: 1.75, tension: 0.2 },
+      { label: "Operating margin", data: rows.map(r => r.opMargin), borderColor: css("--a4"), pointRadius: 3, borderWidth: 1.75, tension: 0.2 }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { position: "top", align: "start", labels: { color: css("--muted"), boxWidth: 10, boxHeight: 2, font: { size: 11 } } }, tooltip: { ...tip, callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y?.toFixed(1)}%` } } },
+      scales: { x: ax, y: { position: "right", grid: { color: css("--line") }, border: { display: false }, ticks: { color: css("--muted"), maxTicksLimit: 4, font: { size: 10 }, callback: v => v + "%" } } } } }));
+}
+async function runFilings(sym) {
+  const b = $("#sFilBtn"), out = $("#sFil");
+  b.disabled = true; out.className = "muted"; out.innerHTML = `<span class="spin"></span> Downloading ${esc(sym)}’s latest filing from the SEC and reading it…`;
+  try {
+    const r = await post("stock/filings", { symbol: sym }); if (S.sym !== sym) return;
+    const L = r.text.split("\n").map(l => l.trim()).filter(Boolean);
+    const get = k => L.filter(l => l.toUpperCase().startsWith(k + ":")).map(l => l.slice(k.length + 1).trim().replace(/\*\*/g, ""));
+    const dt = d => new Date(d + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+    out.className = "";
+    out.innerHTML = `${get("HEADLINE").length ? `<p class="lead">${esc(get("HEADLINE").join(" "))}</p>` : ""}
+      <h4>Guidance</h4><ul>${get("GUIDANCE").map(x => `<li>${esc(x)}</li>`).join("") || "<li>No guidance found.</li>"}</ul>
+      <h4>Key business numbers</h4><div class="tablewrap"><table class="cmp kpis"><tbody>${get("KPI").map(x => { const [n, v, ...c] = x.split("|").map(y => y.trim()); return `<tr><td><b>${esc(n)}</b></td><td class="num">${esc(v || "")}</td><td class="muted">${esc(c.join(" | "))}</td></tr>`; }).join("")}</tbody></table></div>
+      <h4>New or changed risks</h4><ul>${get("RISK").map(x => `<li>${esc(x)}</li>`).join("") || "<li>None flagged.</li>"}</ul>
+      <div class="meta">From the <a href="${esc(r.filing.url)}" target="_blank" rel="noopener">${esc(r.filing.form)} filed ${dt(r.filing.date)}</a>${r.press ? ` and the <a href="${esc(r.press.url)}" target="_blank" rel="noopener">earnings release of ${dt(r.press.date)}</a>` : ""} · summarized by Claude. Check the original before relying on any number.</div>`;
+    b.textContent = "Read it again";
+  } catch (err) { out.className = "down"; out.textContent = err.message; }
+  b.disabled = false;
+}
+
+// research notes (simple markdown)
+function mdHtml(t) {
+  const inline = x => esc(x).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|\W)\*(.+?)\*(?=\W|$)/g, "$1<i>$2</i>").replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  let html = "", list = false;
+  for (const line of t.split("\n")) {
+    const m = line.match(/^\s*[-*]\s+(.*)/), h = line.match(/^(#{1,3})\s+(.*)/);
+    if (m) { if (!list) { html += "<ul>"; list = true; } html += `<li>${inline(m[1])}</li>`; continue; }
+    if (list) { html += "</ul>"; list = false; }
+    if (h) html += `<h${h[1].length + 1}>${inline(h[2])}</h${h[1].length + 1}>`;
+    else if (line.trim()) html += `<p>${inline(line)}</p>`;
+  }
+  return html + (list ? "</ul>" : "");
+}
+function renderNotes(edit) {
+  const box = $("#sNotes"); if (!box || !S.data) return;
+  const sym = S.data.symbol, n = NOTES[sym] || {}, q = S.data.quote;
+  const tmpl = "## Thesis\n- \n\n## Key catalysts\n- \n\n## What would change my mind\n- ";
+  const showEdit = edit || !n.text;
+  box.innerHTML = `<div class="row"><label>Target entry price <input class="field num" id="nTarget" type="number" step="any" min="0" style="width:120px" value="${n.target ?? ""}" placeholder="${q.price ? q.price.toFixed(2) : ""}"></label>
+      <span class="muted" id="nAway">${n.target && q.price ? (q.price <= n.target ? "At or below your target" : `${pct((q.price / n.target - 1) * 100)} above your target`) : "Shows up in your watchlist too"}</span></div>
+    ${showEdit ? `<textarea class="field" id="nText" rows="8" placeholder="Your thesis, catalysts, what would change your mind… (supports **bold**, - bullets, ## headings)">${esc(n.text || "")}</textarea>
+      <div class="row"><button class="btn primary" type="button" id="nSave">Save notes</button>${n.text ? '<button class="btn" type="button" id="nCancel">Cancel</button>' : `<button class="btn" type="button" id="nTmpl">Use a template</button>`}</div>`
+    : `<div class="md-out">${mdHtml(n.text)}</div><div class="row"><button class="btn" type="button" id="nEdit">Edit notes</button><span class="muted" style="font-size:12px">Saved ${ago(new Date(n.updated * 1000).toISOString())}</span></div>`}`;
+  const save = async () => {
+    const text = $("#nText") ? $("#nText").value : n.text || "", tv = $("#nTarget").value;
+    const r = await put("notes", { symbol: sym, text, target: tv === "" ? null : +tv });
+    if (r && (r.text || r.target != null)) NOTES[sym] = r; else delete NOTES[sym];
+    $("#sNoteSaved").textContent = "Saved ✓ · only you can see these"; renderNotes(); render();
+  };
+  $("#nTarget").onchange = save;
+  if ($("#nSave")) $("#nSave").onclick = save;
+  if ($("#nEdit")) $("#nEdit").onclick = () => renderNotes(true);
+  if ($("#nCancel")) $("#nCancel").onclick = () => renderNotes();
+  if ($("#nTmpl")) $("#nTmpl").onclick = () => { $("#nText").value = tmpl; $("#nText").focus(); };
+}
+
+// compare drawer
+const CMP = { syms: [], chart: null, data: null };
+const CMPC = ["--a1", "--a3", "--a2", "--a5"];
+function openCompare(syms) {
+  CMP.syms = [...new Set(syms)].slice(0, 4);
+  const box = $("#sCmpBox"); box.hidden = false;
+  box.innerHTML = `<div class="card-h"><h2>Side-by-side comparison</h2><span style="display:flex;gap:8px;align-items:center"><button class="btn" type="button" id="cmpPeers">Compare vs peers</button><button class="x" style="visibility:visible" type="button" id="cmpClose" aria-label="Close comparison">×</button></span></div>
+    <div class="cmpbar" id="cmpChips"></div>
+    <div id="cmpBody"></div>`;
+  $("#cmpClose").onclick = () => { box.hidden = true; if (CMP.chart) CMP.chart.destroy(); CMP.chart = null; };
+  $("#cmpPeers").onclick = async () => {
+    try { const r = await api("stock/peerlist?symbol=" + encodeURIComponent(S.sym)); CMP.syms = [S.sym, ...r.peers].slice(0, 4); loadCompare(); } catch {}
+  };
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+  loadCompare();
+}
+function renderCmpChips() {
+  $("#cmpChips").innerHTML = CMP.syms.map((s, i) => `<span class="chip2"><i style="background:var(${CMPC[i]})"></i>${esc(s)}${CMP.syms.length > 1 ? `<button type="button" data-rm="${esc(s)}" aria-label="Remove ${esc(s)}">×</button>` : ""}</span>`).join("") +
+    (CMP.syms.length < 4 ? `<form id="cmpAdd" class="ac" style="flex:0 1 220px" autocomplete="off"><input class="field" id="cmpSym" placeholder="+ Add a stock (up to 4)" aria-label="Add a stock to compare"><ul id="cmpAc" hidden></ul></form>` : "");
+  $("#cmpChips").onclick = e => { const b = e.target.closest("[data-rm]"); if (b) { CMP.syms = CMP.syms.filter(x => x !== b.dataset.rm); loadCompare(); } };
+  const f = $("#cmpAdd");
+  if (f) { autocomplete($("#cmpSym"), $("#cmpAc")); const add = () => { const v = $("#cmpSym").value.trim().toUpperCase(); if (v && !CMP.syms.includes(v)) { CMP.syms.push(v); loadCompare(); } };
+    $("#cmpSym").addEventListener("picked", add); f.onsubmit = e => { e.preventDefault(); add(); }; }
+}
+async function loadCompare() {
+  renderCmpChips();
+  $("#cmpBody").innerHTML = `<div class="empty"><span class="spin"></span> Lining them up…</div>`;
+  try { CMP.data = await api("compare?symbols=" + encodeURIComponent(CMP.syms.join(","))); renderCompare(); }
+  catch (err) { $("#cmpBody").innerHTML = `<div class="empty">${esc(err.message)}</div>`; }
+}
+function renderCompare() {
+  const st = CMP.data.stocks;
+  const x = n => n == null ? "—" : n.toFixed(1) + "×";
+  const row = (label, f) => `<tr><td>${label}</td>${st.map(s => `<td>${f(s)}</td>`).join("")}</tr>`;
+  $("#cmpBody").innerHTML = `<div class="chartbox" style="height:240px"><canvas id="cmpChart" aria-label="Normalized price comparison"></canvas></div>
+    <div class="tablewrap"><table class="cmp"><thead><tr><th></th>${st.map((s, i) => `<th><span style="color:var(${CMPC[i]})">●</span> ${esc(s.symbol)}</th>`).join("")}</tr></thead><tbody>
+      ${row("1-year return", s => `<span class="pill ${cls(s.ret1y)}">${pct(s.ret1y)}</span>`)}
+      ${row("Stock mood", s => s.mood == null ? "—" : `<span class="num">${s.mood}</span> ${mchip(s.mood)}`)}
+      ${row("Forward P/E", s => `<span class="num">${x(s.fpe)}</span>`)}
+      ${row("P/E (past year)", s => `<span class="num">${x(s.pe)}</span>`)}
+      ${row("EV / EBITDA", s => `<span class="num">${x(s.evEbitda)}</span>`)}
+      ${row("Price / free cash flow", s => `<span class="num">${x(s.pfcf)}</span>`)}
+      ${row("Revenue growth (yr/yr)", s => `<span class="num ${cls(s.revGrowth)}">${pct(s.revGrowth)}</span>`)}
+      ${row("Operating margin", s => `<span class="num">${s.margin == null ? "—" : s.margin.toFixed(1) + "%"}</span>`)}
+      ${row("Analysts", s => ratingChip(s.rating))}
+      ${row("Upside to avg target", s => `<span class="num ${cls(s.upside)}">${pct(s.upside)}</span>`)}
+    </tbody></table></div><div class="note" style="padding-top:8px">Chart shows % change over the past year, all starting at 0 so different prices compare fairly.</div>`;
+  if (CMP.chart) CMP.chart.destroy();
+  if (!window.Chart) return;
+  const base = st.reduce((a, s) => s.series.length > a.length ? s.series : a, []);
+  CMP.chart = new Chart($("#cmpChart"), { type: "line", data: { datasets: st.map((s, i) => ({ label: s.symbol, data: s.series.map(([t, v]) => ({ x: t, y: v })), borderColor: css(CMPC[i]), borderWidth: 1.75, pointRadius: 0, tension: 0.15 })) },
+    options: { responsive: true, maintainAspectRatio: false, animation: false, parsing: false, interaction: { mode: "nearest", axis: "x", intersect: false },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: css("--surface"), titleColor: css("--muted"), bodyColor: css("--ink"), borderColor: css("--line"), borderWidth: 1,
+        callbacks: { title: it => new Date(it[0].parsed.x).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }), label: c => `${c.dataset.label}: ${pct(c.parsed.y)}` } } },
+      scales: { x: { type: "linear", min: Math.min(...st.filter(s => s.series.length).map(s => s.series[0][0])), max: Math.max(...st.filter(s => s.series.length).map(s => s.series[s.series.length - 1][0])), grid: { display: false }, border: { color: css("--line") }, ticks: { color: css("--muted"), maxTicksLimit: 6, font: { size: 11 }, callback: v => new Date(v).toLocaleDateString([], { month: "short", year: "2-digit" }) } },
+        y: { position: "right", grid: { color: css("--line") }, border: { display: false }, ticks: { color: css("--muted"), maxTicksLimit: 5, font: { size: 11 }, callback: v => (v > 0 ? "+" : "") + v + "%" } } } } });
+}
+
+// ---------- batch 3: screener ----------
+async function runScreen(q) {
+  const out = $("#scrOut"), b = $("#scrBtn");
+  b.disabled = true; out.innerHTML = `<div class="empty"><span class="spin"></span> Turning that into filters and searching…</div>`;
+  try {
+    const r = await post("screen", { q });
+    const opn = { "<": "under", "<=": "≤", ">": "over", ">=": "≥", in: "is", contains: "includes", between: "between", "=": "=" };
+    const lab = { fpe: "Forward P/E", pe: "P/E", mood: "Mood", rating: "Analysts", upside: "Upside", marketCapB: "Market value ($B)", divYield: "Dividend %", revGrowth: "Revenue growth %", evEbitda: "EV/EBITDA", pfcf: "P/FCF", month: "1-month %", day: "Today %", groups: "Theme", industry: "Industry", sector: "Sector", beta: "Beta", country: "Country", price: "Price" };
+    out.innerHTML = `<div style="padding:0 16px 10px;font-size:13px"><b>${esc(r.explain)}</b>
+        <div class="chips" style="margin-top:6px">${r.filters.map(f => `<span class="chip">${esc(lab[f.field] || f.field)} ${esc(opn[f.op] || f.op)} ${esc(Array.isArray(f.value) ? f.value.join(" / ") : f.value)}</span>`).join("")}</div>
+        <div class="muted" style="margin-top:6px;font-size:12px">${r.total} match${r.total === 1 ? "" : "es"} out of ${r.universe} stocks Folio tracks${r.total > r.results.length ? ` · showing the first ${r.results.length}` : ""}</div></div>
+      ${r.results.length ? `<div class="tablewrap"><table class="cmp srt"><thead><tr><th>Stock</th><th>Today</th><th>1 month</th><th>Fwd P/E</th><th>Mood</th><th>Analysts</th><th class="hide-sm">Upside</th><th class="hide-sm">Value</th><th></th></tr></thead><tbody>
+        ${r.results.map(x => `<tr data-s="${esc(x.symbol)}" style="cursor:pointer"><td><span class="sym">${esc(x.symbol)}</span><div class="nm">${esc(x.name)}${x.industry ? " · " + esc(x.industry) : ""}</div></td>
+          <td><span class="pill ${cls(x.day)}">${pct(x.day)}</span></td><td><span class="pill ${cls(x.month)}">${pct(x.month)}</span></td>
+          <td class="num">${x.fpe ? x.fpe.toFixed(1) + "×" : "—"}</td>
+          <td>${x.mood == null ? "—" : `<span class="num" style="margin-right:4px">${x.mood}</span>${mchip(x.mood)}`}</td>
+          <td>${ratingChip(x.rating)}</td><td class="hide-sm num ${cls(x.upside)}">${pct(x.upside)}</td>
+          <td class="hide-sm num muted">${x.marketCapB ? "$" + (x.marketCapB >= 1000 ? (x.marketCapB / 1000).toFixed(2) + "T" : x.marketCapB.toFixed(0) + "B") : "—"}</td><td>${watchBtn(x.symbol)}</td></tr>`).join("")}
+      </tbody></table></div>` : `<div class="empty">Nothing matches. Try loosening a condition.</div>`}
+      <div class="note" style="padding-top:8px">Searches the ~${r.universe} stocks Folio follows: the biggest companies in every sector, the industry groups on the Sentiment tab, and everything the group owns or watches.</div>`;
+  } catch (err) { out.innerHTML = `<div class="empty down">${esc(err.message)}</div>`; }
+  b.disabled = false;
+}
+$("#scrForm").onsubmit = e => { e.preventDefault(); const q = $("#scrQ").value.trim(); if (q.length >= 3) runScreen(q); };
+$("#scrEx").onclick = e => { const b = e.target.closest("button"); if (b) { $("#scrQ").value = b.textContent; runScreen(b.textContent); } };
+$("#scrOut").onclick = e => { const r = e.target.closest("tr[data-s]"); if (r) openStock(r.dataset.s); };
 
 // ---------- sentiment ----------
 function moodBg(v, strength = 1) {
@@ -1650,10 +2245,11 @@ async function start() {
   render();
   await loadQuotes();
   loadHistory(); loadNews(); loadEquity(); loadMoods(); loadReturns(); loadActivity();
+  loadDiag(); loadMyEvents(); loadJournal(); loadWatchInfo(); loadNotes(); loadTldr(); loadAlerts();
   route();
   timers.push(setInterval(() => { if (!document.hidden) loadQuotes(); }, 30000));
   timers.push(setInterval(() => { if (!document.hidden && location.hash === "#markets") loadMarket(true); }, 120000));
-  timers.push(setInterval(() => { if (!document.hidden) { loadGroup(); loadActivity(); } }, 60000));
+  timers.push(setInterval(() => { if (!document.hidden) { loadGroup(); loadActivity(); } loadAlerts(); }, 60000));
   timers.push(setInterval(() => { if (!document.hidden) { loadMoods(); loadReturns(); loadFx(); } }, 900000));
   timers.push(setInterval(() => { if (!document.hidden && (range === "1D" || range === "5D")) loadHistory(); }, 120000));
 }

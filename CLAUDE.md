@@ -74,6 +74,25 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 - Sentiment: up to 2 custom baskets per user (`PUT /api/baskets`, `/api/sentiment/custom`), same card as industries (`industry_card()`).
 - Yahoo's economic calendar fails when hit in parallel ("Invalid Crumb"): query it sequentially (see `macro_events`).
 
+### Added 16 Nov 2026 (third batch)
+- Portfolio: Exposure tabs (asset type / sector / country / currency, `/api/portfolio/diagnostics`) with warnings for any sector >35%
+  and holding pairs with 6-month correlation >=0.85; personal events strip (`/api/myevents`: earnings, ex-dividend/pay dates,
+  projected next dividend from past rhythm, payout = last dividend × shares); AI stress test (`/api/portfolio/stress`, line format
+  EXPOSURE/SUMMARY/HOLDING/CUSHION/WATCH); private trade journal (holding `thesis` + `opened`; removing a holding opens a dialog for a
+  takeaway, sent as `takeaways` in PUT /api/state, stored in `users[k].journal`; thesis is stripped from other members' view).
+- Watchlist is now a full-width table: target buy price (stored in private research notes), % away, fwd P/E, mood, next earnings (`/api/watchinfo`).
+- Earnings TL;DR: `/api/earnings/tldr` finds holdings/watchlist stocks that reported in the last 10 days, generates RESULT/GUIDANCE/TONE
+  in a background thread (EPS + SEC 8-K press release + headlines), stored in `data/tldr.json`. Front end polls while `pending`.
+- Alerts: `users[k].alerts` rules (price/mood/market F&G above/below), one-shot; `alert_loop` checks every 5 min; triggered → `inbox`.
+  Header "Alerts" button + dialog; browser pop-ups only while a tab is open (no email/push set up).
+- Stock: Compare drawer (2-4 stocks, `/api/compare`, `/api/stock/peerlist`), valuation multiples with 5-year ranges (`/api/stock/valuation`;
+  monthly price vs trailing-12-month statements, today measured the same way), financials & margins charts (`/api/stock/financials`),
+  SEC filing summarizer (`/api/stock/filings`: EDGAR submissions → latest 10-Q/10-K MD&A + risk factors vs previous filing + 8-K
+  press release; User-Agent is a generic contact, never the user's email; US filers only — SEDAR+/Korea have no free API),
+  private research notes with simple markdown (`/api/notes`).
+- Markets: plain-English screener (`/api/screen`): Claude turns the query into JSON filters over `universe()` (~130 stocks: sector-fund
+  top holdings, industry members, everything the group holds/watches), applied server-side.
+
 ### Known data limits (tell the user honestly; don't invent data)
 - Yahoo lists the **firm**, not the individual analyst's name, for ratings.
 - Top movers are daily only; "this week" figures are the past 5 trading sessions.

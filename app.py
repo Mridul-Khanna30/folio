@@ -3,12 +3,15 @@ Each person signs in with a name + PIN and keeps their own portfolio; everyone c
 Prices from Yahoo Finance via yfinance. AI briefings via the Anthropic API (ANTHROPIC_API_KEY in .env)."""
 import hashlib
 import hmac
+import html as htmllib
 import json
 import os
 import re
 import secrets
 import threading
 import time
+import urllib.request
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -247,9 +250,10 @@ def set_session(resp: Response, key: str):
     resp.set_cookie("folio_s", make_token(key), max_age=SESSION_DAYS * 86400, httponly=True, samesite="lax")
 
 
-def public(key):
+def public(key, owner=True):
     u = users[key]
-    return {"name": u["name"], "holdings": u["holdings"], "watchlist": u["watchlist"], "joined": u.get("joined"),
+    hold = u["holdings"] if owner else [{k: v for k, v in h.items() if k != "thesis"} for h in u["holdings"]]
+    return {"name": u["name"], "holdings": hold, "watchlist": u["watchlist"], "joined": u.get("joined"),
             "baskets": u.get("baskets", []), "shareActivity": bool(u.get("shareActivity"))}
 
 
@@ -308,11 +312,14 @@ class Holding(BaseModel):
     date: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
     cur: str | None = Field(None, max_length=5)
     fx: dict[str, float] | None = None  # USD per unit of each currency when bought
+    thesis: str | None = Field(None, max_length=600)
+    opened: str | None = Field(None, max_length=10)
 
 
 class State(BaseModel):
     holdings: list[Holding] = Field(max_length=200)
     watchlist: list[str] = Field(max_length=100)
+    takeaways: dict[str, str] | None = None  # symbol -> one-line lesson, when a position is closed
 
 
 BASES = ["USD", "CAD", "EUR", "GBP"]
@@ -397,8 +404,19 @@ def log_activity(key, old, new):
 @app.put("/api/state")
 def put_state(s: State, key: str = Depends(current_user)):
     new = fill_fx([{**{k: v for k, v in h.model_dump().items() if v is not None}, "symbol": h.symbol.upper()} for h in s.holdings])
+    for h in new:
+        h.setdefault("opened", h.get("date") or time.strftime("%Y-%m-%d"))
     with lock:
         old = users[key]["holdings"]
+        keep = {h["symbol"] for h in new}
+        for h in old:
+            if h["symbol"] not in keep:
+                q = one_quote(h["symbol"])
+                users[key].setdefault("journal", []).append({
+                    "id": uuid.uuid4().hex[:10], "symbol": h["symbol"], "opened": h.get("opened") or h.get("date"),
+                    "closed": time.strftime("%Y-%m-%d"), "shares": h["shares"], "cost": h["cost"], "price": q.get("price"),
+                    "currency": q.get("currency"), "thesis": h.get("thesis") or "",
+                    "takeaway": ((s.takeaways or {}).get(h["symbol"]) or "")[:300]})
         users[key]["holdings"] = new
         users[key]["watchlist"] = [w.upper()[:20] for w in s.watchlist]
         log_activity(key, old, new)
@@ -441,7 +459,7 @@ def backfill_fx():
 
 @app.get("/api/group")
 def group(key: str = Depends(current_user)):
-    return [public(k) for k in users]
+    return [public(k, owner=(k == key)) for k in users]
 
 
 # ---------- AI ----------
@@ -1382,6 +1400,825 @@ def calendar(key: str = Depends(current_user)):
             e["top"] = i in top
         return {"events": ev[:16], "ts": time.time()}
     return cached(("calendar",), 1800, f)
+
+
+# ======================= batch 3: research, monitoring, screening =======================
+def tinfo(sym):
+    def f():
+        return yf.Ticker(sym).info or {}
+    try:
+        return cached(("info", sym), 6 * 3600, f)
+    except Exception:
+        return {}
+
+
+def class_of(info):
+    qt = info.get("quoteType", "")
+    if qt == "CRYPTOCURRENCY":
+        return "Crypto", "Global (crypto)"
+    if qt in ("ETF", "MUTUALFUND"):
+        return "Funds (mixed)", "Fund (mixed)"
+    if qt == "FUTURE":
+        return "Commodities", "Global"
+    if qt == "CURRENCY":
+        return "Currencies", "Global"
+    if qt == "INDEX":
+        return "Index", "Index"
+    return info.get("sector") or "Other", info.get("country") or "Unknown"
+
+
+# ---------- exposure diagnostics ----------
+@app.get("/api/portfolio/diagnostics")
+def diagnostics(member: str, key: str = Depends(current_user)):
+    k = member_key(member)
+    syms = sorted({h["symbol"] for h in users[k]["holdings"]})
+    def f():
+        infos = dict(zip(syms, pool.map(tinfo, syms)))
+        meta_ = {}
+        for s_ in syms:
+            sec, country = class_of(infos[s_])
+            meta_[s_] = {"sector": sec, "country": country, "industry": infos[s_].get("industry"),
+                         "currency": (one_quote(s_).get("currency") or "USD")}
+        pairs = []
+        if len(syms) > 1:
+            d = closes_df(syms + ["SPY"], "1y")
+            rets = d[[x for x in syms if x in d]].iloc[-130:].pct_change(fill_method=None)
+            c = rets.corr(min_periods=60)
+            for i, a in enumerate(c.columns):
+                for b in c.columns[i + 1:]:
+                    v = c.loc[a, b]
+                    if v == v and v >= 0.6:
+                        pairs.append({"a": a, "b": b, "corr": round(float(v), 2)})
+            pairs.sort(key=lambda x: -x["corr"])
+        return {"symbols": meta_, "pairs": pairs, "window": "daily moves over the past 6 months"}
+    return cached(("diag", tuple(syms)), 1800, f)
+
+
+# ---------- personal events ----------
+@app.get("/api/myevents")
+def my_events(member: str, key: str = Depends(current_user)):
+    k = member_key(member)
+    u = users[k]
+    shares = {h["symbol"]: h["shares"] for h in u["holdings"]}
+    syms = sorted(set(shares) | set(u["watchlist"]))
+    def one(sym):
+        out = []
+        try:
+            t = yf.Ticker(sym)
+            c = cached(("cal", sym), 6 * 3600, lambda: t.calendar or {})
+        except Exception:
+            return out
+        today = time.strftime("%Y-%m-%d")
+        ed = c.get("Earnings Date") or []
+        if ed and str(ed[0]) >= today:
+            out.append({"symbol": sym, "date": str(ed[0]), "kind": "earnings", "held": sym in shares,
+                        "est": fnum(c.get("Earnings Average"))})
+        exd, pay = c.get("Ex-Dividend Date"), c.get("Dividend Date")
+        amt = None
+        try:
+            dv = cached(("divs", sym), 6 * 3600, lambda: t.dividends)
+            if len(dv):
+                amt = float(dv.iloc[-1])
+                per_year = int((dv.index >= dv.index[-1] - pd.Timedelta(days=365)).sum())
+        except Exception:
+            per_year = None
+        q = one_quote(sym)
+        if exd and str(exd) >= today:
+            out.append({"symbol": sym, "date": str(exd), "kind": "exdiv", "held": sym in shares, "amount": amt,
+                        "payDate": str(pay) if pay and str(pay) >= str(exd) else None, "currency": q.get("currency"),
+                        "payout": amt * shares[sym] if amt and sym in shares else None})
+        elif pay and str(pay) >= today:
+            out.append({"symbol": sym, "date": str(pay), "kind": "paydiv", "held": sym in shares, "amount": amt, "currency": q.get("currency"),
+                        "payout": amt * shares[sym] if amt and sym in shares else None})
+        elif amt and per_year and sym in shares and exd:  # projected next dividend from the usual rhythm
+            nxt = pd.Timestamp(str(exd)) + pd.Timedelta(days=round(365 / per_year))
+            while nxt.strftime("%Y-%m-%d") < today:
+                nxt += pd.Timedelta(days=round(365 / per_year))
+            out.append({"symbol": sym, "date": nxt.strftime("%Y-%m-%d"), "kind": "exdiv", "projected": True, "held": True,
+                        "amount": amt, "currency": q.get("currency"), "payout": amt * shares[sym]})
+        return out
+    def f():
+        ev = [e for lst in pool.map(one, syms) for e in lst]
+        ev.sort(key=lambda e: e["date"])
+        return ev[:20]
+    return cached(("myev", tuple(syms), tuple(sorted(shares.items()))), 1800, f)
+
+
+# ---------- stress test ----------
+class StressReq(BaseModel):
+    member: str = Field(min_length=1, max_length=30)
+    scenario: str = Field(min_length=3, max_length=300)
+
+
+STRESS_FORMAT = (
+    "Reply in exactly this line format, nothing else:\n"
+    "EXPOSURE: <one of: High | Moderate | Low>\n"
+    "SUMMARY: <two sentences: how this portfolio would likely fare and why>\n"
+    "HOLDING: <TICKER> | <one of: Hit hard | Some impact | Little impact | Could benefit> | <short reason> (one line per holding, biggest first)\n"
+    "CUSHION: <what in the portfolio, if anything, would soften the blow> (1-2 lines)\n"
+    "WATCH: <signs in the data or news that the scenario is starting to play out> (1-2 lines)\n"
+    "Be concrete and use the numbers given. This is general information, not personal advice; don't tell the reader what to buy or sell.")
+
+
+@app.post("/api/portfolio/stress")
+def stress(req: StressReq, key: str = Depends(current_user)):
+    k = member_key(req.member)
+    hold = users[k]["holdings"]
+    if not hold:
+        raise HTTPException(400, "There are no holdings to test.")
+    sig = (tuple(sorted((h["symbol"], h["shares"]) for h in hold)), req.scenario.strip().lower())
+    def f():
+        rows, tot = [], 0
+        for h in hold:
+            q = one_quote(h["symbol"])
+            v = (q.get("price") or 0) * h["shares"] * (q.get("usdRate") or 0)
+            tot += v
+            rows.append((h["symbol"], v, q))
+        lines = []
+        for sym, v, q in sorted(rows, key=lambda r: -r[1]):
+            i = tinfo(sym)
+            se = stock_sentiment(sym) or {}
+            lines.append(f"{sym} {i.get('shortName') or ''}: {v / tot * 100 if tot else 0:.1f}% of portfolio; {class_of(i)[0]} / {i.get('industry') or '-'}; "
+                         f"country {i.get('country') or '-'}; currency {q.get('currency')}; beta {i.get('beta')}; forward P/E {i.get('forwardPE')}; "
+                         f"debt/equity {i.get('debtToEquity')}; mood {se.get('score')}")
+        m = market(key)
+        macro = ", ".join(f"{r['label']} {r['price']:.2f} (week {r['week']:+.1f}%)" for r in m["indexes"] if "price" in r)
+        fng = market_fng()
+        text = ask_claude(
+            "You stress-test an investor's portfolio against a macro scenario. Reason from each holding's sector, business, "
+            "geography, currency, valuation, leverage and beta. " + STRESS_FORMAT,
+            f"Scenario: {req.scenario}\n\nPortfolio:\n" + "\n".join(lines) +
+            f"\n\nMarket now: {macro}\nFear & greed: {fng['score']} ({fng['mood']})\n\nHeadlines:\n" + headlines_text(market_news(), 12), 2000)
+        return {"text": text, "ts": time.time()}
+    return cached(("stress", sig), 1800, f)
+
+
+# ---------- journal ----------
+@app.get("/api/journal")
+def journal(key: str = Depends(current_user)):
+    u = users[key]
+    return {"open": [{"symbol": h["symbol"], "opened": h.get("opened"), "thesis": h.get("thesis") or "", "cost": h["cost"], "shares": h["shares"]}
+                     for h in u["holdings"]],
+            "closed": list(reversed(u.get("journal", [])))}
+
+
+class Note(BaseModel):
+    symbol: str = Field(min_length=1, max_length=20)
+    text: str = Field(max_length=600)
+
+
+@app.put("/api/journal/thesis")
+def set_thesis(n: Note, key: str = Depends(current_user)):
+    with lock:
+        for h in users[key]["holdings"]:
+            if h["symbol"] == n.symbol.upper():
+                h["thesis"] = n.text.strip()
+        save_json(USERS_FILE, users)
+    return journal(key)
+
+
+class Takeaway(BaseModel):
+    id: str = Field(max_length=20)
+    text: str = Field(max_length=300)
+
+
+@app.put("/api/journal/takeaway")
+def set_takeaway(t: Takeaway, key: str = Depends(current_user)):
+    with lock:
+        for j in users[key].get("journal", []):
+            if j["id"] == t.id:
+                j["takeaway"] = t.text.strip()
+        save_json(USERS_FILE, users)
+    return journal(key)
+
+
+# ---------- research notes (private) ----------
+class ResearchNote(BaseModel):
+    symbol: str = Field(min_length=1, max_length=20)
+    text: str = Field("", max_length=20000)
+    target: float | None = Field(None, ge=0)
+
+
+@app.get("/api/notes")
+def get_notes(key: str = Depends(current_user)):
+    return users[key].get("notes", {})
+
+
+@app.put("/api/notes")
+def put_note(n: ResearchNote, key: str = Depends(current_user)):
+    sym = n.symbol.strip().upper()
+    with lock:
+        notes = users[key].setdefault("notes", {})
+        if not n.text.strip() and n.target is None:
+            notes.pop(sym, None)
+        else:
+            notes[sym] = {"text": n.text, "target": n.target, "updated": int(time.time())}
+        save_json(USERS_FILE, users)
+    return notes.get(sym) or {}
+
+
+# ---------- watchlist research columns ----------
+@app.get("/api/watchinfo")
+def watchinfo(symbols: str, key: str = Depends(current_user)):
+    syms = sorted({s_.strip().upper() for s_ in symbols.split(",") if s_.strip()})[:60]
+    def one(sym):
+        i = tinfo(sym)
+        se = stock_sentiment(sym)
+        ed = None
+        try:
+            c = cached(("cal", sym), 6 * 3600, lambda: yf.Ticker(sym).calendar or {})
+            e = c.get("Earnings Date") or []
+            ed = str(e[0]) if e else None
+        except Exception:
+            pass
+        return sym, {"fpe": fnum(i.get("forwardPE")), "mood": se["score"] if se else None, "earnings": ed}
+    return dict(pool.map(one, syms))
+
+
+# ---------- financials ----------
+def _row(df, *names):
+    for n in names:
+        if df is not None and n in df.index:
+            return df.loc[n]
+    return None
+
+
+def _v(series, col):
+    if series is None:
+        return None
+    v = series.get(col)
+    return None if v is None or v != v else float(v)
+
+
+@app.get("/api/stock/financials")
+def stock_financials(symbol: str, key: str = Depends(current_user)):
+    sym = symbol.strip().upper()[:20]
+    def f():
+        t = yf.Ticker(sym)
+        def build(inc, cf, quarterly):
+            if inc is None or inc.empty:
+                return []
+            rev, ni = _row(inc, "Total Revenue", "Operating Revenue"), _row(inc, "Net Income", "Net Income Common Stockholders")
+            gp, op = _row(inc, "Gross Profit"), _row(inc, "Operating Income", "Total Operating Income As Reported")
+            fcf = _row(cf, "Free Cash Flow")
+            out = []
+            for col in sorted(inc.columns)[-(5 if quarterly else 5):]:
+                r = _v(rev, col)
+                if r is None:
+                    continue
+                out.append({"period": (col.strftime("%b ’%y") if quarterly else f"FY{col.year}"), "end": col.strftime("%Y-%m-%d"),
+                            "revenue": r, "netIncome": _v(ni, col), "fcf": _v(fcf, col) if fcf is not None and col in fcf.index else None,
+                            "grossMargin": _v(gp, col) / r * 100 if r and _v(gp, col) is not None else None,
+                            "opMargin": _v(op, col) / r * 100 if r and _v(op, col) is not None else None})
+            return out[-4:] if quarterly else out[-5:]
+        try:
+            q = build(t.quarterly_income_stmt, t.quarterly_cashflow, True)
+            a = build(t.income_stmt, t.cashflow, False)
+        except Exception:
+            q, a = [], []
+        i = tinfo(sym)
+        return {"symbol": sym, "currency": (i.get("financialCurrency") or i.get("currency") or "USD"), "quarterly": q, "annual": a}
+    return cached(("fin", sym), 6 * 3600, f)
+
+
+# ---------- valuation multiples + 5-year ranges ----------
+@app.get("/api/stock/valuation")
+def stock_valuation(symbol: str, key: str = Depends(current_user)):
+    sym = symbol.strip().upper()[:20]
+    def f():
+        t = yf.Ticker(sym)
+        i = tinfo(sym)
+        price = fnum(i.get("currentPrice") or i.get("regularMarketPrice"))
+        cap = fnum(i.get("marketCap"))
+        fcf = fnum(i.get("freeCashflow"))
+        cur = {"pe": fnum(i.get("trailingPE")), "fpe": fnum(i.get("forwardPE")), "evEbitda": fnum(i.get("enterpriseToEbitda")),
+               "pfcf": cap / fcf if cap and fcf and fcf > 0 else None,
+               "de": fnum(i.get("debtToEquity")) / 100 if fnum(i.get("debtToEquity")) is not None else None,
+               "ps": fnum(i.get("priceToSalesTrailing12Months"))}
+        ranges = {}
+        try:
+            inc, cf, bs = t.income_stmt, t.cashflow, t.balance_sheet
+            qi, qcf, qbs = t.quarterly_income_stmt, t.quarterly_cashflow, t.quarterly_balance_sheet
+            px = t.history(period="5y", interval="1mo")["Close"].dropna()
+            px.index = px.index.tz_localize(None)
+            qc, fc = (i.get("currency") or "USD").replace("GBp", "GBP"), (i.get("financialCurrency") or i.get("currency") or "USD")
+            conv = (fx_to_usd(fc) or 1) / (fx_to_usd(qc) or 1) if fc != qc else 1.0  # quote-currency units per statement-currency unit
+            if i.get("currency") == "GBp":
+                px = px / 100
+            acols, qcols = sorted(inc.columns), sorted(qi.columns) if qi is not None and not qi.empty else []
+            def get(names, d, flow=True, bal=False):
+                """Trailing-12-month value (sum of 4 quarters) known at date d, else the last annual figure."""
+                qdf, adf = (qbs, bs) if bal else ((qcf, cf) if names[0] in ("Free Cash Flow",) else (qi, inc))
+                qr, ar = _row(qdf, *names), _row(adf, *names)
+                kq = [c for c in qcols if c + pd.Timedelta(days=45) <= d and qr is not None and c in qr.index and _v(qr, c) is not None]
+                if bal and kq:
+                    return _v(qr, kq[-1])
+                if flow and len(kq) >= 4 and (d - kq[-1]).days < 200:
+                    return sum(_v(qr, c) for c in kq[-4:])
+                ka = [c for c in acols if c + pd.Timedelta(days=75) <= d and ar is not None and c in ar.index and _v(ar, c) is not None]
+                return _v(ar, ka[-1]) if ka else None
+            def mcap(d, p):
+                sh = get(["Diluted Average Shares", "Basic Average Shares"], d, bal=True) if qcols else None
+                sh = sh or get(["Diluted Average Shares", "Basic Average Shares"], d, flow=False)
+                return p * sh / conv if sh else None
+            def ratio(names):
+                def g(d, p):
+                    m, n = mcap(d, p), get(names, d)
+                    return m / n if m and n and n > 0 else None
+                return g
+            def ev_e(d, p):
+                m, e = mcap(d, p), get(["EBITDA", "Normalized EBITDA"], d)
+                if not m or not e or e <= 0:
+                    return None
+                debt = get(["Total Debt"], d, bal=True) or 0
+                cash = get(["Cash Cash Equivalents And Short Term Investments", "Cash And Cash Equivalents"], d, bal=True) or 0
+                return (m + debt - cash) / e
+            calc = {"pe": ratio(["Net Income"]), "pfcf": ratio(["Free Cash Flow"]), "evEbitda": ev_e}
+            now = pd.Timestamp.now()
+            for name, fn in calc.items():
+                vals = [v for d, p in px.items() if (v := fn(d, p)) is not None and v == v and 0 < v < 1000]
+                if len(vals) >= 6:
+                    ranges[name] = {"low": float(np.min(vals)), "high": float(np.max(vals)), "median": float(np.median(vals)), "n": len(vals)}
+                if price:  # today's value measured the same way as the history
+                    v = fn(now, price / (100 if i.get("currency") == "GBp" else 1))
+                    if v is not None and 0 < v < 1000:
+                        ranges.setdefault(name, {})["now"] = float(v)
+            des = []
+            for df_ in (bs,):
+                for c in sorted(df_.columns):
+                    dv, ev_ = _v(_row(df_, "Total Debt"), c), _v(_row(df_, "Stockholders Equity"), c)
+                    if ev_ and ev_ > 0:
+                        des.append((dv or 0) / ev_)
+            if len(des) >= 3:
+                ranges["de"] = {"low": min(des), "high": max(des), "median": float(np.median(des)), "n": len(des)}
+            ranges["_from"] = px.index[0].strftime("%Y-%m-%d")
+        except Exception:
+            pass
+        if ranges.get("pfcf", {}).get("now"):
+            cur["pfcf"] = ranges["pfcf"]["now"]
+        return {"symbol": sym, "current": cur, "ranges": ranges}
+    return cached(("val", sym), 6 * 3600, f)
+
+
+# ---------- SEC filings ----------
+SEC_UA = {"User-Agent": "Folio research dashboard folio-app@example.com", "Accept-Encoding": "identity"}
+
+
+def http_get(url, timeout=20):
+    req = urllib.request.Request(url, headers=SEC_UA)
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read()
+
+
+def sec_cik(sym):
+    def f():
+        d = json.loads(http_get("https://www.sec.gov/files/company_tickers.json"))
+        return {v["ticker"].upper(): int(v["cik_str"]) for v in d.values()}
+    m = cached(("ciks",), 86400, f)
+    return m.get(sym.upper().replace(".", "-")) or m.get(sym.upper())
+
+
+def html_text(raw):
+    t = raw.decode("utf-8", "ignore")
+    t = re.sub(r"(?is)<ix:header>.*?</ix:header>", " ", t)
+    t = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", t)
+    t = re.sub(r"(?i)<br\s*/?>|</(p|div|tr|li|h\d)>", "\n", t)
+    t = re.sub(r"(?s)<[^>]+>", " ", t)
+    t = htmllib.unescape(t).replace("\xa0", " ")
+    t = re.sub(r"[ \t]+", " ", t)
+    return re.sub(r"\n\s*\n+", "\n", t)
+
+
+def section(text, start_pat, end_pat, cap):
+    best = ""
+    for m in re.finditer(start_pat, text, re.I):
+        e = re.search(end_pat, text[m.end():], re.I)
+        chunk = text[m.start(): m.end() + (e.start() if e else 200000)]
+        if len(chunk) > len(best):
+            best = chunk
+    return best[:cap]
+
+
+def sec_filings(sym):
+    cik = sec_cik(sym)
+    if not cik:
+        return None
+    def f():
+        d = json.loads(http_get(f"https://data.sec.gov/submissions/CIK{cik:010d}.json"))
+        r = d["filings"]["recent"]
+        rows = [{"form": r["form"][i], "date": r["filingDate"][i], "acc": r["accessionNumber"][i], "doc": r["primaryDocument"][i],
+                 "items": r["items"][i], "period": r["reportDate"][i]} for i in range(len(r["form"]))]
+        for x in rows:
+            x["url"] = f"https://www.sec.gov/Archives/edgar/data/{cik}/{x['acc'].replace('-', '')}/{x['doc']}"
+        return {"cik": cik, "name": d.get("name"), "rows": rows}
+    return cached(("secsub", cik), 6 * 3600, f)
+
+
+def press_release(cik, filing):
+    """Exhibit 99.1 (the earnings press release) of an 8-K."""
+    def f():
+        base = f"https://www.sec.gov/Archives/edgar/data/{cik}/{filing['acc'].replace('-', '')}/"
+        idx = json.loads(http_get(base + "index.json"))
+        names = [it["name"] for it in idx["directory"]["item"]]
+        cand = [n for n in names if n.lower().endswith((".htm", ".html")) and n != filing["doc"]
+                and not re.match(r"(?i)R\d+\.htm|.*index", n)]
+        ex = sorted(cand, key=lambda n: (not re.search(r"(?i)ex-?99[._-]?0?1|press|pr\.htm|release|earn", n), n))
+        if not ex:
+            return None
+        return {"url": base + ex[0], "text": html_text(http_get(base + ex[0]))}
+    try:
+        return cached(("press", filing["acc"]), 86400 * 30, f)
+    except Exception:
+        return None
+
+
+@app.post("/api/stock/filings")
+def stock_filings(req: WhyReq, key: str = Depends(current_user)):
+    sym = req.symbol.strip().upper()
+    subs = sec_filings(sym)
+    if not subs:
+        raise HTTPException(404, f"{sym} doesn’t file with the US SEC, so there’s no 10-Q/10-K to read. (Canadian SEDAR+ and Korean filings have no free data feed Folio can use.)")
+    periodic = [x for x in subs["rows"] if x["form"] in ("10-Q", "10-K", "20-F", "40-F")]
+    if not periodic:
+        raise HTTPException(404, f"No quarterly or annual report found for {sym}.")
+    latest = periodic[0]
+    prior = next((x for x in periodic[1:] if x["form"] == latest["form"]), periodic[1] if len(periodic) > 1 else None)
+    er = next((x for x in subs["rows"] if x["form"] == "8-K" and "2.02" in (x["items"] or "")), None)
+    def f():
+        doc = html_text(http_get(latest["url"]))
+        annual = latest["form"] in ("10-K", "20-F", "40-F")
+        mdna = section(doc, r"item\s*7\.?\s*management.{0,3}s\s+discussion" if annual else r"item\s*2\.?\s*management.{0,3}s\s+discussion",
+                       r"item\s*7a\.?|item\s*8\.?\s*financial" if annual else r"item\s*3\.?\s*quantitative|item\s*4\.?\s*controls", 45000)
+        risks = section(doc, r"item\s*1a\.?\s*risk\s+factors", r"item\s*1b\.?|item\s*2\.?\s*(unregistered|properties)|item\s*1c", 25000)
+        prior_risks = ""
+        if prior:
+            try:
+                prior_risks = section(html_text(http_get(prior["url"])), r"item\s*1a\.?\s*risk\s+factors", r"item\s*1b\.?|item\s*2\.?\s*(unregistered|properties)|item\s*1c", 15000)
+            except Exception:
+                pass
+        pr = press_release(subs["cik"], er) if er else None
+        if not mdna:
+            mdna = doc[:40000]
+        parts = [f"Company: {subs['name']} ({sym})", f"LATEST REPORT: {latest['form']} filed {latest['date']} for period ending {latest['period']}",
+                 "=== MD&A ===\n" + mdna, "=== RISK FACTORS (latest) ===\n" + (risks or "(not found)")]
+        if prior_risks:
+            parts.append(f"=== RISK FACTORS (previous {prior['form']}, filed {prior['date']}) ===\n" + prior_risks)
+        if pr:
+            parts.append(f"=== EARNINGS PRESS RELEASE (8-K filed {er['date']}) ===\n" + pr["text"][:25000])
+        text = ask_claude(
+            "You summarize a company's latest SEC filings for a private investor. Reply in exactly this line format, nothing else:\n"
+            "HEADLINE: <one sentence on the quarter/year>\n"
+            "GUIDANCE: <a change or reaffirmation in forward guidance/outlook vs the prior period, with numbers> (1-4 lines; say plainly if no guidance is given)\n"
+            "KPI: <metric name> | <latest value> | <change or context> (4-8 lines; pick the business-specific numbers that matter for this company, e.g. data center revenue, backlog, capacity, subscribers)\n"
+            "RISK: <a risk factor that is new or noticeably changed vs the previous filing> (1-4 lines; if nothing material changed, one line saying so)\n"
+            "Use only the text given.", "\n\n".join(parts), 2500)
+        return {"text": text, "ts": time.time(), "filing": {k_: latest[k_] for k_ in ("form", "date", "period", "url")},
+                "press": {"date": er["date"], "url": pr["url"]} if pr and er else None}
+    return cached(("filings", sym, latest["acc"]), 86400, f)
+
+
+# ---------- side-by-side compare ----------
+@app.get("/api/compare")
+def compare(symbols: str, key: str = Depends(current_user)):
+    syms = list(dict.fromkeys(s_.strip().upper() for s_ in symbols.split(",") if s_.strip()))[:4]
+    if len(syms) < 1:
+        raise HTTPException(400, "Pick at least one stock")
+    def f():
+        d = closes_df(syms + ["SPY"])
+        spy = d["SPY"].dropna()
+        infos = dict(zip(syms, pool.map(tinfo, syms)))
+        out = []
+        for s_ in syms:
+            i = infos[s_]
+            col = d[s_].dropna() if s_ in d else pd.Series(dtype=float)
+            sc, df = series_score(col, spy) if len(col) else (None, None)
+            summ = summarize(sc, df, GROUP_LABELS) if sc is not None else None
+            yr = col[col.index >= col.index[-1] - pd.Timedelta(days=365)] if len(col) else col
+            cap, fcf = fnum(i.get("marketCap")), fnum(i.get("freeCashflow"))
+            price, tgt = fnum(i.get("currentPrice") or i.get("regularMarketPrice")), fnum(i.get("targetMeanPrice"))
+            out.append({"symbol": s_, "name": i.get("shortName") or s_, "mood": summ["score"] if summ else None,
+                        "fpe": fnum(i.get("forwardPE")), "pe": fnum(i.get("trailingPE")), "evEbitda": fnum(i.get("enterpriseToEbitda")),
+                        "pfcf": cap / fcf if cap and fcf and fcf > 0 else None, "revGrowth": fnum(i.get("revenueGrowth")) * 100 if fnum(i.get("revenueGrowth")) is not None else None,
+                        "margin": fnum(i.get("operatingMargins")) * 100 if fnum(i.get("operatingMargins")) is not None else None,
+                        "upside": (tgt / price - 1) * 100 if tgt and price else None, "rating": rating_label(fnum(i.get("recommendationMean"))),
+                        "ret1y": float(yr.iloc[-1] / yr.iloc[0] - 1) * 100 if len(yr) > 1 else None,
+                        "series": [[int(ts.timestamp() * 1000), round(float(v / yr.iloc[0] * 100 - 100), 2)] for ts, v in yr.iloc[::2].items()] if len(yr) > 1 else []})
+        return {"stocks": out}
+    return cached(("compare", tuple(syms)), 1800, f)
+
+
+@app.get("/api/stock/peerlist")
+def peer_list(symbol: str, key: str = Depends(current_user)):
+    return {"symbol": symbol.upper(), "peers": peers_for(symbol.strip().upper())[:3]}
+
+
+# ---------- smart alerts ----------
+ALERT_KINDS = {"price_above": "price rises above", "price_below": "price falls below", "mood_below": "Stock Mood drops below",
+               "mood_above": "Stock Mood rises above", "fng_below": "Market fear & greed drops below", "fng_above": "Market fear & greed rises above"}
+
+
+class AlertReq(BaseModel):
+    kind: str = Field(pattern="^(" + "|".join(ALERT_KINDS) + ")$")
+    symbol: str | None = Field(None, max_length=20)
+    value: float
+
+
+def alert_text(a):
+    if a["kind"].startswith("fng"):
+        return f"{ALERT_KINDS[a['kind']]} {a['value']:g}"
+    return f"{a['symbol']}: {ALERT_KINDS[a['kind']]} {a['value']:g}"
+
+
+@app.get("/api/alerts")
+def get_alerts(key: str = Depends(current_user)):
+    u = users[key]
+    return {"rules": u.get("alerts", []), "inbox": list(reversed(u.get("inbox", [])))[:30]}
+
+
+@app.post("/api/alerts")
+def add_alert(a: AlertReq, key: str = Depends(current_user)):
+    if not a.kind.startswith("fng"):
+        if not a.symbol:
+            raise HTTPException(400, "Pick a stock for this alert.")
+        if one_quote(a.symbol.upper()).get("error"):
+            raise HTTPException(400, f"Couldn't find {a.symbol.upper()}.")
+    if a.kind.startswith(("mood", "fng")) and not 0 <= a.value <= 100:
+        raise HTTPException(400, "Mood and fear & greed go from 0 to 100.")
+    with lock:
+        rules = users[key].setdefault("alerts", [])
+        if len(rules) >= 30:
+            raise HTTPException(400, "That's the limit of 30 alerts. Delete one first.")
+        r = {"id": uuid.uuid4().hex[:10], "kind": a.kind, "symbol": a.symbol.upper() if a.symbol and not a.kind.startswith("fng") else None,
+             "value": a.value, "created": int(time.time()), "active": True}
+        r["text"] = alert_text(r)
+        rules.append(r)
+        save_json(USERS_FILE, users)
+    threading.Thread(target=check_alerts, daemon=True).start()
+    return get_alerts(key)
+
+
+@app.delete("/api/alerts/{aid}")
+def del_alert(aid: str, key: str = Depends(current_user)):
+    with lock:
+        users[key]["alerts"] = [r for r in users[key].get("alerts", []) if r["id"] != aid]
+        save_json(USERS_FILE, users)
+    return get_alerts(key)
+
+
+@app.post("/api/alerts/read")
+def read_alerts(key: str = Depends(current_user)):
+    with lock:
+        for m in users[key].get("inbox", []):
+            m["read"] = True
+        save_json(USERS_FILE, users)
+    return get_alerts(key)
+
+
+_alert_lock = threading.Lock()
+
+
+def check_alerts():
+    if not _alert_lock.acquire(blocking=False):
+        return
+    try:
+        rules = [(k, r) for k, u in users.items() for r in u.get("alerts", []) if r.get("active")]
+        if not rules:
+            return
+        fng = None
+        changed = False
+        for k, r in rules:
+            try:
+                if r["kind"].startswith("fng"):
+                    fng = fng or market_fng()
+                    now = fng["score"]
+                elif r["kind"].startswith("price"):
+                    now = one_quote(r["symbol"]).get("price")
+                else:
+                    se = stock_sentiment(r["symbol"])
+                    now = se["score"] if se else None
+                if now is None:
+                    continue
+                hit = now > r["value"] if r["kind"].endswith("above") else now < r["value"]
+                if hit:
+                    r["active"] = False
+                    r["fired"] = int(time.time())
+                    cur_ = one_quote(r["symbol"]).get("currency") if r["kind"].startswith("price") else None
+                    shown = f"{now:,.2f} {cur_}" if cur_ else f"{now:.0f} ({mood(now)})"
+                    users[k].setdefault("inbox", []).append({"id": uuid.uuid4().hex[:10], "ts": int(time.time()), "text": r["text"],
+                                                             "now": shown, "symbol": r.get("symbol"), "read": False})
+                    del users[k]["inbox"][:-50]
+                    changed = True
+            except Exception:
+                pass
+        if changed:
+            with lock:
+                save_json(USERS_FILE, users)
+    finally:
+        _alert_lock.release()
+
+
+def alert_loop():
+    while True:
+        time.sleep(300)
+        try:
+            check_alerts()
+        except Exception:
+            pass
+
+
+# ---------- automatic earnings TL;DR ----------
+TLDR_FILE = DATA / "tldr.json"
+tldr_store = load_json(TLDR_FILE, {})
+_tldr_busy: set = set()
+
+
+def recent_earnings(sym, days=10):
+    try:
+        ev = stock_events(sym, "")
+    except Exception:
+        return None
+    cut = (pd.Timestamp.now() - pd.Timedelta(days=days)).strftime("%Y-%m-%d")
+    today = time.strftime("%Y-%m-%d")
+    for e in ev["earnings"]:
+        if cut <= e["date"] <= today and e.get("eps") is not None:
+            return e
+    return None
+
+
+def make_tldr(sym, e):
+    k = f"{sym}|{e['date']}"
+    try:
+        lines = [f"{sym} reported on {e['date']}: EPS {e['eps']} vs {e['est']} expected (surprise {e.get('surprise')}%)."]
+        subs = None
+        try:
+            subs = sec_filings(sym)
+        except Exception:
+            pass
+        if subs:
+            er = next((x for x in subs["rows"] if x["form"] in ("8-K", "6-K") and x["date"] >= e["date"] and ("2.02" in (x["items"] or "") or x["form"] == "6-K")), None)
+            pr = press_release(subs["cik"], er) if er else None
+            if pr:
+                lines.append("Earnings press release:\n" + pr["text"][:22000])
+        text = ask_claude(
+            "Summarize this company's latest earnings report in exactly three lines, nothing else:\n"
+            "RESULT: <beat / miss / in line on revenue and EPS, with the numbers>\n"
+            "GUIDANCE: <how the outlook changed, with numbers; or that none was given>\n"
+            "TONE: <management's tone and the market's reaction if headlines show it>",
+            "\n\n".join(lines) + "\n\nHeadlines:\n" + headlines_text(news_for(sym), 12), 900)
+        tldr_store[k] = {"symbol": sym, "date": e["date"], "eps": e["eps"], "est": e["est"], "text": text, "ts": time.time()}
+        with lock:
+            save_json(TLDR_FILE, tldr_store)
+    except Exception:
+        pass
+    finally:
+        _tldr_busy.discard(k)
+
+
+@app.get("/api/earnings/tldr")
+def earnings_tldr(symbols: str, key: str = Depends(current_user)):
+    syms = sorted({s_.strip().upper() for s_ in symbols.split(",") if s_.strip()})[:30]
+    out, pending = [], False
+    for sym, e in zip(syms, pool.map(recent_earnings, syms)):
+        if not e:
+            continue
+        k = f"{sym}|{e['date']}"
+        if k in tldr_store:
+            out.append(tldr_store[k])
+        else:
+            pending = True
+            if k not in _tldr_busy and claude:
+                _tldr_busy.add(k)
+                threading.Thread(target=make_tldr, args=(sym, e), daemon=True).start()
+    out.sort(key=lambda x: x["date"], reverse=True)
+    return {"items": out, "pending": pending}
+
+
+# ---------- natural-language screener ----------
+def universe_syms():
+    s_ = {m for i in INDUSTRIES for m in i["members"]}
+    for etf, _ in SECTORS:
+        try:
+            th = cached(("tophold", etf), 86400, lambda etf=etf: list(yf.Ticker(etf).funds_data.top_holdings.index[:12]))
+            s_ |= set(th)
+        except Exception:
+            pass
+    for u in users.values():
+        s_ |= {h["symbol"] for h in u["holdings"]} | set(u["watchlist"]) | {m for b in u.get("baskets", []) for m in b["members"]}
+    return sorted(x for x in s_ if not x.startswith("^") and "=" not in x)
+
+
+def universe():
+    def f():
+        syms = universe_syms()
+        infos = dict(zip(syms, pool.map(tinfo, syms)))
+        syms = [x for x in syms if infos[x].get("quoteType") == "EQUITY"]
+        d = closes_df(syms + ["SPY"])
+        spy = d["SPY"].dropna()
+        raw = daily_closes(tuple(syms))
+        groups = {}
+        for ind in INDUSTRIES:
+            for m in ind["members"]:
+                groups.setdefault(m, []).append(ind["name"])
+        rows = []
+        for x in syms:
+            i = infos[x]
+            mood_ = None
+            if x in d:
+                sc, df = series_score(d[x].dropna(), spy)
+                if sc is not None and len(sc.dropna()):
+                    mood_ = round(float(sc.dropna().iloc[-1]))
+            col = [v for _, v in raw.get(x, [])]
+            price, tgt = fnum(i.get("currentPrice") or i.get("regularMarketPrice")), fnum(i.get("targetMeanPrice"))
+            cap, fcf = fnum(i.get("marketCap")), fnum(i.get("freeCashflow"))
+            rg = fnum(i.get("revenueGrowth"))
+            dy = fnum(i.get("dividendYield"))
+            rows.append({"symbol": x, "name": i.get("shortName") or x, "sector": i.get("sector"), "industry": i.get("industry"),
+                         "groups": groups.get(x, []), "country": i.get("country"), "marketCapB": cap * (fx_to_usd((i.get("currency") or "USD").replace("GBp", "GBP")) or 1) / 1e9 if cap else None,
+                         "price": price, "currency": i.get("currency"),
+                         "day": (col[-1] / col[-2] - 1) * 100 if len(col) > 1 else None, "month": (col[-1] / col[-22] - 1) * 100 if len(col) > 22 else None,
+                         "fpe": fnum(i.get("forwardPE")), "pe": fnum(i.get("trailingPE")), "evEbitda": fnum(i.get("enterpriseToEbitda")),
+                         "pfcf": cap / fcf if cap and fcf and fcf > 0 else None, "revGrowth": rg * 100 if rg is not None else None,
+                         "divYield": dy, "beta": fnum(i.get("beta")), "rating": rating_label(fnum(i.get("recommendationMean"))),
+                         "upside": (tgt / price - 1) * 100 if tgt and price else None, "mood": mood_, "moodLabel": mood(mood_) if mood_ is not None else None})
+        return rows
+    return cached(("universe",), 1800, f)
+
+
+SCREEN_FIELDS = {
+    "sector": "Yahoo sector (Technology, Financial Services, Healthcare, Consumer Cyclical, Consumer Defensive, Communication Services, Industrials, Energy, Basic Materials, Utilities, Real Estate)",
+    "industry": "Yahoo industry text, e.g. 'Semiconductors', 'Software - Infrastructure', 'Banks - Diversified'",
+    "groups": "Folio themes the stock belongs to: Technology, Semiconductors, Memory & storage, Neoclouds, Financials, Consumer",
+    "country": "country of the company", "marketCapB": "market value in USD billions", "price": "share price",
+    "day": "% change latest session", "month": "% change past month", "fpe": "forward P/E", "pe": "trailing P/E",
+    "evEbitda": "EV/EBITDA", "pfcf": "price / free cash flow", "revGrowth": "revenue growth % year over year (latest quarter)",
+    "divYield": "dividend yield %", "beta": "beta", "rating": "analyst consensus: one of Strong buy, Buy, Hold, Sell",
+    "upside": "% from price to average analyst target", "mood": "Folio Stock Mood 0-100 (below 25 extreme fear, 25-45 fear, 45-55 neutral, 55-75 greed, 75+ extreme greed)",
+}
+
+
+class ScreenReq(BaseModel):
+    q: str = Field(min_length=3, max_length=300)
+
+
+def apply_filters(rows, filters):
+    def ok(r, f_):
+        v, op, want = r.get(f_.get("field")), f_.get("op"), f_.get("value")
+        if v is None:
+            return False
+        try:
+            if op in ("<", "<=", ">", ">="):
+                return {"<": v < want, "<=": v <= want, ">": v > want, ">=": v >= want}[op]
+            if op == "between":
+                return want[0] <= v <= want[1]
+            if op == "in":
+                vals = [str(w).lower() for w in (want if isinstance(want, list) else [want])]
+                if isinstance(v, list):
+                    return any(x.lower() in vals for x in v)
+                return str(v).lower() in vals
+            if op == "contains":
+                hay = " ".join(v) if isinstance(v, list) else str(v)
+                return any(str(w).lower() in hay.lower() for w in (want if isinstance(want, list) else [want]))
+            if op == "=":
+                return str(v).lower() == str(want).lower() if isinstance(v, str) else v == want
+        except Exception:
+            return False
+        return True
+    return [r for r in rows if all(ok(r, f_) for f_ in filters)]
+
+
+@app.post("/api/screen")
+def screen_nl(req: ScreenReq, key: str = Depends(current_user)):
+    rows = universe()
+    def f():
+        spec = ask_claude(
+            "Turn the user's stock-screening request into JSON filters over these fields:\n" +
+            "\n".join(f"- {k_}: {v}" for k_, v in SCREEN_FIELDS.items()) +
+            "\nOperators: <, <=, >, >=, between (value [lo, hi]), in (value list, exact match, case-insensitive), contains (substring; use for industry/groups/sector words), =.\n"
+            "Map words sensibly: 'semiconductor stocks' -> industry contains Semiconductor OR groups in Semiconductors (prefer groups/industry 'contains' 'Semiconductor'); "
+            "'in fear' -> mood < 45; 'extreme fear' -> mood < 25; 'greed' -> mood >= 55; 'cheap' -> fpe < 15; 'large cap' -> marketCapB >= 10; 'mega cap' -> marketCapB >= 200; "
+            "'Strong Buy consensus' -> rating in ['Strong buy']; 'buy rated' -> rating in ['Strong buy','Buy'].\n"
+            "Reply with only a JSON object: {\"filters\": [{\"field\":..., \"op\":..., \"value\":...}], \"sort\": {\"field\":..., \"dir\": \"asc\"|\"desc\"}, \"explain\": \"<one plain sentence restating the screen>\"}",
+            req.q, 800)
+        m = re.search(r"\{.*\}", spec, re.S)
+        if not m:
+            raise HTTPException(502, "Couldn't understand that screen. Try rephrasing it.")
+        try:
+            return json.loads(m.group(0))
+        except Exception:
+            raise HTTPException(502, "Couldn't understand that screen. Try rephrasing it.")
+    spec = cached(("screenq", req.q.strip().lower()), 3600, f)
+    filters = [x for x in spec.get("filters", []) if isinstance(x, dict) and x.get("field") in SCREEN_FIELDS]
+    res = apply_filters(rows, filters)
+    srt = spec.get("sort") or {}
+    if srt.get("field") in SCREEN_FIELDS:
+        res.sort(key=lambda r: (r.get(srt["field"]) is None, -(r.get(srt["field"]) or 0) if srt.get("dir", "desc") == "desc" else (r.get(srt["field"]) or 0)))
+    else:
+        res.sort(key=lambda r: -(r.get("marketCapB") or 0))
+    return {"explain": spec.get("explain", ""), "filters": filters, "results": res[:40], "total": len(res), "universe": len(rows), "ts": time.time()}
+
+
+threading.Thread(target=alert_loop, daemon=True).start()
+threading.Thread(target=universe, daemon=True).start()
 
 
 @app.get("/")
