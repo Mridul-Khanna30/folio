@@ -15,7 +15,7 @@ Folio is the user's finance website: a shared market dashboard for a small group
 ## Where things live
 | What | Where |
 |---|---|
-| Master code (edit here, commit here) | `/home/mk30/.t3/projects/finance` (git repo, no remote yet: nothing pushed to GitHub) |
+| Master code (edit here, commit here) | `/home/mk30/.t3/projects/finance` (git repo; backed up to private GitHub repo https://github.com/Mridul-Khanna30/folio) |
 | Running group server | `/srv/shared/folio`, port **19001**, runs `./start.sh` (= `./.venv/bin/python app.py`) |
 | Live data (accounts, portfolios) | `/srv/shared/folio/data/users.json`, `session.key`, `meta.json` |
 | Anthropic API key | `/srv/shared/folio/.env` (`ANTHROPIC_API_KEY=...`). Readable by everyone on the box; the user accepted this. |
@@ -33,7 +33,7 @@ Folio is the user's finance website: a shared market dashboard for a small group
 3. Visual check: Playwright with Chromium (`uv run --with playwright python script.py`, launch with `--no-sandbox`).
    Screenshot desktop (1280) and phone (400, dark) and look at them. One look, fix, move on.
 4. `./deploy.sh`: copies `app.py`, `pyproject.toml`, `start.sh`, `static/` to `/srv/shared/folio` and restarts it.
-5. `git commit` here. End commit messages with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+5. `git commit` here, then `git push` (backs it up to GitHub). End commit messages with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 
 New Python packages: install into both venvs (`.venv/bin/pip` here and `/srv/shared/folio/.venv/bin/pip`) and add to `pyproject.toml`.
 Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the box can manage it.
@@ -137,7 +137,6 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 6. Code moved into this finance folder (the original T3 starter README/icon were replaced; they're in git history).
 
 ## Open items / ideas offered to the user
-- Not backed up online: offer to create a private GitHub repo and push (needs `gh auth status`; log in via device code if needed).
 - Ideas mentioned but not built: price alerts, a real buy/sell log (would make the value-over-time chart and FX split exact).
 
 ## DCF (stock page)
