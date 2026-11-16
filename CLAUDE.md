@@ -153,4 +153,6 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
   cached 30 min per symbol/start/tv) fills all three cases plus a one-sentence reason each.
 - Expected value badge = 25% bear + 50% base + 25% bull fair value. SBC box is hidden in earnings modes. Sensitivity cells
   show 2 decimals; clicking one sets the discount rate and the base case's years 1-5 growth.
+- Layout: Reset/AI suggest live in the card header (`#dHead`, shown once the DCF loads); 1Y/3Y/5Y sits on the chart header;
+  global inputs in a 2-column `.dpanel`; explanation text in a collapsed `<details class="dmeth">`; warnings in `#dWarn`.
 

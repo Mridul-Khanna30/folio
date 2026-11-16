@@ -297,43 +297,59 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .drow { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; margin-top: 6px; flex-wrap: wrap; }
 .drow b { font-family: var(--mono); font-weight: 500; font-size: 15px; }
 .drow .pill { font-size: 11px; }
-.dmid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; padding: 14px 16px 0; }
-.dctl { display: grid; gap: 12px; align-content: start; }
-.drow2 { display: flex; gap: 14px; flex-wrap: wrap; align-items: end; font-size: 12px; color: var(--muted); }
-.drow2 > label { display: grid; gap: 4px; min-width: 0; max-width: 100%; }
-.drow2 select { max-width: 100%; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+.dmid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px; padding: 16px 16px 0; }
+.dchart-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.dctl { display: grid; gap: 14px; align-content: start; }
+.dhead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.dhead #dAiMsg { font-size: 12px; max-width: 34ch; text-align: right; }
+.dpanel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.dfld { display: grid; gap: 6px; align-content: start; min-width: 0; font-size: 12px; color: var(--muted); }
+.dfl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-height: 16px; }
+.dfl b { font-family: var(--mono); font-weight: 500; color: var(--ink); }
+.dfx { font-size: 12px; padding: 5px 0; }
+.dfld select { width: 100%; font: inherit; font-size: 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; }
+.dfld .tabs { width: fit-content; max-width: 100%; flex-wrap: wrap; }
 .dgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.dcol { border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 8px; padding: 8px 10px; display: grid; gap: 8px; min-width: 0; }
+.dcol { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px 10px; display: grid; gap: 8px; min-width: 0; }
+.dcol::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--c); }
 .dcol .dh { font-weight: 600; font-size: 13px; }
 .dsl { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
-.dsl span { display: flex; justify-content: space-between; gap: 6px; }
+.dsl > span { display: flex; justify-content: space-between; gap: 6px; }
 .dsl b { font-family: var(--mono); font-weight: 500; color: var(--ink); }
 .dsl input { width: 100%; accent-color: var(--c, var(--accent)); }
-.dchk { display: flex !important; align-items: center; gap: 6px; color: var(--ink); cursor: pointer; }
-.dchk .muted { font-size: 11px; }
-.dchk input { accent-color: var(--accent); }
+.dchk { display: flex; align-items: center; gap: 6px; color: var(--ink); cursor: pointer; padding: 4px 0; }
+.dchk input { accent-color: var(--accent); margin: 0; }
 .dwhy { font-size: 12px; color: var(--muted); line-height: 1.4; border-top: 1px dashed var(--line); padding-top: 6px; }
-.dsl .dtip { display: inline; position: relative; cursor: help; border-bottom: 1px dotted var(--muted); }
-.dsl .dtipbox { display: none; pointer-events: none; position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 20; width: min(300px, 80vw); background: var(--surface); color: var(--ink);
-  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.45; box-shadow: 0 6px 20px rgb(0 0 0 / 0.15); font-family: var(--sans); }
-.dsl .dtip:hover .dtipbox, .dsl .dtip:focus .dtipbox { display: block; }
-.dsens { padding: 14px 16px 0; }
-.dsm { border-collapse: separate; border-spacing: 2px; font-size: 12px; }
-.dsm td { min-width: 72px; cursor: pointer; }
-.dsm td:hover, .dsm td:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.dev { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: 12px; color: var(--muted); margin: 2px 0 6px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); width: fit-content; max-width: 100%; }
-.dev b { font-family: var(--mono); font-weight: 500; color: var(--ink); font-size: 14px; }
-.dev .pill { font-size: 11px; }
+.dtip { position: relative; cursor: help; border-bottom: 1px dotted var(--muted); }
+.dtipbox { display: none; pointer-events: none; position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 20; width: min(300px, 80vw); background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.45; box-shadow: 0 6px 20px rgb(0 0 0 / 0.15); font-family: var(--sans); font-weight: 400; }
+.dtip:hover .dtipbox, .dtip:focus .dtipbox { display: block; }
 .dinfo { display: inline-grid; place-items: center; width: 13px; height: 13px; border-radius: 50%; border: 1px solid currentColor; font: italic 600 9px/1 Georgia, serif; vertical-align: 1px; margin-left: 2px; }
+.dnow .drow { margin-top: 2px; }
+@media (min-width: 521px) { .dnow .drow { flex-direction: column; align-items: flex-start; gap: 2px; } }
+.dfld .tabs button { white-space: nowrap; }
+.dsub { font-size: 10px; font-family: var(--mono); opacity: 0.8; }
+.dimp { display: inline-block; margin-top: 8px; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 11px; line-height: 1.4; }
+.dimp b { font-family: var(--mono); font-weight: 600; }
+.dsens { padding: 18px 16px 0; }
+.dsm { border-collapse: separate; border-spacing: 3px; font-size: 12px; }
 .dsm th { font-weight: 500; color: var(--muted); padding: 4px 6px; text-align: center; font-family: var(--mono); white-space: nowrap; }
 .dsm thead th:first-child, .dsm tbody th { text-align: left; font-family: var(--sans); }
 .dsm th.cur { color: var(--ink); font-weight: 600; }
-.dsm td { font-family: var(--mono); text-align: center; padding: 6px 4px; border-radius: 4px; white-space: nowrap; }
-.dsm td.hi { background: var(--up-soft); color: var(--up); }
-.dsm td.lo { background: var(--down-soft); color: var(--down); }
-.dsm td.me { outline: 2px solid var(--ink); outline-offset: -2px; font-weight: 600; }
+.dsm td { min-width: 76px; cursor: pointer; font-family: var(--mono); text-align: center; padding: 7px 6px; border-radius: 6px; white-space: nowrap; background: var(--bg); border: 1px solid var(--line); }
+.dsm td.hi { color: var(--up); }
+.dsm td.lo { color: var(--down); }
+.dsm td.me { background: var(--accent-soft); border-color: var(--accent); font-weight: 600; }
+.dsm td:hover, .dsm td:focus-visible { border-color: var(--accent); outline: none; }
+.dmeth { margin: 12px 16px 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+.dmeth summary { cursor: pointer; font-size: 12px; color: var(--muted); list-style: none; user-select: none; }
+.dmeth summary::-webkit-details-marker { display: none; }
+.dmeth summary::after { content: " ▾"; }
+.dmeth[open] summary::after { content: " ▴"; }
+.dmeth .note { padding: 8px 0 0; }
+#dWarn { padding: 10px 16px 0; color: var(--down); }
 @media (max-width: 880px) { .dtop { grid-template-columns: 1fr 1fr; } .dmid { grid-template-columns: 1fr; } }
-@media (max-width: 520px) { .dtop { grid-template-columns: 1fr; } .dgrid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .dtop { grid-template-columns: 1fr; } .dgrid { grid-template-columns: 1fr; } .dpanel { grid-template-columns: 1fr; } .dhead #dAiMsg { text-align: left; } }
 .wi input[type=range] { width: 100%; accent-color: var(--accent); }
 .wi .out { font-size: 15px; max-width: 72ch; }
 .wi .out b { font-family: var(--mono); font-weight: 500; }
@@ -2106,7 +2122,8 @@ function renderStock() {
     </section>` : ""}
 
     <section class="card">
-      <div class="card-h"><h2>Discounted cash flow (DCF): bear, base &amp; bull</h2><span class="muted" style="font-size:12px">What the business is worth from the cash it should make · drag to change growth</span></div>
+      <div class="card-h"><div><h2>Discounted cash flow (DCF): bear, base &amp; bull</h2><div class="muted" style="font-size:12px;margin-top:2px">What the business is worth from the cash it should make · drag to change growth</div></div>
+        <div class="dhead" id="dHead" hidden><span class="muted" id="dAiMsg"></span><button class="btn" type="button" id="dReset">Reset</button><button class="btn primary" type="button" id="dAi">AI suggest</button></div></div>
       <div id="sDcf"><div class="empty"><span class="spin"></span> Gathering cash flow, debt and growth estimates…</div></div>
     </section>
 
@@ -2214,7 +2231,7 @@ function renderWhatIf() {
 const DCF = { base: null, set: null, chart: null };
 const DCF_CASES = [["bear", "Bear", "--down"], ["base", "Base", "--accent"], ["bull", "Bull", "--up"]];
 const DCF_STARTS = [["fcf", "Free cash flow (past 12 months)", "fcfPs"], ["fcf3", "3-year average free cash flow", "fcf3Ps"],
-  ["ni", "Earnings (past 12 months)", "niPs"], ["fwd", "Forward earnings (analysts, next year)", "fwdPs"], ["rev", "Revenue × target FCF margin", "revPs"]];
+  ["ni", "Earnings (past 12 months)", "niPs"], ["fwd", "Forward earnings (analysts, next year)", "fwdPs"], ["rev", "Revenue × FCF margin", "revPs"]];
 const money2 = (v, cur) => { try { return v.toLocaleString("en-US", { style: "currency", currency: cur || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }); } catch { return v.toFixed(2) + " " + cur; } };
 const dcfEarn = st => st === "ni" || st === "fwd";
 async function loadDcf(sym) {
@@ -2257,37 +2274,37 @@ function renderDcf() {
       <input type="range" min="${min}" max="${max}" step="${step}" value="${s[k][f]}" data-k="${k}" data-f="${f}" aria-label="${DCF_CASES.find(x => x[0] === k)[1]} ${lab}" title="${help}"></label>`;
   const betaTxt = b.beta == null ? `beta 1.00 (not available, so market average)` : `beta ${b.betaUsed.toFixed(2)}${Math.abs(b.beta - b.betaUsed) > 0.005 ? ` (actual ${b.beta.toFixed(2)}, capped)` : ""}`;
   const capm = `CAPM: 10-year Treasury ${b.rf.toFixed(2)}% + ${betaTxt} × equity risk premium ${b.erp.toFixed(1)}% = ${b.discRaw.toFixed(2)}%.${Math.abs(b.discRaw - b.discount) > 0.06 ? ` Kept within 7–14%, so the suggested rate is ${b.discount.toFixed(1)}%.` : ""} Higher = riskier = lower fair value.`;
+  const startSel = `<select id="dStart">${DCF_STARTS.map(([v, lab, f]) => `<option value="${v}" ${s.start === v ? "selected" : ""} ${b[f] == null ? "disabled" : ""}>${lab}${v === "rev" ? ` (${b.revPs == null ? "n/a" : money(b.revPs, cur)} sales/share)` : ` (${b[f] == null ? "n/a" : money(b[f], cur)}/share)`}</option>`).join("")}</select>`;
+  const fields = [
+    `<div class="dfld"><div class="dfl"><span>Start from</span></div>${startSel}</div>`,
+    s.start === "rev" ? `<label class="dfld dsl"><span class="dfl"><span>Target FCF margin</span><b id="dv-margin">${s.margin.toFixed(1)}%</b></span>
+      <input type="range" id="dMargin" min="1" max="60" step="0.5" value="${s.margin}" aria-label="Target free cash flow margin" title="Free cash flow as a share of sales once the business matures. Recent years: ${b.hist.map(h => `${h.year} ${h.fcf ?? "—"}%`).join(", ")}"></label>` : "",
+    `<div class="dfld"><div class="dfl"><span>Stock-based pay</span>${!earn && b.sbcPs ? `<b>${money(b.sbcPs, cur)}/sh</b>` : ""}</div>${earn
+      ? `<div class="muted dfx">Already counted as a cost in earnings</div>`
+      : `<label class="dchk" title="Free cash flow adds back stock-based pay because it isn’t cash, but it dilutes owners. Ticking this treats it as a real cost."><input type="checkbox" id="dSbc" ${s.sbc ? "checked" : ""}> Deduct SBC${b.sbcPs ? "" : ` <span class="muted">(none reported)</span>`}</label>`}</div>`,
+    `<div class="dfld"><div class="dfl"><span>Terminal value</span></div><span class="tabs" id="dTv"><button type="button" data-v="growth" class="${s.tv === "growth" ? "on" : ""}" title="Grows at the long-run rate forever after year 10">Perpetuity growth</button><button type="button" data-v="exit" class="${s.tv === "exit" ? "on" : ""}" title="Sold at a multiple of year-10 cash flow">Exit multiple</button></span></div>`,
+    `<label class="dfld dsl"><span class="dfl"><span class="dtip" tabindex="0">Discount rate <i class="dinfo">i</i><span class="dtipbox" role="tooltip">${esc(capm)}</span></span><b id="dv-disc">${s.disc.toFixed(1)}%</b></span>
+      <input type="range" id="dDisc" min="3" max="18" step="0.5" value="${s.disc}" aria-label="Discount rate"></label>`,
+    `<label class="dfld dsl"><span class="dfl"><span>Share count / yr</span><b id="dv-dil">${(s.dil > 0 ? "+" : "") + s.dil.toFixed(1)}%</b></span>
+      <input type="range" id="dDil" min="-6" max="6" step="0.1" value="${s.dil}" aria-label="Yearly change in share count" title="+ = new shares issued (dilution), − = buybacks. Recent trend: ${(b.dilution > 0 ? "+" : "") + (b.dilution ?? 0).toFixed(1)}% a year"></label>`,
+  ].filter(Boolean);
   box.innerHTML = `
     <div class="dtop">
       <div class="dnow"><span class="label">Today’s price</span><b>${money(b.price, cur)}</b>
-        <div class="dev" id="dEv" title="Probability-weighted fair value: 25% bear + 50% base + 25% bull"></div>
-        <div class="muted" style="font-size:12px" id="dImplied"></div></div>
+        <div class="drow" id="dEv" title="Probability-weighted fair value: 25% bear + 50% base + 25% bull"></div>
+        <div id="dImplied"></div></div>
       ${DCF_CASES.map(([k, n, c]) => `<div class="dcase" style="--c:var(${c})"><span class="label"><i></i>${n} case</span>
         <div class="drow"><span class="muted">Fair value today</span><span id="dfv-${k}"></span></div>
         <div class="drow"><span class="muted">Price in ${N} year${N > 1 ? "s" : ""}</span><span id="dfp-${k}"></span></div></div>`).join("")}
     </div>
+    <div class="note" id="dWarn" hidden></div>
     <div class="dmid">
-      <div class="chartbox" style="height:240px;padding:0"><canvas id="dChart" aria-label="Fair value path for each case"></canvas></div>
+      <div class="dchartw">
+        <div class="dchart-h"><span class="label">Fair value path</span><span class="tabs" id="dYrs" title="Look ahead">${[1, 3, 5].map(y => `<button type="button" data-y="${y}" class="${y === N ? "on" : ""}">${y}Y</button>`).join("")}</span></div>
+        <div class="chartbox" style="height:250px;padding:0"><canvas id="dChart" aria-label="Fair value path for each case"></canvas></div>
+      </div>
       <div class="dctl">
-        <div class="drow2">
-          <label>Start from <select id="dStart">${DCF_STARTS.map(([v, lab, f]) => `<option value="${v}" ${s.start === v ? "selected" : ""} ${b[f] == null ? "disabled" : ""}>${lab}${v === "rev" ? ` (${b.revPs == null ? "n/a" : money(b.revPs, cur)} sales/share)` : ` (${b[f] == null ? "n/a" : money(b[f], cur)}/share)`}</option>`).join("")}</select></label>
-          ${s.start === "rev" ? `<label class="dsl" style="min-width:170px"><span>Target FCF margin <b id="dv-margin">${s.margin.toFixed(1)}%</b></span>
-            <input type="range" id="dMargin" min="1" max="60" step="0.5" value="${s.margin}" aria-label="Target free cash flow margin" title="Free cash flow as a share of sales once the business matures. Recent years: ${b.hist.map(h => `${h.year} ${h.fcf ?? "—"}%`).join(", ")}"></label>` : ""}
-          ${earn ? `<span class="muted" style="font-size:11px;align-self:center">Earnings already count stock-based pay as a cost</span>` : `<label class="dchk" title="Free cash flow adds back stock-based pay because it isn’t cash, but it dilutes owners. Ticking this treats it as a real cost."><input type="checkbox" id="dSbc" ${s.sbc ? "checked" : ""}> Deduct stock-based pay (SBC)<span class="muted">${b.sbcPs ? ` ${money(b.sbcPs, cur)}/share` : " none reported"}</span></label>`}
-        </div>
-        <div class="drow2">
-          <label>Terminal value <span class="tabs" id="dTv"><button type="button" data-v="growth" class="${s.tv === "growth" ? "on" : ""}">Perpetuity growth</button><button type="button" data-v="exit" class="${s.tv === "exit" ? "on" : ""}">Exit multiple (yr 10)</button></span></label>
-          <label class="dsl" style="min-width:160px"><span>Share count / yr <b id="dv-dil">${(s.dil > 0 ? "+" : "") + s.dil.toFixed(1)}%</b></span>
-            <input type="range" id="dDil" min="-6" max="6" step="0.1" value="${s.dil}" aria-label="Yearly change in share count" title="+ = new shares issued (dilution), − = buybacks. Recent trend: ${(b.dilution > 0 ? "+" : "") + (b.dilution ?? 0).toFixed(1)}% a year"></label>
-          <label class="dsl" style="min-width:160px"><span><span class="dtip" tabindex="0">Discount rate <i class="dinfo">i</i><span class="dtipbox" role="tooltip">${esc(capm)}</span></span> <b id="dv-disc">${s.disc.toFixed(1)}%</b></span>
-            <input type="range" id="dDisc" min="3" max="18" step="0.5" value="${s.disc}" aria-label="Discount rate"></label>
-        </div>
-        <div class="drow2">
-          <label>Look ahead <span class="tabs" id="dYrs">${[1, 3, 5].map(y => `<button type="button" data-y="${y}" class="${y === N ? "on" : ""}">${y}Y</button>`).join("")}</span></label>
-          <button class="btn" type="button" id="dReset">Reset</button>
-          <button class="btn primary" type="button" id="dAi">AI suggest</button>
-          <span class="muted" id="dAiMsg" style="font-size:12px"></span>
-        </div>
+        <div class="dpanel">${fields.join("")}</div>
         <div class="dgrid">${DCF_CASES.map(([k, n, c]) => `<div class="dcol" style="--c:var(${c})"><div class="dh"><i></i>${n}</div>
           ${sl(k, "g1", "Growth, years 1–5", -20, 50, 0.5, "%", "How fast the cash flow grows each year for the next 5 years")}
           ${sl(k, "g2", "Growth, years 6–10", -10, 30, 0.5, "%", "Growth usually slows as a company gets bigger")}
@@ -2297,7 +2314,9 @@ function renderDcf() {
       </div>
     </div>
     <div class="dsens"><div class="label" style="margin-bottom:6px">Sensitivity: base-case fair value today</div><div id="dSens"></div></div>
-    <div class="note" id="dNote" style="padding-top:8px"></div>`;
+    <details class="dmeth" ${DCF.methOpen ? "open" : ""}><summary>Methodology &amp; assumptions</summary><div class="note" id="dNote"></div></details>`;
+  box.querySelector(".dmeth").ontoggle = e => { DCF.methOpen = e.target.open; };
+  const hd = $("#dHead"); if (hd) { hd.hidden = false; $("#dAiMsg").textContent = ""; $("#dAi").disabled = false; }
   const re = () => { saveDcf(); renderDcf(); };
   $("#dStart").onchange = e => { s.start = e.target.value; re(); };
   if ($("#dSbc")) $("#dSbc").onchange = e => { s.sbc = e.target.checked; updDcf(); };
@@ -2340,9 +2359,10 @@ function updDcf() {
   if (!(s0 > 0)) {
     for (const [k] of DCF_CASES) { $(`#dfv-${k}`).innerHTML = "—"; $(`#dfp-${k}`).innerHTML = "—"; }
     $("#dImplied").textContent = ""; $("#dSens").innerHTML = ""; $("#dEv").innerHTML = "";
-    $("#dNote").innerHTML = `Starting from ${startName}${s.sbc && !earn ? ", minus stock-based pay," : ""} gives ${s0 == null ? "nothing (not available)" : money(s0, cur)}, so there’s nothing to grow. Try another “Start from” option${s.sbc && !earn ? " or untick the stock-based pay box" : ""}.`;
+    $("#dWarn").hidden = false; $("#dNote").innerHTML = $("#dWarn").innerHTML = `Starting from ${startName}${s.sbc && !earn ? ", minus stock-based pay," : ""} gives ${s0 == null ? "nothing (not available)" : money(s0, cur)}, so there’s nothing to grow. Try another “Start from” option${s.sbc && !earn ? " or untick the stock-based pay box" : ""}.`;
     DCF.chart?.destroy(); DCF.chart = null; return;
   }
+  $("#dWarn").hidden = true;
   const paths = {};
   for (const [k] of DCF_CASES) {
     const path = Array.from({ length: N + 1 }, (_, t) => dcfOf(s, s[k], s.disc, t)); paths[k] = path;
@@ -2351,12 +2371,12 @@ function updDcf() {
     $(`#dfp-${k}`).innerHTML = fp > 0 ? `<b>${money(fp, cur)}</b> <span class="muted" title="Yearly return from today's price">${yr >= 0 ? "+" : "−"}${Math.abs(yr).toFixed(1)}%/yr</span>` : "<b>below zero</b>";
   }
   const ev = 0.25 * paths.bear[0] + 0.5 * paths.base[0] + 0.25 * paths.bull[0], evu = (ev / b.price - 1) * 100;
-  $("#dEv").innerHTML = `<span>Expected value</span> <b>${money(ev, cur)}</b> <span class="pill ${cls(evu)}">${pct(evu)}</span><span class="muted">25/50/25</span>`;
+  $("#dEv").innerHTML = `<span class="muted">Expected value <span class="dsub">25/50/25</span></span><span><b>${money(ev, cur)}</b> <span class="pill ${cls(evu)}">${pct(evu)}</span></span>`;
   // reverse DCF: what years-1-5 growth does today's price assume (base case's other settings)?
   const bc = s.base, cg = g => ({ ...bc, g1: g, g2: bc.g2auto ? (g + bc.gt) / 2 : bc.g2 }), f = g => dcfOf(s, cg(g), s.disc, 0) - b.price;
   let lo = -40, hi = 120, imp = null;
   if (f(lo) < 0 && f(hi) > 0) { for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; f(m) > 0 ? hi = m : lo = m; } imp = (lo + hi) / 2; }
-  $("#dImplied").innerHTML = imp == null ? "" : `Today’s price assumes about <b class="num" style="color:var(--ink)">${imp.toFixed(1)}%</b> yearly growth in ${{ fcf: "free cash flow", fcf3: "free cash flow", ni: "earnings", fwd: "earnings", rev: "free cash flow" }[s.start]} for 5 years`;
+  $("#dImplied").innerHTML = imp == null ? "" : `<span class="dimp" title="Reverse DCF: the years 1–5 growth that makes the base case equal today’s price">Price implies <b>${imp.toFixed(1)}%</b>/yr growth in ${{ fcf: "free cash flow", fcf3: "free cash flow", ni: "earnings", fwd: "earnings", rev: "free cash flow" }[s.start]}, yrs 1–5</span>`;
   // sensitivity: discount rate (rows) × years 1-5 growth (columns), base case
   const rs = [-2, -1, 0, 1, 2].map(x => s.disc + x).filter(r => r > 1), gs = [-5, -2.5, 0, 2.5, 5].map(x => bc.g1 + x);
   $("#dSens").innerHTML = `<div class="tablewrap"><table class="dsm"><thead><tr><th title="Rows: discount rate. Columns: growth in years 1–5.">Discount ↓ · Yrs 1–5 growth →</th>${gs.map(g => `<th class="${g === bc.g1 ? "cur" : ""}">${g.toFixed(1)}%</th>`).join("")}</tr></thead><tbody>
@@ -2371,7 +2391,7 @@ function updDcf() {
     bc2.why = ""; saveDcf(); renderDcf();
   };
   const tvTxt = s.tv === "exit" ? `then assume the shares are sold in year 10 at each case’s multiple of that year’s ${earn ? "earnings" : "cash flow"}` : "then at the long-run rate forever";
-  $("#dNote").innerHTML = `How it works: start from ${esc(b.symbol)}’s ${startName}${s.sbc && !earn ? `, minus stock-based pay (${money(b.sbcPs, cur)})` : ""} = ${money(s0, cur)}. Grow it at each case’s rates for 10 years, ${tvTxt}. Spread it over ${s.dil > 0 ? `${s.dil.toFixed(1)}% more shares each year (dilution)` : s.dil < 0 ? `${Math.abs(s.dil).toFixed(1)}% fewer shares each year (buybacks)` : "an unchanged share count"}. Discount every future year back to today at ${s.disc.toFixed(1)}% a year, then ${nc >= 0 ? "add net cash" : "subtract net debt"} (${money(Math.abs(nc), cur)}/share). “Price in ${N} years” is what the shares would be worth then if the market valued them fairly; it doesn’t include dividends.
+  $("#dNote").innerHTML = `Start from ${esc(b.symbol)}’s ${startName}${s.sbc && !earn ? `, minus stock-based pay (${money(b.sbcPs, cur)})` : ""} = ${money(s0, cur)}. Grow it at each case’s rates for 10 years, ${tvTxt}. Spread it over ${s.dil > 0 ? `${s.dil.toFixed(1)}% more shares each year (dilution)` : s.dil < 0 ? `${Math.abs(s.dil).toFixed(1)}% fewer shares each year (buybacks)` : "an unchanged share count"}. Discount every future year back to today at ${s.disc.toFixed(1)}% a year, then ${nc >= 0 ? "add net cash" : "subtract net debt"} (${money(Math.abs(nc), cur)}/share). “Price in ${N} years” is what the shares would be worth then if the market valued them fairly; it doesn’t include dividends.
     Default growth comes from ${b.growthFrom.length ? esc(b.growthFrom.join(", ")) : "a generic 6%"}; hover “Discount rate (i)” for how the default rate is built.
     ${b.parent ? `Uses ${esc(b.parent)}’s company figures, scaled to this listing’s price. ` : ""}${b.financial ? "Banks and insurers hold customers’ money, so cash flow is misleading: earnings work better, and debt and cash are ignored. " : ""}A DCF is very sensitive to these guesses; treat it as a range, not a forecast. Your settings are saved on this device.`;
   drawDcf(paths, N);
