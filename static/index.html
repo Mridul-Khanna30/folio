@@ -2108,6 +2108,28 @@ function renderStock() {
     </div>
 
     <section class="card">
+      <div class="card-h"><h2>Key numbers</h2></div>
+      <div class="stats">
+        ${stat("Market value", bigCur(st.marketCap, st.capCurrency), st.capCurrency && st.capCurrency !== "USD" && st.marketCapUsd ? `<div class="muted" style="font-size:12px">≈ ${big(st.marketCapUsd)}</div>` : "")}
+        ${stat("P/E (past year)", st.pe ? st.pe.toFixed(1) : "—")}
+        ${stat("P/E (next year)", st.fpe ? st.fpe.toFixed(1) : "—")}
+        ${stat("52-week range", st.low52 != null ? `${money(st.low52, q.currency)} – ${money(st.high52, q.currency)}` : "—", pos52 != null ? `<div class="range52"><i style="left:${pos52}%"></i></div>` : "")}
+        ${stat("Volume vs average", st.volRatio ? `<span class="${st.volRatio > 1.5 ? "up" : ""}">${st.volRatio.toFixed(1)}×</span> <span class="muted" style="font-size:12px">${vol(st.volume)} / ${vol(st.avgVolume)}</span>` : "—")}
+        ${stat("Analyst target", st.target ? `${money(st.target, q.currency)} <span class="${cls(upside)}" style="font-size:12px">${pct(upside)}</span>` : "—")}
+        ${stat("Analyst rating", st.rating ? `${RATING[st.rating] || esc(st.rating)}${st.analysts ? ` <span class="muted" style="font-size:12px">${st.analysts} analysts</span>` : ""}` : "—")}
+        ${stat("Next earnings", ed ? `${ed.toLocaleDateString([], { month: "short", day: "numeric" })} <span class="muted" style="font-size:12px">${edDays >= 0 ? `in ${edDays} day${edDays === 1 ? "" : "s"}` : "reported"}</span>` : "—")}
+        ${stat("Dividend yield", st.dividendYield ? st.dividendYield.toFixed(2) + "%" : "—")}
+        ${stat("Beta (volatility vs market)", st.beta ? st.beta.toFixed(2) : "—")}
+      </div>
+      ${d.about ? `<p class="about">${esc(d.about)}${d.about.length >= 600 ? "…" : ""}</p>` : ""}
+    </section>
+
+    <section class="card">
+      <div class="card-h"><h2>Financials &amp; margins</h2><div class="tabs" id="sFinTabs"><button type="button" data-f="quarterly" class="on">Quarterly</button><button type="button" data-f="annual">Yearly</button></div></div>
+      <div id="sFin"><div class="empty"><span class="spin"></span> Loading financials…</div></div>
+    </section>
+
+    <section class="card">
       <div class="card-h"><h2>Compare with peers</h2><span class="muted" style="font-size:12px">Similar companies side by side · click one to open it</span></div>
       <div id="sPeers"><div class="empty"><span class="spin"></span> Finding peers…</div></div>
     </section>
@@ -2129,30 +2151,8 @@ function renderStock() {
     </section>
 
     <section class="card">
-      <div class="card-h"><h2>Key numbers</h2></div>
-      <div class="stats">
-        ${stat("Market value", bigCur(st.marketCap, st.capCurrency), st.capCurrency && st.capCurrency !== "USD" && st.marketCapUsd ? `<div class="muted" style="font-size:12px">≈ ${big(st.marketCapUsd)}</div>` : "")}
-        ${stat("P/E (past year)", st.pe ? st.pe.toFixed(1) : "—")}
-        ${stat("P/E (next year)", st.fpe ? st.fpe.toFixed(1) : "—")}
-        ${stat("52-week range", st.low52 != null ? `${money(st.low52, q.currency)} – ${money(st.high52, q.currency)}` : "—", pos52 != null ? `<div class="range52"><i style="left:${pos52}%"></i></div>` : "")}
-        ${stat("Volume vs average", st.volRatio ? `<span class="${st.volRatio > 1.5 ? "up" : ""}">${st.volRatio.toFixed(1)}×</span> <span class="muted" style="font-size:12px">${vol(st.volume)} / ${vol(st.avgVolume)}</span>` : "—")}
-        ${stat("Analyst target", st.target ? `${money(st.target, q.currency)} <span class="${cls(upside)}" style="font-size:12px">${pct(upside)}</span>` : "—")}
-        ${stat("Analyst rating", st.rating ? `${RATING[st.rating] || esc(st.rating)}${st.analysts ? ` <span class="muted" style="font-size:12px">${st.analysts} analysts</span>` : ""}` : "—")}
-        ${stat("Next earnings", ed ? `${ed.toLocaleDateString([], { month: "short", day: "numeric" })} <span class="muted" style="font-size:12px">${edDays >= 0 ? `in ${edDays} day${edDays === 1 ? "" : "s"}` : "reported"}</span>` : "—")}
-        ${stat("Dividend yield", st.dividendYield ? st.dividendYield.toFixed(2) + "%" : "—")}
-        ${stat("Beta (volatility vs market)", st.beta ? st.beta.toFixed(2) : "—")}
-      </div>
-      ${d.about ? `<p class="about">${esc(d.about)}${d.about.length >= 600 ? "…" : ""}</p>` : ""}
-    </section>
-
-    <section class="card">
       <div class="card-h"><h2>Valuation vs its own history</h2><span class="muted" style="font-size:12px" id="sValNote">Where today’s multiples sit in their past-5-year range</span></div>
       <div id="sVal"><div class="empty"><span class="spin"></span> Working out valuation history…</div></div>
-    </section>
-
-    <section class="card">
-      <div class="card-h"><h2>Financials &amp; margins</h2><div class="tabs" id="sFinTabs"><button type="button" data-f="quarterly" class="on">Quarterly</button><button type="button" data-f="annual">Yearly</button></div></div>
-      <div id="sFin"><div class="empty"><span class="spin"></span> Loading financials…</div></div>
     </section>
 
     <section class="card">
