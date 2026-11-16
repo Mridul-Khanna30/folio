@@ -12,18 +12,18 @@
 :root {
   --bg: #f6f7f9; --surface: #ffffff; --line: #e4e7ec; --ink: #13171d; --muted: #667080;
   --accent: #2b55c9; --accent-soft: #e8eefb; --up: #0d7f57; --up-soft: #e3f4ec; --down: #c23a2f; --down-soft: #fbe9e7;
-  --a1: #2b55c9; --a2: #0f9d8f; --a3: #d08a1c; --a4: #8a56c9; --a5: #c9506f; --a6: #6b7a8f;
+  --a1: #2b55c9; --a2: #0f9d8f; --a3: #d08a1c; --a4: #8a56c9; --a5: #c9506f; --a6: #6b7a8f; --a7: #4f8f2f; --a8: #b0603a;
   --sans: "Geist", ui-sans-serif, system-ui, sans-serif; --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0f1216; --surface: #161a20; --line: #262c35; --ink: #e8ebf0; --muted: #8b95a5;
   --accent: #7d9cf0; --accent-soft: #1d2639; --up: #3cc48f; --up-soft: #12271f; --down: #f0776b; --down-soft: #2c1816;
-  --a1: #7d9cf0; --a2: #38c2b3; --a3: #e5a94a; --a4: #b08ae8; --a5: #e77d98; --a6: #8b98ab; color-scheme: dark; } }
+  --a1: #7d9cf0; --a2: #38c2b3; --a3: #e5a94a; --a4: #b08ae8; --a5: #e77d98; --a6: #8b98ab; --a7: #8fcf6a; --a8: #e0915f; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #0f1216; --surface: #161a20; --line: #262c35; --ink: #e8ebf0; --muted: #8b95a5;
   --accent: #7d9cf0; --accent-soft: #1d2639; --up: #3cc48f; --up-soft: #12271f; --down: #f0776b; --down-soft: #2c1816;
-  --a1: #7d9cf0; --a2: #38c2b3; --a3: #e5a94a; --a4: #b08ae8; --a5: #e77d98; --a6: #8b98ab; color-scheme: dark; }
+  --a1: #7d9cf0; --a2: #38c2b3; --a3: #e5a94a; --a4: #b08ae8; --a5: #e77d98; --a6: #8b98ab; --a7: #8fcf6a; --a8: #e0915f; color-scheme: dark; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -363,6 +363,25 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .bform h3 { margin: 0; font-size: 15px; font-weight: 600; }
 .bform p { margin: 0; font-size: 12px; color: var(--muted); }
 .ind-h .top .x { visibility: visible; }
+.brk-body { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; align-items: center; padding: 4px 16px 16px; }
+.donut { position: relative; width: 230px; height: 230px; }
+.donut-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; gap: 2px; }
+.donut-c b { font-size: 21px; font-weight: 600; color: var(--ink); }
+.donut-c span { font-size: 12px; }
+#allocTabs { overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+#allocTabs button { white-space: nowrap; font-family: var(--sans); }
+.brk-leg { max-width: 760px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 20px; }
+.brk-leg li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; gap: 8px; align-items: baseline; font-size: 13px; padding: 6px 8px; border-radius: 6px; cursor: default; }
+.brk-leg li i, .hdot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.brk-leg li .lab { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brk-leg li .lab small { color: var(--muted); margin-left: 4px; }
+.brk-leg li .pc { font-family: var(--mono); font-weight: 500; }
+.brk-leg li .dv { font-family: var(--mono); color: var(--muted); font-size: 12px; min-width: 70px; text-align: right; }
+.brk-leg li.hl, #holdings tr.hl { background: var(--accent-soft); }
+.brk-leg li.dim { opacity: 0.45; }
+.hdot { margin-right: 7px; vertical-align: 1px; }
+@media (max-width: 880px) { .brk-body { grid-template-columns: 1fr; justify-items: center; } .brk-leg { width: 100%; } }
+@media (max-width: 520px) { .brk-leg { grid-template-columns: 1fr; } }
 .alloc-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .alloc-h .tabs button { font-family: var(--sans); }
 .warns { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
@@ -573,13 +592,17 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <div class="moodbig" id="pMood">—</div>
       <div class="sub muted" id="pMoodSub">Fear &amp; greed of what’s held, weighted by value</div>
     </div>
-    <div class="alloc">
-      <div class="alloc-h"><div class="label">Exposure</div>
-        <div class="tabs" id="allocTabs"><button type="button" data-a="cls" class="on">Asset type</button><button type="button" data-a="sector">Sector</button><button type="button" data-a="country">Country</button><button type="button" data-a="currency">Currency</button></div></div>
-      <div class="bar" id="bar"></div>
-      <div class="legend" id="legend"></div>
-      <ul class="warns" id="warns"></ul>
+  </section>
+
+  <section class="card brk" id="brkCard">
+    <div class="card-h"><h2>Portfolio breakdown</h2>
+      <div class="tabs" id="allocTabs"><button type="button" data-a="hold" class="on">Holdings</button><button type="button" data-a="sector">Sectors</button><button type="button" data-a="country">Country</button><button type="button" data-a="currency">Currency</button><button type="button" data-a="cls">Asset type</button></div></div>
+    <div class="brk-body">
+      <div class="donut"><canvas id="brkChart" aria-label="Portfolio breakdown donut chart"></canvas>
+        <div class="donut-c"><b class="num" id="brkTotal">—</b><span class="num" id="brkGain"></span></div></div>
+      <ul class="brk-leg" id="brkLeg"></ul>
     </div>
+    <ul class="warns" id="warns" style="margin:0 16px 16px"></ul>
   </section>
 
   <div id="myEvWrap" hidden>
@@ -901,7 +924,7 @@ const EC = { range: "6M", bench: "^GSPC", data: null, chart: null, who: null };
     const next = dark ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("folio-theme", next); } catch {}
-    drawChart(); drawEquity(); renderFin(); if (DCF.base?.ok && $("#dChart")) { DCF.chart?.destroy(); DCF.chart = null; updDcf(); } if (CMP.data && !$("#sCmpBox")?.hidden) renderCompare();
+    BRK.chart?.destroy(); BRK.chart = null; render(); drawChart(); drawEquity(); renderFin(); if (DCF.base?.ok && $("#dChart")) { DCF.chart?.destroy(); DCF.chart = null; updDcf(); } if (CMP.data && !$("#sCmpBox")?.hidden) renderCompare();
   };
 })();
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -1053,12 +1076,11 @@ function render() {
   const by = allocBy(st, u);
   const parts = Object.entries(by).sort((a, b) => b[1] - a[1]);
   renderWarns(st, u, by);
-  $("#bar").innerHTML = parts.map(([k, v], i) => `<span title="${k}" style="width:${v / st.total * 100}%;background:var(${HUES[i % 6]})"></span>`).join("");
-  $("#legend").innerHTML = parts.length ? parts.map(([k, v], i) => `<span><i style="background:var(${HUES[i % 6]})"></i>${k} <b class="num">${(v / st.total * 100).toFixed(1)}%</b> <span class="num">${bm(v, 0)}</span></span>`).join("") : `<span>${mine ? "Add a holding to see your allocation." : "No holdings yet."}</span>`;
+  renderBreakdown(st, u, mine);
 
   $("#holdings").innerHTML = st.rows.length ? st.rows.map(({ h, q, i, val, gain, gainPct, fx }) => `
     <tr data-s="${esc(h.symbol)}" class="${sel === h.symbol ? "sel" : ""}">
-      <td><div class="sym">${esc(h.symbol)}</div><div class="nm">${esc(q.name && q.name !== h.symbol ? q.name : "")}${q.error ? '<span class="down">price unavailable</span>' : ""}</div></td>
+      <td><div class="sym"><i class="hdot" style="background:var(${BRK.dots[h.symbol] || "--a6"})"></i>${esc(h.symbol)}</div><div class="nm">${esc(q.name && q.name !== h.symbol ? q.name : "")}${q.error ? '<span class="down">price unavailable</span>' : ""}</div></td>
       <td class="num hide-sm">${money(q.price, q.currency)}</td>
       <td><span class="pill ${cls(q.pct)}">${pct(q.pct)}</span></td>
       <td class="hide-sm">${MOODS[h.symbol] == null ? '<span class="muted">—</span>' : `<span class="num mnum" style="margin-right:4px">${MOODS[h.symbol]}</span><span title="Mood ${MOODS[h.symbol]}">${mchip(MOODS[h.symbol])}</span>`}</td>
@@ -1069,7 +1091,7 @@ function render() {
     </tr>`).join("") : `<tr><td colspan="8" class="empty">${mine ? "No holdings yet. Add what you own below: the ticker (or search by name), how many shares, and the average price you paid per share." : "No holdings yet."}</td></tr>`;
   const cc = u.cash || { amount: 0, currency: "USD" };
   if (mine || cc.amount > 0) $("#holdings").insertAdjacentHTML("beforeend", `<tr data-cash="1" style="cursor:${mine ? "pointer" : "default"}">
-      <td><div class="sym">Cash</div><div class="nm">${esc(cc.currency)}${cc.currency !== BASE && cc.amount ? " · " + money(cc.amount, cc.currency) : ""}</div></td>
+      <td><div class="sym"><i class="hdot" style="background:var(--a6)"></i>Cash</div><div class="nm">${esc(cc.currency)}${cc.currency !== BASE && cc.amount ? " · " + money(cc.amount, cc.currency) : ""}</div></td>
       <td class="num hide-sm muted">—</td><td></td><td class="hide-sm"></td><td class="num hide-sm muted shcol">—</td>
       <td class="num">${bm(st.cash)}</td><td class="muted num">${st.total ? (st.cash / st.total * 100).toFixed(1) + "%" : ""}</td>
       <td>${mine ? `<button class="wbtn" type="button" data-cashedit="1">${cc.amount ? "Edit" : "+ Add cash"}</button>` : ""}</td></tr>`);
@@ -1168,7 +1190,66 @@ document.addEventListener("click", async e => {
 }, true);
 
 // ---------- batch 3: portfolio diagnostics, events, stress, journal, watchlist research, alerts ----------
-let ALLOC = "cls", DIAG = {}, WI = {}, NOTES = {}, MYEV = [], JOURNAL = null, ALERTS = { rules: [], inbox: [] };
+let ALLOC = "hold", DIAG = {}, WI = {}, NOTES = {}, MYEV = [], JOURNAL = null, ALERTS = { rules: [], inbox: [] };
+const BRK_HUES = ["--a1", "--a2", "--a3", "--a4", "--a5", "--a7", "--a8"], BRK = { chart: null, items: [], map: {}, dots: {} };
+// slices for the breakdown donut: top 7 by value, the rest grouped into "Other"; `map` sends each holding (and "$cash") to its slice
+function breakdown(st, u, mode) {
+  const d = DIAG[u.name]?.symbols || {}, groups = {}, members = {};
+  const add = (k, v, sym, name) => { groups[k] = (groups[k] || 0) + v; (members[k] = members[k] || []).push(sym); if (name) groups["\u0000" + k] = name; };
+  for (const r of st.rows) {
+    if (!r.val) continue;
+    const k = mode === "hold" ? r.h.symbol : mode === "cls" ? (r.q.cls || "Other") : mode === "currency" ? (r.q.currency || "USD")
+      : (d[r.h.symbol]?.[mode] || (DIAG[u.name] ? "Other" : "Loading…"));
+    add(k, r.val, r.h.symbol, mode === "hold" && r.q.name && r.q.name !== r.h.symbol ? r.q.name : "");
+  }
+  if (st.cash > 0) add("Cash", st.cash, "$cash");
+  let list = Object.entries(groups).filter(([k]) => !k.startsWith("\u0000")).sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => ({ key: k, label: k, name: groups["\u0000" + k] || "", value: v, syms: members[k] }));
+  if (list.length > 8) {
+    const rest = list.slice(7);
+    list = list.slice(0, 7).concat([{ key: "__other", label: "Other", name: `${rest.length} smaller`, value: rest.reduce((a, x) => a + x.value, 0), syms: rest.flatMap(x => x.syms), other: true }]);
+  }
+  list.forEach((x, i) => x.hue = x.other ? "--line" : x.key === "Cash" && mode !== "hold" ? "--a6" : BRK_HUES[i % BRK_HUES.length]);
+  if (mode === "hold") list.filter(x => x.key === "Cash").forEach(x => x.hue = "--a6");
+  const map = {}; list.forEach((x, i) => x.syms.forEach(sm => map[sm] = i));
+  return { list, map };
+}
+function renderBreakdown(st, u, mine) {
+  const { list, map } = breakdown(st, u, ALLOC);
+  const dots = breakdown(st, u, "hold"); BRK.dots = {}; for (const [sm, i] of Object.entries(dots.map)) BRK.dots[sm] = dots.list[i].other ? "--muted" : dots.list[i].hue;
+  BRK.items = list; BRK.map = map;
+  const g = st.invested - st.cost;
+  $("#brkTotal").textContent = bm(st.total);
+  $("#brkGain").innerHTML = st.cost ? `<span class="${cls(g)}">${sBm(g)} / ${pct(st.allPct)}</span>` : "";
+  $("#brkLeg").innerHTML = list.length ? list.map((x, i) => `<li data-i="${i}"><i style="${x.other ? "border:2px solid var(--muted);box-sizing:border-box" : `background:var(${x.hue})`}"></i><span class="lab" title="${esc(x.name || x.label)}">${esc(x.label)}${x.other ? ` <small>${esc(x.name)}</small>` : ""}</span><span class="pc">${(x.value / st.total * 100).toFixed(1)}%</span><span class="dv">${bm(x.value, 0)}</span></li>`).join("")
+    : `<li style="display:block" class="muted">${mine ? "Add a holding to see your breakdown." : "No holdings yet."}</li>`;
+  if (!window.Chart) return;
+  const data = list.map(x => x.value), colors = list.map(x => css(x.hue)), labels = list.map(x => x.label);
+  const cv = $("#brkChart");
+  if (BRK.chart && BRK.chart.canvas === cv) {
+    Object.assign(BRK.chart.data, { labels }); Object.assign(BRK.chart.data.datasets[0], { data, backgroundColor: colors, borderColor: css("--surface") });
+    BRK.chart.update("none"); return;
+  }
+  BRK.chart?.destroy();
+  BRK.chart = new Chart(cv, { type: "doughnut", data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: css("--surface"), borderWidth: 2, hoverOffset: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: false, cutout: "72%", layout: { padding: 6 },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: css("--surface"), titleColor: css("--muted"), bodyColor: css("--ink"), borderColor: css("--line"), borderWidth: 1,
+        callbacks: { label: c => ` ${bm(c.parsed, 0)} · ${(c.parsed / (c.dataset.data.reduce((a, b) => a + b, 0) || 1) * 100).toFixed(1)}%` } } },
+      onHover: (e, els) => brkHighlight(els.length ? els[0].index : null, "chart") } });
+}
+// highlight one slice everywhere: donut, legend and the holdings rows that belong to it
+function brkHighlight(i, from) {
+  for (const li of $("#brkLeg").children) { li.classList.toggle("hl", i != null && +li.dataset.i === i); li.classList.toggle("dim", i != null && +li.dataset.i !== i); }
+  for (const tr of $("#holdings").children) { const k = tr.dataset.cash ? "$cash" : tr.dataset.s; tr.classList.toggle("hl", i != null && BRK.map[k] === i); }
+  const ch = BRK.chart; if (!ch || from === "chart") return;
+  const a = i == null ? [] : [{ datasetIndex: 0, index: i }];
+  ch.setActiveElements(a); ch.tooltip.setActiveElements([], { x: 0, y: 0 }); ch.update("none");
+}
+$("#brkLeg").onmouseover = e => { const li = e.target.closest("li[data-i]"); if (li) brkHighlight(+li.dataset.i, "leg"); };
+$("#brkLeg").onmouseleave = () => brkHighlight(null, "leg");
+$("#brkChart").onmouseleave = () => brkHighlight(null, "chart");
+$("#holdings").onmouseover = e => { const tr = e.target.closest("tr"); if (!tr) return; const k = tr.dataset.cash ? "$cash" : tr.dataset.s; brkHighlight(BRK.map[k] ?? null, "row"); };
+$("#holdings").onmouseleave = () => brkHighlight(null, "row");
 function allocBy(st, u) {
   if (ALLOC === "cls") return st.byCls;
   const d = DIAG[u.name]?.symbols || {}, out = {};

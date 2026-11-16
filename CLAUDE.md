@@ -168,3 +168,7 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 - Portfolio: best/worst contributor under Total gain; holdings + chart side by side at >=1180px (`.holdgrid`;
   the Shares column and mood number hide there, shares show under Value).
 - Yahoo hiccups: `tinfo` and `analyst` drop blank answers from the cache; analyst mean is rebuilt from vote counts if missing.
+- Portfolio breakdown card (`#brkCard`, replaced the Exposure bar): Chart.js doughnut + 2-column legend; tabs Holdings (default),
+  Sectors, Country, Currency, Asset type. `breakdown()` keeps the top 7 slices (cash counts as one) and groups the rest as "Other".
+  Holdings rows get matching dots (`BRK.dots`); hovering a row, legend item or slice highlights the others (`brkHighlight`).
+  Concentration/correlation warnings (`#warns`) sit at the bottom of the card.
