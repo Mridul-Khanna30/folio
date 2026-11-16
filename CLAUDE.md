@@ -139,3 +139,11 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 ## Open items / ideas offered to the user
 - Not backed up online: offer to create a private GitHub repo and push (needs `gh auth status`; log in via device code if needed).
 - Ideas mentioned but not built: price alerts, a real buy/sell log (would make the value-over-time chart and FX split exact).
+
+## DCF (stock page)
+- `/api/stock/dcf` returns per-share inputs in the quote currency: price, fcfPs, niPs, netCashPs, default growth (bear/base/bull),
+  terminal growth, discount rate (10-yr yield + beta x 5%, 7-14%). CDRs/foreign listings whose statements are in another
+  currency use the parent ticker's figures scaled by the price ratio. Financials: earnings, net cash ignored.
+- The math runs in the browser (`dcfValue`): years 1-5 growth, years 6-10 growth, then perpetual growth; fair value today,
+  value in 1/3/5 years, reverse-DCF implied growth. Slider settings saved per ticker in localStorage (`folio-dcf-<SYM>`).
+

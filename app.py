@@ -1810,6 +1810,94 @@ def stock_valuation(symbol: str, key: str = Depends(current_user)):
     return cached(("val", sym), 6 * 3600, f)
 
 
+# ---------- DCF (bull / base / bear) ----------
+def _dcf_base(sym):
+    """Company-level inputs for a DCF, per share in the stock's own (quote) currency."""
+    t = yf.Ticker(sym)
+    i = tinfo(sym)
+    if i.get("quoteType") not in (None, "", "EQUITY"):
+        return {"ok": False, "why": "A DCF values a single company's cash flows, so it doesn't apply to funds, crypto, currencies or commodities."}
+    raw = fnum(i.get("currentPrice") or i.get("regularMarketPrice"))
+    if not raw:
+        return {"ok": False, "why": "No current price."}
+    pence = i.get("currency") == "GBp"
+    qc = (i.get("currency") or "USD").replace("GBp", "GBP")
+    price = raw / 100 if pence else raw
+    src = i
+    scale = None
+    # Canadian depositary receipts (e.g. AMD.TO) carry the parent's company-wide figures but a much smaller share,
+    # so value the parent's shares and scale by today's price ratio.
+    if "." in sym and (i.get("financialCurrency") or qc) != qc:
+        base_sym = sym.split(".")[0].replace("-", ".")
+        bi = tinfo(base_sym) if base_sym != sym else {}
+        n1, n2 = (i.get("longName") or i.get("shortName") or "").lower(), (bi.get("longName") or bi.get("shortName") or "").lower()
+        bp = fnum(bi.get("currentPrice") or bi.get("regularMarketPrice"))
+        if bp and n1[:5] and n1[:5] == n2[:5]:
+            src = bi
+            bqc = (bi.get("currency") or "USD").replace("GBp", "GBP")
+            px_in_b = price * (fx_to_usd(qc) or 1) / (fx_to_usd(bqc) or 1)
+            scale = px_in_b / bp  # one share here = `scale` parent shares
+    cap = fnum(src.get("marketCap"))
+    sp = fnum(src.get("currentPrice") or src.get("regularMarketPrice"))  # same units as marketCap (pence for GBp)
+    shares = cap / sp if cap and sp else fnum(src.get("sharesOutstanding"))
+    if not shares:
+        return {"ok": False, "why": "Share count isn't available."}
+    sqc = (src.get("currency") or "USD").replace("GBp", "GBP")
+    fc = src.get("financialCurrency") or sqc
+    conv = (fx_to_usd(fc) or 1) / (fx_to_usd(sqc) or 1) if fc != sqc else 1.0
+    fcf, ni = fnum(src.get("freeCashflow")), fnum(src.get("netIncomeToCommon"))
+    if fcf is None:
+        try:
+            fcf = _v(_row(yf.Ticker(src.get("symbol") or sym).cashflow, "Free Cash Flow"), sorted(yf.Ticker(src.get("symbol") or sym).cashflow.columns)[-1])
+        except Exception:
+            fcf = None
+    cash, debt = fnum(src.get("totalCash")) or 0, fnum(src.get("totalDebt")) or 0
+    k = conv / shares * (scale or 1)
+    if scale:  # parent's per-share figures are in the parent's quote currency; bring to ours
+        k *= (fx_to_usd(sqc) or 1) / (fx_to_usd(qc) or 1)
+    # growth guide: analysts' next-year EPS growth, long-term growth and last year's sales growth
+    ests, used = [], []
+    try:
+        ge = yf.Ticker(src.get("symbol") or sym).growth_estimates
+        for row, lab in (("+1y", "next-year earnings growth"), ("LTG", "long-term growth")):
+            v = fnum(ge.loc[row, "stockTrend"]) if row in ge.index else None
+            if v is not None and v == v:
+                ests.append(v * 100); used.append(lab)
+    except Exception:
+        pass
+    rg = fnum(src.get("revenueGrowth"))
+    if rg is not None:
+        cap_ = max(rg * 150, rg * 100 + 10)  # one-year earnings jumps (e.g. recovering from a slump) don't last 5 years
+        ests = [min(e, cap_) for e in ests]
+        ests.append(rg * 100); used.append("last year's sales growth")
+    g = float(np.median(ests)) if ests else 6.0
+    base = round(max(-5.0, min(20.0, g)), 1)
+    spread = round(max(4.0, abs(base) * 0.4), 1)
+    beta = fnum(src.get("beta"))
+    try:
+        rf = one_quote("^TNX")["price"]
+        rf = rf if 1 < rf < 10 else 4.2
+    except Exception:
+        rf = 4.2
+    disc = round(max(7.0, min(14.0, rf + max(0.6, min(2.0, beta or 1.0)) * 5.0)), 1)
+    return {"ok": True, "symbol": sym, "currency": qc, "price": price,
+            "fcfPs": fcf * k if fcf is not None else None, "niPs": ni * k if ni is not None else None,
+            "netCashPs": 0.0 if (i.get("sector") or "") == "Financial Services" else (cash - debt) * k, "cashPs": cash * k, "debtPs": debt * k,
+            "growth": {"base": base, "bull": round(base + spread, 1), "bear": round(base - spread, 1)},
+            "terminal": {"bear": 2.0, "base": 2.5, "bull": 3.0}, "discount": disc, "rf": round(rf, 2), "beta": beta,
+            "growthFrom": used, "parent": (src.get("symbol") if scale else None),
+            "sector": i.get("sector") or "", "financial": (i.get("sector") or "") in ("Financial Services",)}
+
+
+@app.get("/api/stock/dcf")
+def stock_dcf(symbol: str, key: str = Depends(current_user)):
+    sym = symbol.strip().upper()[:20]
+    try:
+        return cached(("dcf", sym), 3 * 3600, lambda: _dcf_base(sym))
+    except Exception:
+        return {"ok": False, "why": "Couldn't get the numbers for a DCF."}
+
+
 # ---------- SEC filings ----------
 SEC_UA = {"User-Agent": "Folio research dashboard folio-app@example.com", "Accept-Encoding": "identity"}
 

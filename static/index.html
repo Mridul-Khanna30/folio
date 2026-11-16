@@ -290,6 +290,27 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .peers td, .peers th { padding: 8px 12px; }
 .peers tr.self { background: var(--accent-soft); }
 .wi { padding: 0 16px 16px; display: grid; gap: 10px; }
+.dtop { display: grid; grid-template-columns: 1fr repeat(3, minmax(0, 1.3fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.dtop > div { background: var(--surface); padding: 12px 16px; min-width: 0; }
+.dnow > b { display: block; font-family: var(--mono); font-weight: 500; font-size: 22px; margin: 2px 0 4px; }
+.dcase .label i, .dcol .dh i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 6px; }
+.drow { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; margin-top: 6px; flex-wrap: wrap; }
+.drow b { font-family: var(--mono); font-weight: 500; font-size: 15px; }
+.drow .pill { font-size: 11px; }
+.dmid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; padding: 14px 16px 0; }
+.dctl { display: grid; gap: 12px; align-content: start; }
+.drow2 { display: flex; gap: 14px; flex-wrap: wrap; align-items: end; font-size: 12px; color: var(--muted); }
+.drow2 > label { display: grid; gap: 4px; }
+.drow2 select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+.dgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.dcol { border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 8px; padding: 8px 10px; display: grid; gap: 8px; min-width: 0; }
+.dcol .dh { font-weight: 600; font-size: 13px; }
+.dsl { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
+.dsl span { display: flex; justify-content: space-between; gap: 6px; }
+.dsl b { font-family: var(--mono); font-weight: 500; color: var(--ink); }
+.dsl input { width: 100%; accent-color: var(--c, var(--accent)); }
+@media (max-width: 880px) { .dtop { grid-template-columns: 1fr 1fr; } .dmid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .dtop { grid-template-columns: 1fr; } .dgrid { grid-template-columns: 1fr; } }
 .wi input[type=range] { width: 100%; accent-color: var(--accent); }
 .wi .out { font-size: 15px; max-width: 72ch; }
 .wi .out b { font-family: var(--mono); font-weight: 500; }
@@ -813,7 +834,7 @@ const EC = { range: "6M", bench: "^GSPC", data: null, chart: null, who: null };
     const next = dark ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("folio-theme", next); } catch {}
-    drawChart(); drawEquity(); renderFin(); if (CMP.data && !$("#sCmpBox")?.hidden) renderCompare();
+    drawChart(); drawEquity(); renderFin(); if (DCF.base?.ok && $("#dChart")) { DCF.chart?.destroy(); DCF.chart = null; updDcf(); } if (CMP.data && !$("#sCmpBox")?.hidden) renderCompare();
   };
 })();
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -2062,6 +2083,11 @@ function renderStock() {
     </section>` : ""}
 
     <section class="card">
+      <div class="card-h"><h2>Discounted cash flow (DCF): bear, base &amp; bull</h2><span class="muted" style="font-size:12px">What the business is worth from the cash it should make · drag to change growth</span></div>
+      <div id="sDcf"><div class="empty"><span class="spin"></span> Gathering cash flow, debt and growth estimates…</div></div>
+    </section>
+
+    <section class="card">
       <div class="card-h"><h2>Key numbers</h2></div>
       <div class="stats">
         ${stat("Market value", bigCur(st.marketCap, st.capCurrency), st.capCurrency && st.capCurrency !== "USD" && st.marketCapUsd ? `<div class="muted" style="font-size:12px">≈ ${big(st.marketCapUsd)}</div>` : "")}
@@ -2105,7 +2131,7 @@ function renderStock() {
       <ul class="news">${newsList(d.news)}</ul>
     </section>
   </div>`;
-  renderWhatIf(); renderPeers(); renderNotes(); loadVal(d.symbol); loadFin(d.symbol);
+  renderWhatIf(); renderPeers(); renderNotes(); loadVal(d.symbol); loadFin(d.symbol); loadDcf(d.symbol);
   $("#sFilBtn").onclick = () => runFilings(d.symbol);
   $("#sAlertBtn").onclick = () => openAlerts(d.symbol, "price_below");
   $("#sCmpBtn").onclick = () => openCompare([d.symbol]);
@@ -2159,6 +2185,125 @@ function renderWhatIf() {
   $("#wiR").oninput = e => upd(+e.target.value);
   box.querySelector(".presets").onclick = e => { const b = e.target.closest("button"); if (!b) return; $("#wiR").value = Math.min(hi, +b.dataset.pe); upd(+b.dataset.pe); };
   upd(Math.min(hi, cur0));
+}
+
+// ---------- DCF: bear / base / bull ----------
+const DCF = { base: null, set: null, chart: null, yrs: 5 };
+const DCF_CASES = [["bear", "Bear", "--down"], ["base", "Base", "--accent"], ["bull", "Bull", "--up"]];
+async function loadDcf(sym) {
+  DCF.base = null;
+  try {
+    const b = await api("stock/dcf?symbol=" + encodeURIComponent(sym)); if (S.sym !== sym || !$("#sDcf")) return;
+    DCF.base = b;
+    if (!b.ok) { $("#sDcf").innerHTML = `<div class="empty">${esc(b.why || "A DCF isn’t available for this one.")}</div>`; return; }
+    let saved = null; try { saved = JSON.parse(localStorage.getItem("folio-dcf-" + sym) || "null"); } catch {}
+    DCF.set = saved || dcfDefaults(b);
+    renderDcf();
+  } catch { if ($("#sDcf")) $("#sDcf").innerHTML = `<div class="empty">Couldn’t load the numbers for a DCF.</div>`; }
+}
+function dcfDefaults(b) {
+  const start = b.financial || !(b.fcfPs > 0) ? "ni" : "fcf", s = { start, disc: b.discount, yrs: 5 };
+  for (const [k] of DCF_CASES) { const g1 = b.growth[k], gt = b.terminal[k]; s[k] = { g1, g2: Math.round((g1 + gt) / 2 * 10) / 10, gt, g2auto: true }; }
+  return s;
+}
+// value per share at the end of year `at` (0 = today) when the starting cash flow grows g1% for 5 years, g2% for 5 more, then gt% forever
+function dcfValue(s0, c, r, at, netCash) {
+  r /= 100; let cf = s0, flows = [];
+  for (let t = 1; t <= 10; t++) { cf *= 1 + (t <= 5 ? c.g1 : c.g2) / 100; flows.push(cf); }
+  const gt = Math.min(c.gt / 100, r - 0.005), tv = flows[9] * (1 + gt) / (r - gt);
+  let v = 0; for (let t = at + 1; t <= 10; t++) v += flows[t - 1] / (1 + r) ** (t - at);
+  return v + tv / (1 + r) ** (10 - at) + netCash;
+}
+function renderDcf() {
+  const box = $("#sDcf"), b = DCF.base, s = DCF.set; if (!box || !b?.ok) return;
+  const cur = b.currency, s0 = s.start === "fcf" ? b.fcfPs : b.niPs, nc = b.netCashPs || 0, N = s.yrs;
+  const sl = (k, f, lab, min, max, help) => `<label class="dsl"><span>${lab} <b id="dv-${k}-${f}">${s[k][f].toFixed(1)}%</b></span>
+      <input type="range" min="${min}" max="${max}" step="0.5" value="${s[k][f]}" data-k="${k}" data-f="${f}" aria-label="${DCF_CASES.find(x => x[0] === k)[1]} ${lab}" title="${help}"></label>`;
+  box.innerHTML = `
+    <div class="dtop">
+      <div class="dnow"><span class="label">Today’s price</span><b>${money(b.price, cur)}</b>
+        <div class="muted" style="font-size:12px" id="dImplied"></div></div>
+      ${DCF_CASES.map(([k, n, c]) => `<div class="dcase" style="--c:var(${c})"><span class="label"><i></i>${n} case</span>
+        <div class="drow"><span class="muted">Fair value today</span><span id="dfv-${k}"></span></div>
+        <div class="drow"><span class="muted">Price in ${N} year${N > 1 ? "s" : ""}</span><span id="dfp-${k}"></span></div></div>`).join("")}
+    </div>
+    <div class="dmid">
+      <div class="chartbox" style="height:220px;padding:0"><canvas id="dChart" aria-label="Fair value path for each case"></canvas></div>
+      <div class="dctl">
+        <div class="drow2">
+          <label>Start from <select id="dStart">
+            <option value="fcf" ${s.start === "fcf" ? "selected" : ""} ${b.fcfPs == null ? "disabled" : ""}>Free cash flow (${b.fcfPs == null ? "n/a" : money(b.fcfPs, cur)}/share)</option>
+            <option value="ni" ${s.start === "ni" ? "selected" : ""} ${b.niPs == null ? "disabled" : ""}>Earnings (${b.niPs == null ? "n/a" : money(b.niPs, cur)}/share)</option></select></label>
+          <label>Look ahead <span class="tabs" id="dYrs">${[1, 3, 5].map(y => `<button type="button" data-y="${y}" class="${y === N ? "on" : ""}">${y}Y</button>`).join("")}</span></label>
+          <label class="dsl" style="min-width:180px"><span>Discount rate <b id="dv-disc">${s.disc.toFixed(1)}%</b></span>
+            <input type="range" id="dDisc" min="5" max="16" step="0.5" value="${s.disc}" aria-label="Discount rate" title="The yearly return you'd want for owning this stock. Higher = riskier = lower fair value."></label>
+          <button class="btn" type="button" id="dReset">Reset</button>
+        </div>
+        <div class="dgrid">${DCF_CASES.map(([k, n, c]) => `<div class="dcol" style="--c:var(${c})"><div class="dh"><i></i>${n}</div>
+          ${sl(k, "g1", "Growth, years 1–5", -20, 50, "How fast the cash flow grows each year for the next 5 years")}
+          ${sl(k, "g2", "Growth, years 6–10", -10, 30, "Growth usually slows as a company gets bigger")}
+          ${sl(k, "gt", "Long-run growth", 0, 4, "Growth forever after year 10, usually near inflation (2–3%)")}</div>`).join("")}</div>
+      </div>
+    </div>
+    <div class="note" id="dNote" style="padding-top:8px"></div>`;
+  $("#dStart").onchange = e => { s.start = e.target.value; saveDcf(); renderDcf(); };
+  $("#dYrs").onclick = e => { const bt = e.target.closest("button"); if (!bt) return; s.yrs = +bt.dataset.y; saveDcf(); renderDcf(); };
+  $("#dDisc").oninput = e => { s.disc = +e.target.value; $("#dv-disc").textContent = s.disc.toFixed(1) + "%"; updDcf(); };
+  $("#dReset").onclick = () => { DCF.set = dcfDefaults(b); try { localStorage.removeItem("folio-dcf-" + S.sym); } catch {} renderDcf(); };
+  box.querySelector(".dgrid").oninput = e => {
+    const t = e.target; if (!t.dataset.k) return;
+    const c = s[t.dataset.k], f = t.dataset.f; c[f] = +t.value;
+    if (f === "g2") c.g2auto = false;
+    if ((f === "g1" || f === "gt") && c.g2auto) { c.g2 = Math.round((c.g1 + c.gt) / 2 * 2) / 2; box.querySelector(`input[data-k="${t.dataset.k}"][data-f="g2"]`).value = c.g2; }
+    for (const ff of ["g1", "g2", "gt"]) $(`#dv-${t.dataset.k}-${ff}`).textContent = c[ff].toFixed(1) + "%";
+    updDcf();
+  };
+  updDcf();
+}
+let dcfSaveT = null;
+function saveDcf() { clearTimeout(dcfSaveT); const sym = S.sym, v = JSON.stringify(DCF.set); dcfSaveT = setTimeout(() => { try { localStorage.setItem("folio-dcf-" + sym, v); } catch {} }, 400); }
+function updDcf() {
+  const b = DCF.base, s = DCF.set, cur = b.currency, s0 = s.start === "fcf" ? b.fcfPs : b.niPs, nc = b.netCashPs || 0, N = s.yrs;
+  saveDcf();
+  if (!(s0 > 0)) {
+    for (const [k] of DCF_CASES) { $(`#dfv-${k}`).innerHTML = "—"; $(`#dfp-${k}`).innerHTML = "—"; }
+    $("#dImplied").textContent = "";
+    $("#dNote").innerHTML = `${esc(b.symbol)} ${s.start === "fcf" ? "doesn’t currently produce positive free cash flow" : "isn’t currently profitable"}, so there’s nothing to grow. ${s.start === "fcf" && b.niPs > 0 ? "Try starting from earnings instead." : "A DCF can’t value it until it makes money."}`;
+    DCF.chart?.destroy(); DCF.chart = null; return;
+  }
+  const paths = {};
+  for (const [k] of DCF_CASES) {
+    const c = s[k], path = Array.from({ length: N + 1 }, (_, t) => dcfValue(s0, c, s.disc, t, nc)); paths[k] = path;
+    const fv = path[0], fp = path[N], up = (fv / b.price - 1) * 100, yr = ((fp / b.price) ** (1 / N) - 1) * 100;
+    $(`#dfv-${k}`).innerHTML = fv > 0 ? `<b>${money(fv, cur)}</b> <span class="pill ${cls(up)}">${pct(up)}</span>` : "<b>below zero</b>";
+    $(`#dfp-${k}`).innerHTML = fp > 0 ? `<b>${money(fp, cur)}</b> <span class="muted" title="Yearly return from today's price">${yr >= 0 ? "+" : "−"}${Math.abs(yr).toFixed(1)}%/yr</span>` : "<b>below zero</b>";
+  }
+  // reverse DCF: what years-1-5 growth does today's price assume (base case's other settings)?
+  const bc = s.base, f = g => dcfValue(s0, { g1: g, g2: bc.g2auto ? (g + bc.gt) / 2 : bc.g2, gt: bc.gt }, s.disc, 0, nc) - b.price;
+  let lo = -40, hi = 120, imp = null;
+  if (f(lo) < 0 && f(hi) > 0) { for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; f(m) > 0 ? hi = m : lo = m; } imp = (lo + hi) / 2; }
+  $("#dImplied").innerHTML = imp == null ? "" : `Today’s price assumes about <b class="num" style="color:var(--ink)">${imp.toFixed(1)}%</b> yearly growth for 5 years`;
+  $("#dNote").innerHTML = `How it works: start from ${esc(b.symbol)}’s ${s.start === "fcf" ? "free cash flow" : "earnings"} per share over the past 12 months (${money(s0, cur)}), grow it at each case’s rates for 10 years, then at the long-run rate forever. Discount every future year back to today at ${s.disc.toFixed(1)}% a year, then ${nc >= 0 ? "add net cash" : "subtract net debt"} (${money(Math.abs(nc), cur)}/share). “Price in ${N} years” is what the shares would be worth then if the market valued them fairly; it doesn’t include dividends.
+    Starting growth comes from ${b.growthFrom.length ? esc(b.growthFrom.join(", ")) : "a generic 6%"}; the discount rate from the 10-year Treasury yield (${b.rf}%) plus extra for how volatile the stock is${b.beta ? ` (beta ${b.beta.toFixed(2)})` : ""}.
+    ${b.parent ? `Uses ${esc(b.parent)}’s company figures, scaled to this listing’s price. ` : ""}${b.financial ? "Banks and insurers hold customers’ money, so this uses earnings and ignores debt and cash. " : ""}A DCF is very sensitive to these guesses; treat it as a range, not a forecast. Your slider settings are saved on this device.`;
+  drawDcf(paths, N);
+}
+function drawDcf(paths, N) {
+  const cv = $("#dChart"); if (!cv || !window.Chart) return;
+  const b = DCF.base, cur = b.currency, labels = Array.from({ length: N + 1 }, (_, t) => t === 0 ? "Today" : "Year " + t);
+  const ds = DCF_CASES.map(([k, n, c]) => ({ label: n, data: paths[k], borderColor: css(c), backgroundColor: css(c), pointRadius: 3, borderWidth: 2, tension: 0.2 }));
+  ds.push({ label: "Today’s price", data: labels.map(() => b.price), borderColor: css("--muted"), borderDash: [5, 4], pointRadius: 0, borderWidth: 1.25 });
+  if (DCF.chart && DCF.chart.canvas === cv && DCF.chart.data.labels.length === labels.length) {
+    DCF.chart.data.datasets.forEach((d, i) => d.data = ds[i].data); DCF.chart.update("none"); return;
+  }
+  DCF.chart?.destroy();
+  const tip = { backgroundColor: css("--surface"), titleColor: css("--muted"), bodyColor: css("--ink"), borderColor: css("--line"), borderWidth: 1 };
+  DCF.chart = new Chart(cv, { type: "line", data: { labels, datasets: ds }, options: { responsive: true, maintainAspectRatio: false, animation: false,
+    interaction: { mode: "index", intersect: false },
+    plugins: { legend: { position: "top", align: "start", labels: { color: css("--muted"), boxWidth: 10, boxHeight: 2, font: { size: 11 } } },
+      tooltip: { ...tip, callbacks: { label: c => `${c.dataset.label}: ${money(c.parsed.y, cur)}` } } },
+    scales: { x: { grid: { display: false }, border: { color: css("--line") }, ticks: { color: css("--muted"), font: { size: 11 } } },
+      y: { position: "right", grid: { color: css("--line") }, border: { display: false }, ticks: { color: css("--muted"), maxTicksLimit: 5, font: { size: 10 }, callback: v => money(v, cur).replace(/\.\d+$/, "") } } } } });
 }
 
 
