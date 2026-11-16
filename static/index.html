@@ -456,6 +456,9 @@ dialog::backdrop { background: rgb(0 0 0 / 0.35); }
 .pe-lo { color: var(--up); } .pe-hi { color: var(--a3); } .pe-neg { color: var(--down); }
 td.pbest { color: #34D399; font-weight: 700; }
 .avgpt { align-items: baseline; }
+.avgr { font-size: 15px; color: var(--ink); align-items: baseline; }
+.avgr b { font-size: 17px; font-weight: 700; font-family: var(--mono); }
+.bigchip .mchip { font-size: 15px; font-weight: 700; padding: 5px 14px; border-radius: 8px; }
 .avgpt .ptv { font-size: 17px; font-weight: 700; color: var(--ink); font-family: var(--mono); margin-left: 4px; }
 .avgpt .ptd { font-weight: 700; font-family: var(--mono); margin-left: 4px; }
 .avgpt .ptd.pos { color: #34D399; } .avgpt .ptd.neg { color: #F87171; }
@@ -2953,8 +2956,8 @@ async function loadStockSent(sym) {
         </div>
         <div style="min-width:0">
           <div class="ind-h">
-            <div class="top"><span class="label">Analyst consensus</span>${ratingChip(a.rating)}</div>
-            ${a.mean ? `<div class="facts"><span>Average rating <b>${a.mean.toFixed(2)}</b> (1 = strong buy, 5 = sell)</span><span><b>${a.analysts ?? tot}</b> analysts</span></div>` : tot ? `<div class="facts"><span><b>${tot}</b> analyst ratings</span></div>` : `<div class="facts">No analyst coverage found.</div>`}
+            <div class="top"><span class="label">Analyst consensus</span><span class="bigchip">${ratingChip(a.rating)}</span></div>
+            ${a.mean ? `<div class="facts avgr"><span>Average rating <b>${a.mean.toFixed(2)}</b> (1 = strong buy, 5 = sell)</span><span><b>${a.analysts ?? tot}</b> analysts</span></div>` : tot ? `<div class="facts"><span><b>${tot}</b> analyst ratings</span></div>` : `<div class="facts">No analyst coverage found.</div>`}
             ${stackBar(a.counts)}
             ${a.counts ? `<div class="legend-c">${[["strongBuy", "Strong buy"], ["buy", "Buy"], ["hold", "Hold"], ["sell", "Sell"], ["strongSell", "Strong sell"]].map(([k, l]) => `<span><i style="background:${ratingCol[k]}"></i>${l} ${a.counts[k]}</span>`).join("")}</div>` : ""}
             ${a.target ? `<div class="facts avgpt"><span>Average price target <b class="ptv">${money(a.target, S.data.quote.currency)}</b> <b class="ptd ${a.upside >= 0 ? "pos" : "neg"}">${pct(a.upside)}</b></span><span>from the current price</span></div>` : ""}
