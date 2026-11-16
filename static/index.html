@@ -199,14 +199,57 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .cmp tbody tr { cursor: default; }
 .cmp tbody tr:hover { background: none; }
 .about { padding: 12px 16px 16px; color: var(--muted); font-size: 13px; max-width: 80ch; margin: 0; }
+.gauge { display: grid; justify-items: center; padding: 8px 16px 16px; gap: 4px; }
+.gauge svg { width: min(340px, 100%); height: auto; display: block; }
+.gauge .score { font-size: 44px; font-weight: 500; font-family: var(--mono); letter-spacing: -0.03em; line-height: 1; margin-top: -8px; }
+.gauge .mood { font-size: 15px; font-weight: 600; }
+.then { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.then div { padding: 10px 14px; border-left: 1px solid var(--line); min-width: 0; }
+.then div:first-child { border-left: 0; }
+.then b { display: block; font-family: var(--mono); font-weight: 500; font-size: 15px; }
+.then small { font-size: 11px; color: var(--muted); }
+.comps { list-style: none; margin: 0; padding: 0 0 6px; }
+.comps li { padding: 10px 16px; border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 4px 12px; align-items: center; }
+.comps .d { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.comps .meter { grid-column: 1 / -1; }
+.meter { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--down), color-mix(in srgb, var(--down) 40%, var(--surface)), var(--line), color-mix(in srgb, var(--up) 40%, var(--surface)), var(--up)); position: relative; }
+.meter i { position: absolute; top: -3px; width: 4px; height: 12px; border-radius: 2px; background: var(--ink); transform: translateX(-50%); box-shadow: 0 0 0 2px var(--surface); }
+.mchip { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.inds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ind { display: grid; align-content: start; }
+.ind-h { padding: 14px 16px 8px; display: grid; gap: 8px; }
+.ind-h .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ind-h h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.ind-h .sc { font-family: var(--mono); font-size: 22px; font-weight: 500; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 500; }
+.stack { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 1px; background: var(--line); }
+.stack span { display: block; height: 100%; }
+.mem { list-style: none; margin: 0; padding: 0 0 6px; }
+.mem li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 6px 16px; border-top: 1px solid var(--line); font-size: 13px; cursor: pointer; }
+.mem li:hover { background: var(--bg); }
+.mem .r { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.basis { font-size: 11px; color: var(--muted); padding: 0 16px 12px; }
+.verdict .sig { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 6px; font-weight: 600; font-size: 13px; }
+.vcols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+.vcols h4 { margin: 0 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; }
+.vcols ul { margin: 0; padding-left: 18px; }
+.legend-c { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--muted); }
+.legend-c i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
 footer { font-size: 12px; color: var(--muted); text-align: center; }
 
+@media (max-width: 1100px) and (min-width: 881px) { .inds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 880px) {
   .grid2 { grid-template-columns: minmax(0, 1fr); }
   .grid3 { grid-template-columns: minmax(0, 1fr); }
   .grid3 > div { border-left: 0; border-top: 1px solid var(--line); padding-top: 8px; }
   .rets { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .tiles, .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .inds { grid-template-columns: minmax(0, 1fr); }
+  .then { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .then div:nth-child(3) { border-left: 0; }
+  .then div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .vcols { grid-template-columns: 1fr; }
   .rets div:nth-child(4) { border-left: 0; }
   .rets div:nth-child(n+4) { border-top: 1px solid var(--line); }
   .summary { grid-template-columns: 1fr 1fr; }
@@ -235,6 +278,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
   <nav class="nav" id="nav" aria-label="Sections">
     <a href="#portfolio" data-v="portfolio" class="on">Portfolio</a>
     <a href="#markets" data-v="markets">Markets</a>
+    <a href="#sentiment" data-v="sentiment">Sentiment</a>
     <a href="#stock" data-v="stock">Stock lookup</a>
   </nav>
 
@@ -364,6 +408,33 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <div class="card-h"><h2>Market headlines</h2></div>
       <ul class="news" id="mNews"></ul>
     </section>
+  </div>
+
+  <div class="view" id="v-sentiment" hidden>
+    <div class="vhead"><div><h1>Sentiment</h1><p id="fAsof">How fearful or greedy investors are right now, and what analysts think.</p></div></div>
+    <div class="grid2">
+      <section class="card">
+        <div class="card-h"><h2>Market fear &amp; greed</h2><span class="muted" style="font-size:12px">0 = extreme fear · 100 = extreme greed</span></div>
+        <div class="gauge" id="fGauge"><div class="empty"><span class="spin"></span> Working out the mood…</div></div>
+        <div class="then" id="fThen"></div>
+      </section>
+      <section class="card">
+        <div class="card-h"><h2>What’s behind the score</h2><span class="muted" style="font-size:12px">Each signal vs its past year</span></div>
+        <ul class="comps" id="fComps"></ul>
+      </section>
+    </div>
+    <section class="card">
+      <div class="card-h"><h2>Fear &amp; greed over the last 6 months</h2></div>
+      <div class="chartbox" style="height:200px"><canvas id="fChart" aria-label="Fear and greed history"></canvas></div>
+    </section>
+    <div class="ai big verdict">
+      <div class="ai-h"><span class="label">Is now a good time to buy?</span><button class="btn primary" id="fAiBtn" type="button">Ask Claude</button></div>
+      <div id="fAi" class="muted" style="font-size:13px;margin-top:6px">Claude weighs the fear &amp; greed reading, each industry’s mood and analyst consensus, and the latest headlines, then gives the case for and against buying now.</div>
+    </div>
+    <div class="vhead"><div><h2 style="margin:0;font-size:17px;font-weight:600">Industries</h2><p>Mood from each group’s trend, momentum and volatility; consensus from Wall Street analysts covering its biggest names. Click a stock for details.</p></div>
+      <div class="legend-c"><span><i style="background:var(--up)"></i>Strong buy</span><span><i style="background:color-mix(in srgb, var(--up) 50%, var(--surface))"></i>Buy</span><span><i style="background:var(--line)"></i>Hold</span><span><i style="background:color-mix(in srgb, var(--down) 50%, var(--surface))"></i>Sell</span><span><i style="background:var(--down)"></i>Strong sell</span></div></div>
+    <div class="inds" id="fInds"></div>
+    <p class="muted" style="font-size:12px;margin:0;max-width:90ch">Folio computes its own fear &amp; greed index from Yahoo Finance data in the same spirit as the well-known one: six market signals, each ranked against the past year and averaged. It is not CNN’s index. Analyst ratings and targets come from Yahoo Finance. None of this is investment advice.</p>
   </div>
 
   <div class="view" id="v-stock" hidden>
@@ -736,13 +807,14 @@ $("#sumBtn").onclick = async () => {
 };
 
 // ---------- views ----------
-const VIEWS = ["portfolio", "markets", "stock"];
+const VIEWS = ["portfolio", "markets", "sentiment", "stock"];
 function route() {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "portfolio";
   for (const x of VIEWS) $("#v-" + x).hidden = x !== v;
   for (const a of $("#nav").children) a.classList.toggle("on", a.dataset.v === v);
   if (!me) return;
   if (v === "markets") loadMarket();
+  if (v === "sentiment") loadSent();
   if (v === "stock") { renderChips(); if (!S.data) openStock(S.sym || me.holdings[0]?.symbol || "NVDA", false); }
 }
 window.addEventListener("hashchange", route);
@@ -851,7 +923,7 @@ async function openStock(sym, go = true) {
     const d = await api("stock?symbol=" + encodeURIComponent(sym));
     if (S.sym !== sym) return;
     S.data = d; Q[sym] = { ...(Q[sym] || {}), ...d.quote };
-    renderStock(); loadStockHist();
+    renderStock(); loadStockHist(); loadStockSent(sym);
   } catch (err) {
     if (S.sym === sym) $("#sOut").innerHTML = `<div class="card empty">${esc(err.message)}</div>`;
   }
@@ -906,6 +978,11 @@ function renderStock() {
     </div>
 
     <section class="card">
+      <div class="card-h"><h2>Sentiment &amp; analyst consensus</h2></div>
+      <div id="sSent"><div class="empty"><span class="spin"></span> Loading sentiment…</div></div>
+    </section>
+
+    <section class="card">
       <div class="card-h"><h2>Key numbers</h2></div>
       <div class="stats">
         ${stat("Market value", big(st.marketCap))}
@@ -931,8 +1008,144 @@ function renderStock() {
   $("#sWhyBtn").onclick = () => aiInto($("#sWhyBtn"), $("#sWhy"), "stock/why", { symbol: d.symbol }, "Explain again");
   $("#sWatch").onclick = async () => {
     if (me.watchlist.includes(d.symbol)) return;
-    me.watchlist.unshift(d.symbol); await saveMe(); renderStock(); loadStockHist(); render();
+    me.watchlist.unshift(d.symbol); await saveMe(); renderStock(); loadStockHist(); loadStockSent(d.symbol); render();
   };
+}
+
+// ---------- sentiment ----------
+function moodBg(v, strength = 1) {
+  if (v == null) return "var(--line)";
+  if (v < 25) return `color-mix(in srgb, var(--down) ${Math.round(85 * strength)}%, var(--surface))`;
+  if (v < 45) return `color-mix(in srgb, var(--down) ${Math.round(35 * strength)}%, var(--surface))`;
+  if (v < 55) return "var(--line)";
+  if (v < 75) return `color-mix(in srgb, var(--up) ${Math.round(35 * strength)}%, var(--surface))`;
+  return `color-mix(in srgb, var(--up) ${Math.round(85 * strength)}%, var(--surface))`;
+}
+const moodInk = v => v == null ? "var(--muted)" : (v < 25 || v >= 75) ? "var(--surface)" : "var(--ink)";
+const moodName = v => v == null ? "—" : v < 25 ? "Extreme fear" : v < 45 ? "Fear" : v < 55 ? "Neutral" : v < 75 ? "Greed" : "Extreme greed";
+const mchip = v => `<span class="mchip" style="background:${moodBg(v)};color:${moodInk(v)}">${moodName(v)}</span>`;
+const meter = v => `<div class="meter"><i style="left:${Math.max(1, Math.min(99, v ?? 50))}%"></i></div>`;
+function gaugeSvg(v) {
+  const P = x => { const t = Math.PI * (1 - x / 100); return [100 + 80 * Math.cos(t), 100 - 80 * Math.sin(t)]; };
+  const seg = (a, b, col) => { const [x1, y1] = P(a + 0.6), [x2, y2] = P(b - 0.6); return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} A80 80 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="${col}" stroke-width="16" fill="none"/>`; };
+  const [nx, ny] = (() => { const t = Math.PI * (1 - v / 100); return [100 + 64 * Math.cos(t), 100 - 64 * Math.sin(t)]; })();
+  const lab = (x, t) => { const [lx, ly] = (() => { const a = Math.PI * (1 - x / 100); return [100 + 100 * Math.cos(a), 100 - 100 * Math.sin(a)]; })(); return `<text x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="middle" font-size="8" fill="var(--muted)">${t}</text>`; };
+  return `<svg viewBox="-44 -14 288 126" role="img" aria-label="Fear and greed ${v} of 100">
+    ${seg(0, 25, moodBg(10))}${seg(25, 45, moodBg(35))}${seg(45, 55, "var(--line)")}${seg(55, 75, moodBg(65))}${seg(75, 100, moodBg(90))}
+    ${lab(12, "Extreme fear")}${lab(35, "Fear")}${lab(50, "Neutral")}${lab(65, "Greed")}${lab(88, "Extreme greed")}
+    <line x1="100" y1="100" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="5" fill="var(--ink)"/></svg>`;
+}
+const ratingCol = { strongBuy: "var(--up)", buy: "color-mix(in srgb, var(--up) 50%, var(--surface))", hold: "var(--line)", sell: "color-mix(in srgb, var(--down) 50%, var(--surface))", strongSell: "var(--down)" };
+function stackBar(c) {
+  if (!c) return "";
+  const tot = Object.values(c).reduce((a, b) => a + b, 0); if (!tot) return "";
+  return `<div class="stack" title="${Object.entries(c).map(([k, v]) => `${k}: ${v}`).join(", ")}">${Object.entries(c).filter(([, v]) => v).map(([k, v]) => `<span style="width:${v / tot * 100}%;background:${ratingCol[k]}"></span>`).join("")}</div>`;
+}
+const ratingChip = r => r ? `<span class="mchip" style="background:${r === "Strong buy" ? ratingCol.strongBuy : r === "Buy" ? ratingCol.buy : r === "Hold" ? ratingCol.hold : ratingCol.sell};color:${r === "Strong buy" ? "var(--surface)" : "var(--ink)"}">${r}</span>` : `<span class="muted">—</span>`;
+
+function verdictHtml(text) {
+  const get = k => text.split("\n").map(l => l.trim()).filter(l => l.toUpperCase().startsWith(k + ":")).map(l => l.slice(k.length + 1).trim().replace(/\*\*/g, ""));
+  const sig = get("SIGNAL")[0], sum = get("SUMMARY").join(" "), bull = get("BULL"), bear = get("BEAR"), timing = get("TIMING").join(" ");
+  if (!sig && !sum) return bullets(text);
+  const sc = /positive/i.test(sig) ? ["var(--up-soft)", "var(--up)"] : /cautious/i.test(sig) ? ["var(--down-soft)", "var(--down)"] : ["var(--line)", "var(--ink)"];
+  return `${sig ? `<span class="sig" style="background:${sc[0]};color:${sc[1]}">${esc(sig)}</span>` : ""}
+    ${sum ? `<p class="lead">${esc(sum)}</p>` : ""}
+    <div class="vcols">
+      <div><h4 class="up">The case for buying</h4><ul>${bull.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div><h4 class="down">The case for waiting</h4><ul>${bear.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    </div>
+    ${timing ? `<p style="margin:10px 0 0;max-width:72ch"><b>Timing:</b> ${esc(timing)}</p>` : ""}`;
+}
+async function verdictInto(btn, out, path, body) {
+  btn.disabled = true; out.className = "muted"; out.innerHTML = `<span class="spin"></span> Weighing the signals…`;
+  try {
+    const r = await post(path, body);
+    out.className = "";
+    out.innerHTML = verdictHtml(r.text) + `<div class="meta">Written by Claude at ${new Date(r.ts * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} from the data on this page. A summary of signals and opinions, not investment advice.</div>`;
+    btn.textContent = "Ask again";
+  } catch (err) { out.className = "down"; out.textContent = err.message || "That didn’t work. Try again in a minute."; }
+  btn.disabled = false;
+}
+
+let F = null, fLoaded = 0, fChart = null;
+async function loadSent(force) {
+  if (!force && F && Date.now() - fLoaded < 300000) return renderSent();
+  try { F = await api("sentiment"); fLoaded = Date.now(); renderSent(); }
+  catch (err) { $("#fGauge").innerHTML = `<div class="empty">Couldn’t work out the mood right now. ${esc(err.message)}</div>`; }
+}
+function renderSent() {
+  const m = F.market;
+  $("#fAsof").textContent = `How fearful or greedy investors are, and what analysts think. Data as of the ${new Date(m.asof + "T12:00:00").toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })} close.`;
+  $("#fGauge").innerHTML = `${gaugeSvg(m.score)}<div class="score">${m.score}</div><div class="mood">${mchip(m.score)}</div>`;
+  const then = (l, v) => `<div><small>${l}</small><b>${v == null ? "—" : Math.round(v)}</b>${v == null ? "" : `<small>${moodName(v)}</small>`}</div>`;
+  $("#fThen").innerHTML = then("Previous close", m.prevClose) + then("1 week ago", m.weekAgo) + then("1 month ago", m.monthAgo) + then("1 year ago", m.yearAgo);
+  $("#fComps").innerHTML = m.components.map(c => `<li><span>${esc(c.name)}</span><span class="num" style="text-align:right">${c.score ?? "—"}</span>${meter(c.score)}<span class="d">${esc(c.desc)} · ${moodName(c.score)}</span></li>`).join("");
+  if (window.Chart) {
+    if (fChart) fChart.destroy();
+    const h = m.history;
+    fChart = new Chart($("#fChart").getContext("2d"), { type: "line",
+      data: { labels: h.map(([d]) => new Date(d + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric" })),
+        datasets: [{ data: h.map(x => x[1]), borderColor: css("--accent"), borderWidth: 1.75, pointRadius: 0, pointHoverRadius: 4, tension: 0.2, fill: false }] },
+      options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
+        plugins: { legend: { display: false }, tooltip: { displayColors: false, backgroundColor: css("--surface"), titleColor: css("--muted"), bodyColor: css("--ink"), borderColor: css("--line"), borderWidth: 1, callbacks: { label: c => `${Math.round(c.parsed.y)} · ${moodName(c.parsed.y)}` } } },
+        scales: { x: { grid: { display: false }, border: { color: css("--line") }, ticks: { color: css("--muted"), maxTicksLimit: 6, maxRotation: 0, font: { size: 11 } } },
+          y: { min: 0, max: 100, position: "right", border: { display: false }, grid: { color: c => [25, 45, 55, 75].includes(c.tick.value) ? css("--line") : "transparent" },
+            ticks: { color: css("--muted"), font: { size: 10 }, stepSize: 5, autoSkip: false, callback: v => ({ 12.5: "Ext. fear", 35: "Fear", 50: "Neutral", 65: "Greed", 87.5: "Ext. greed" })[v] ?? (([25, 45, 55, 75].includes(v)) ? "" : null) },
+            afterBuildTicks: ax => { ax.ticks = [0, 12.5, 25, 35, 45, 50, 55, 65, 75, 87.5, 100].map(v => ({ value: v })); } } } } });
+  }
+  $("#fInds").innerHTML = F.industries.map(i => {
+    const se = i.sentiment || {}, co = i.consensus;
+    return `<section class="card ind">
+      <div class="ind-h">
+        <div class="top"><h3>${esc(i.name)}</h3><span class="sc">${se.score ?? "—"}</span></div>
+        <div class="top">${mchip(se.score)}<span class="muted" style="font-size:12px">a week ago ${se.weekAgo == null ? "—" : Math.round(se.weekAgo)} · a month ago ${se.monthAgo == null ? "—" : Math.round(se.monthAgo)}</span></div>
+        ${meter(se.score)}
+        <div class="facts"><span>1 week <b class="${cls(i.week)}">${pct(i.week)}</b></span><span>1 month <b class="${cls(i.month)}">${pct(i.month)}</b></span></div>
+        <div class="facts"><span>Analysts: ${ratingChip(co.rating)}</span><span>Median target <b class="${cls(co.upside)}">${pct(co.upside)}</b> from here</span></div>
+        ${stackBar(co.counts)}
+      </div>
+      <ul class="mem">${i.members.map(x => `<li data-s="${esc(x.symbol)}"><span class="sym">${esc(x.symbol)}</span><span class="r">${x.rating || "—"}${x.upside != null ? ` · target ${pct(x.upside)}` : ""}</span><span class="pill ${cls(x.month)}" title="1 month">${pct(x.month)}</span><span></span></li>`).join("")}</ul>
+      <div class="basis">Mood based on the ${esc(i.basis)} · stock moves are 1 month</div>
+    </section>`;
+  }).join("");
+}
+$("#fInds").onclick = e => { const li = e.target.closest("li[data-s]"); if (li) openStock(li.dataset.s); };
+$("#fAiBtn").onclick = () => verdictInto($("#fAiBtn"), $("#fAi"), "sentiment/brief", {});
+
+async function loadStockSent(sym) {
+  const box = $("#sSent"); if (!box) return;
+  try {
+    const r = await api("stock/sentiment?symbol=" + encodeURIComponent(sym));
+    if (S.sym !== sym || !$("#sSent")) return;
+    const se = r.sentiment, a = r.analyst;
+    const tot = a.counts ? Object.values(a.counts).reduce((x, y) => x + y, 0) : 0;
+    $("#sSent").innerHTML = `
+      <div class="grid2" style="gap:0">
+        <div style="min-width:0;border-right:1px solid var(--line)">
+          <div class="ind-h">
+            <div class="top"><span class="label">Stock mood</span><span class="sc">${se?.score ?? "—"}</span></div>
+            <div class="top">${mchip(se?.score)}<span class="muted" style="font-size:12px">${se ? `a week ago ${Math.round(se.weekAgo ?? 0)} · a month ago ${Math.round(se.monthAgo ?? 0)}` : "Not enough price history"}</span></div>
+            ${meter(se?.score)}
+          </div>
+          <ul class="comps">${(se?.components || []).map(c => `<li><span>${esc(c.name)}</span><span class="num" style="text-align:right">${c.score ?? "—"}</span>${meter(c.score)}<span class="d">${esc(c.desc)}</span></li>`).join("")}</ul>
+        </div>
+        <div style="min-width:0">
+          <div class="ind-h">
+            <div class="top"><span class="label">Analyst consensus</span>${ratingChip(a.rating)}</div>
+            ${a.mean ? `<div class="facts"><span>Average rating <b>${a.mean.toFixed(2)}</b> (1 = strong buy, 5 = sell)</span><span><b>${a.analysts ?? tot}</b> analysts</span></div>` : `<div class="facts">No analyst coverage found.</div>`}
+            ${stackBar(a.counts)}
+            ${a.counts ? `<div class="legend-c">${[["strongBuy", "Strong buy"], ["buy", "Buy"], ["hold", "Hold"], ["sell", "Sell"], ["strongSell", "Strong sell"]].map(([k, l]) => `<span><i style="background:${ratingCol[k]}"></i>${l} ${a.counts[k]}</span>`).join("")}</div>` : ""}
+            ${a.target ? `<div class="facts"><span>Average price target <b>${money(a.target, S.data.quote.currency)}</b></span><span><b class="${cls(a.upside)}">${pct(a.upside)}</b> from the current price</span></div>` : ""}
+          </div>
+          <div class="ai big verdict" style="margin:4px 16px 16px">
+            <div class="ai-h"><span class="label">Buy now or wait?</span><button class="btn primary" id="sVerBtn" type="button">Ask Claude</button></div>
+            <div id="sVer" class="muted" style="font-size:13px;margin-top:6px">Claude weighs the analyst consensus, valuation, the stock’s mood, upcoming earnings and the news, then lays out the case for and against buying at today’s price.</div>
+          </div>
+        </div>
+      </div>`;
+    $("#sVerBtn").onclick = () => verdictInto($("#sVerBtn"), $("#sVer"), "stock/verdict", { symbol: sym });
+  } catch { if ($("#sSent")) $("#sSent").innerHTML = `<div class="empty">Sentiment data isn’t available for ${esc(sym)}.</div>`; }
 }
 
 // ---------- boot ----------
