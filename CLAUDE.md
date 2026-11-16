@@ -146,4 +146,9 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
   currency use the parent ticker's figures scaled by the price ratio. Financials: earnings, net cash ignored.
 - The math runs in the browser (`dcfValue`): years 1-5 growth, years 6-10 growth, then perpetual growth; fair value today,
   value in 1/3/5 years, reverse-DCF implied growth. Slider settings saved per ticker in localStorage (`folio-dcf-<SYM>`).
+- Start options: fcf, fcf3 (3-yr avg), ni, fwd (price / forwardPE), rev (revenue/share x target FCF margin slider). SBC deduction
+  applies only to cash-flow starts. Terminal value: perpetuity growth or exit multiple (per case). Share count change %/yr divides
+  each year's per-share flow by (1+d)^t. Discount tooltip shows CAPM (rf + beta [0.6-2] x 5% ERP, clamped 7-14%).
+- 5x5 sensitivity (discount +-2pp x base growth +-5pp) at the bottom. `POST /api/stock/dcf/suggest` (AI, JSON out, clamped,
+  cached 30 min per symbol/start/tv) fills all three cases plus a one-sentence reason each.
 

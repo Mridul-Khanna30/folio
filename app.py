@@ -1879,8 +1879,57 @@ def _dcf_base(sym):
         rf = rf if 1 < rf < 10 else 4.2
     except Exception:
         rf = 4.2
-    disc = round(max(7.0, min(14.0, rf + max(0.6, min(2.0, beta or 1.0)) * 5.0)), 1)
+    ERP = 5.0
+    beta_used = max(0.6, min(2.0, beta or 1.0))
+    disc_raw = rf + beta_used * ERP
+    disc = round(max(7.0, min(14.0, disc_raw)), 1)
+    # statements: 3-year average FCF, stock-based pay, margins, share-count trend
+    t2 = yf.Ticker(src.get("symbol") or sym)
+    fcf3 = sbc = None
+    hist, dil = [], None
+    try:
+        cf, inc = t2.cashflow, t2.income_stmt
+        cols = sorted(cf.columns)[-4:]
+        fr = _row(cf, "Free Cash Flow")
+        f3 = [v for c in cols[-3:] if (v := _v(fr, c)) is not None]
+        fcf3 = sum(f3) / len(f3) if f3 else None
+        sr = _row(cf, "Stock Based Compensation")
+        try:
+            qcf = t2.quarterly_cashflow
+            qs = _row(qcf, "Stock Based Compensation")
+            qv = [v for c in sorted(qcf.columns)[-4:] if (v := _v(qs, c)) is not None]
+            sbc = sum(qv) if len(qv) == 4 else None
+        except Exception:
+            pass
+        if sbc is None and sr is not None and cols:
+            sbc = _v(sr, cols[-1])
+        rr, gr, orr = _row(inc, "Total Revenue"), _row(inc, "Gross Profit"), _row(inc, "Operating Income")
+        for c in sorted(inc.columns)[-4:]:
+            rv = _v(rr, c)
+            if not rv:
+                continue
+            pct_ = lambda x: round(x / rv * 100, 1) if x is not None else None
+            hist.append({"year": c.strftime("%Y"), "revenue": rv, "gross": pct_(_v(gr, c)), "op": pct_(_v(orr, c)),
+                         "fcf": pct_(_v(fr, c) if c in cf.columns else None), "sbc": pct_(_v(sr, c) if c in cf.columns else None)})
+        shr = _row(inc, "Diluted Average Shares", "Basic Average Shares")
+        sv = [(c, v) for c in sorted(inc.columns) if (v := _v(shr, c))]
+        if len(sv) >= 2:
+            yrs = max(1.0, (sv[-1][0] - sv[0][0]).days / 365.25)
+            dil = round(max(-6.0, min(6.0, ((sv[-1][1] / sv[0][1]) ** (1 / yrs) - 1) * 100)), 1)
+    except Exception:
+        pass
+    rev = fnum(src.get("totalRevenue"))
+    fms = [h["fcf"] for h in hist if h["fcf"] is not None]
+    margin = round(max(1.0, min(60.0, float(np.median(fms[-3:])))), 1) if fms and np.median(fms[-3:]) > 0 else (
+        round(max(1.0, min(60.0, fcf / rev * 100)), 1) if fcf and rev and fcf > 0 else 10.0)
+    fpe = fnum(src.get("forwardPE"))
+    exit_b = round(max(10.0, min(25.0, 15 + (base - 5) * 0.5)))
     return {"ok": True, "symbol": sym, "currency": qc, "price": price,
+            "fcf3Ps": fcf3 * k if fcf3 is not None else None, "fwdPs": price / fpe if fpe and fpe > 0 else None,
+            "revPs": rev * k if rev else None, "sbcPs": sbc * k if sbc else 0.0, "margin": margin,
+            "dilution": dil if dil is not None else 0.0, "erp": ERP, "betaUsed": round(beta_used, 2), "discRaw": round(disc_raw, 2),
+            "exit": {"bear": round(exit_b * 0.75), "base": exit_b, "bull": round(exit_b * 1.3)},
+            "hist": [{k_: v for k_, v in h.items() if k_ != "revenue"} for h in hist],
             "fcfPs": fcf * k if fcf is not None else None, "niPs": ni * k if ni is not None else None,
             "netCashPs": 0.0 if (i.get("sector") or "") == "Financial Services" else (cash - debt) * k, "cashPs": cash * k, "debtPs": debt * k,
             "growth": {"base": base, "bull": round(base + spread, 1), "bear": round(base - spread, 1)},
@@ -1896,6 +1945,69 @@ def stock_dcf(symbol: str, key: str = Depends(current_user)):
         return cached(("dcf", sym), 3 * 3600, lambda: _dcf_base(sym))
     except Exception:
         return {"ok": False, "why": "Couldn't get the numbers for a DCF."}
+
+
+class DcfAiReq(BaseModel):
+    symbol: str
+    start: str = "fcf"
+    tv: str = "growth"
+
+
+@app.post("/api/stock/dcf/suggest")
+def stock_dcf_suggest(req: DcfAiReq, key: str = Depends(current_user)):
+    sym = req.symbol.strip().upper()[:20]
+    b = stock_dcf(sym, key)
+    if not b.get("ok"):
+        raise HTTPException(400, b.get("why") or "No DCF for this stock.")
+    def f():
+        i = tinfo(sym)
+        src = tinfo(b["parent"]) if b.get("parent") else i
+        lines = [f"{i.get('longName') or sym} ({sym}); sector {i.get('sector') or '-'}, industry {i.get('industry') or '-'}",
+                 f"Price {b['price']:.2f} {b['currency']}; beta {b.get('beta')}; 10-yr Treasury {b['rf']}%; suggested discount rate {b['discount']}%"]
+        try:
+            ge = yf.Ticker(src.get("symbol") or sym).growth_estimates
+            lines.append("Analyst EPS growth estimates: " + ", ".join(f"{r} {ge.loc[r, 'stockTrend'] * 100:.1f}%" for r in ge.index
+                                                                      if ge.loc[r, "stockTrend"] == ge.loc[r, "stockTrend"]))
+        except Exception:
+            pass
+        try:
+            re_ = yf.Ticker(src.get("symbol") or sym).revenue_estimate
+            lines.append("Analyst revenue growth estimates: " + ", ".join(f"{r} {re_.loc[r, 'growth'] * 100:.1f}%" for r in re_.index
+                                                                         if re_.loc[r, "growth"] == re_.loc[r, "growth"]))
+        except Exception:
+            pass
+        for kk, lab in (("revenueGrowth", "Last-year revenue growth"), ("earningsGrowth", "Last-year earnings growth"),
+                        ("grossMargins", "Gross margin"), ("operatingMargins", "Operating margin"), ("profitMargins", "Net margin")):
+            v = fnum(src.get(kk))
+            if v is not None:
+                lines.append(f"{lab}: {v * 100:.1f}%")
+        for h in b.get("hist", []):
+            lines.append(f"FY{h['year']}: gross {h['gross']}%, operating {h['op']}%, FCF margin {h['fcf']}%, stock pay {h['sbc']}% of sales")
+        lines.append(f"Share count change per year (recent): {b.get('dilution')}%")
+        lines.append(f"Valuation method: starting from {req.start}; terminal value by {'exit multiple of year-10 cash flow' if req.tv == 'exit' else 'perpetual growth'}")
+        txt = ask_claude(
+            "You set realistic DCF assumptions for a stock. Consider consensus estimates, historical margins and growth, "
+            "how cyclical the sector is (cyclicals: wider bear/bull spread and mean reversion; mature companies: low growth), and base rates "
+            "(very few companies compound above 20% for 5 years). Reply with JSON only, no other text, exactly this shape: "
+            '{"bear":{"g1":n,"g2":n,"gt":n,"exit":n,"why":"..."},"base":{...},"bull":{...},"margin":n} where g1 = yearly growth % for years 1-5, '
+            "g2 = years 6-10, gt = perpetual growth % after year 10 (0-4), exit = year-10 multiple of free cash flow (or earnings) (5-40), "
+            "margin = a sensible long-run free cash flow margin % of revenue, and why = one short plain-English sentence (max 25 words) explaining that case. "
+            "Bear < base < bull for g1.",
+            "\n".join(lines), 900)
+        m = re.search(r"\{.*\}", txt, re.S)
+        if not m:
+            raise HTTPException(502, "The AI's answer couldn't be read. Try again.")
+        d = json.loads(m.group(0))
+        clamp = lambda v, lo, hi, dflt: max(lo, min(hi, float(v))) if isinstance(v, (int, float)) else dflt
+        out = {}
+        for c in ("bear", "base", "bull"):
+            x = d.get(c) or {}
+            out[c] = {"g1": round(clamp(x.get("g1"), -20, 50, b["growth"][c]) * 2) / 2, "g2": round(clamp(x.get("g2"), -10, 30, 5) * 2) / 2,
+                      "gt": round(clamp(x.get("gt"), 0, 4, 2.5) * 2) / 2, "exit": round(clamp(x.get("exit"), 5, 40, b["exit"][c])),
+                      "why": str(x.get("why") or "")[:240]}
+        out["margin"] = round(clamp(d.get("margin"), 1, 60, b["margin"]) * 2) / 2
+        return out
+    return cached(("dcfai", sym, req.start, req.tv), 1800, f)
 
 
 # ---------- SEC filings ----------
