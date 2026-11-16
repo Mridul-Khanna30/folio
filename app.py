@@ -667,7 +667,7 @@ def stock(symbol: str, key: str = Depends(current_user)):
     def f():
         t = yf.Ticker(sym)
         try:
-            info = t.info or {}
+            info = tinfo(sym)
         except Exception:
             info = {}
         q = one_quote(sym)
@@ -890,12 +890,19 @@ def analyst(sym):
             pass
         price = fnum(info.get("currentPrice") or info.get("regularMarketPrice"))
         target = fnum(info.get("targetMeanPrice"))
-        return {"symbol": sym, "name": info.get("shortName") or sym, "mean": fnum(info.get("recommendationMean")),
+        mean = fnum(info.get("recommendationMean"))
+        if mean is None and counts and sum(counts.values()):  # Yahoo sometimes drops the summary; rebuild it from the vote counts
+            w = {"strongBuy": 1, "buy": 2, "hold": 3, "sell": 4, "strongSell": 5}
+            mean = sum(w[k] * v for k, v in counts.items()) / sum(counts.values())
+        return {"symbol": sym, "name": info.get("shortName") or sym, "mean": mean, "_ok": bool(info),
                 "key": info.get("recommendationKey"), "target": target, "price": price,
                 "upside": (target / price - 1) * 100 if target and price else None,
                 "analysts": info.get("numberOfAnalystOpinions"), "counts": counts,
                 "fpe": fnum(info.get("forwardPE")), "pe": fnum(info.get("trailingPE"))}
-    return cached(("analyst", sym), 6 * 3600, f)
+    r = cached(("analyst", sym), 6 * 3600, f)
+    if not r.get("_ok"):
+        _cache.pop(("analyst", sym), None)  # Yahoo hiccup: don't keep a blank answer for 6 hours
+    return r
 
 
 def rating_label(mean):
@@ -1433,7 +1440,10 @@ def tinfo(sym):
     def f():
         return yf.Ticker(sym).info or {}
     try:
-        return cached(("info", sym), 6 * 3600, f)
+        r = cached(("info", sym), 6 * 3600, f)
+        if not r:
+            _cache.pop(("info", sym), None)
+        return r
     except Exception:
         return {}
 

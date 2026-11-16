@@ -418,6 +418,32 @@ dialog::backdrop { background: rgb(0 0 0 / 0.35); }
 .rbar { position: relative; height: 4px; background: var(--line); border-radius: 2px; margin: 10px 0 4px; }
 .rbar .md { position: absolute; top: -3px; width: 2px; height: 10px; background: var(--muted); transform: translateX(-50%); }
 .rbar .nw { position: absolute; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: translateX(-50%); }
+.rbar .nw.good { background: var(--up); } .rbar .nw.warn { background: var(--a3); } .rbar .nw.bad { background: var(--down); }
+.vst { font-size: 11px; margin-top: 2px; } .vst.good { color: var(--up); } .vst.warn { color: var(--a3); } .vst.bad { color: var(--down); }
+.pe-lo { color: var(--up); } .pe-hi { color: var(--a3); } .pe-neg { color: var(--down); }
+td.best { background: color-mix(in srgb, var(--up) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--up) 30%, transparent); border-radius: 6px; }
+.act { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.act.a-up { color: var(--up); background: var(--up-soft); } .act.a-down { color: var(--down); background: var(--down-soft); }
+.act.a-init { color: var(--accent); background: var(--accent-soft); } .act.a-keep { color: var(--muted); background: var(--bg); }
+.mdelta { font-family: var(--mono); font-size: 11px; padding: 0 6px; border-radius: 999px; margin-left: 4px; }
+.mdelta.up { background: var(--up-soft); } .mdelta.down { background: var(--down-soft); }
+.jump { position: sticky; top: 0; z-index: 30; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding: 4px; border: 1px solid var(--line); border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.jump button { border: 0; background: none; padding: 5px 12px; border-radius: 7px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.jump button:hover { color: var(--ink); } .jump button.on { background: var(--accent-soft); color: var(--accent); }
+#sOut .view > section { scroll-margin-top: 56px; }
+.bw { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; font-size: 12px; }
+.bw span { white-space: nowrap; } .bw .sym { font-size: 12px; }
+.holdgrid { display: grid; gap: 16px; }
+.sh2 { display: none; }
+@media (min-width: 1180px) {
+  .holdgrid { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); align-items: start; }
+  .holdgrid .shcol, .holdgrid .mnum { display: none; }
+  .holdgrid .sh2 { display: block; }
+  .holdgrid table th, .holdgrid table td { padding-left: 8px; padding-right: 8px; }
+  .holdgrid > .chartcard { position: sticky; top: 12px; }
+  .holdgrid > .chartcard .chartbox { height: 340px; }
+}
 .rlab { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); font-family: var(--mono); }
 .fil dl { margin: 10px 0 0; }
 .fil h4 { margin: 12px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
@@ -540,6 +566,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <div class="mid num" id="gain">—</div>
       <div class="sub num" id="gainPct"></div>
       <div class="sub num" id="gainFx"></div>
+      <div class="bw" id="gainBW"></div>
     </div>
     <div>
       <div class="label">Portfolio mood</div>
@@ -588,13 +615,13 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     <div id="stressOut" class="muted" style="font-size:13px;margin-top:8px">Claude looks at each holding’s business, sector, country, currency, valuation, debt and volatility, plus today’s market, and says how the portfolio would likely hold up.</div>
   </div>
 
-  <div class="view" style="gap:16px">
+  <div class="holdgrid">
     <section class="card">
       <div class="card-h"><h2 id="holdTitle">Holdings</h2><span style="display:flex;gap:8px;align-items:center"><span class="muted hide-sm" style="font-size:12px">Click a row to chart it</span><button class="btn" type="button" id="impBtn">Import CSV</button><button class="btn" type="button" id="expBtn">Export CSV</button></span></div>
       <div class="tablewrap">
         <table>
           <thead><tr>
-            <th>Asset</th><th class="hide-sm">Price</th><th>Today</th><th class="hide-sm">Mood</th><th class="hide-sm">Shares</th><th>Value</th><th>Gain</th><th></th>
+            <th>Asset</th><th class="hide-sm">Price</th><th>Today</th><th class="hide-sm">Mood</th><th class="hide-sm shcol">Shares</th><th>Value</th><th>Gain</th><th></th>
           </tr></thead>
           <tbody id="holdings"></tbody>
         </table>
@@ -609,7 +636,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       </form>
     </section>
 
-    <section class="card">
+    <section class="card chartcard">
       <div class="chart-head">
         <div class="row">
           <div style="min-width:0">
@@ -895,6 +922,15 @@ const bm = (v, d = 2) => v == null || isNaN(v) ? "—" : money(v, BASE).replace(
 const sBm = (v, d = 2) => v == null || isNaN(v) ? "—" : sign(v) + bm(Math.abs(v), d);
 const baseRate = () => FX[BASE] || 1;  // USD per 1 unit of base
 const cls = v => v > 0 ? "up" : v < 0 ? "down" : "muted";
+// forward P/E colour: cheap (<15x) green, very expensive (>40x) amber, negative (losses) red
+const peCls = v => v == null || isNaN(v) ? "" : v <= 0 ? "pe-neg" : v < 15 ? "pe-lo" : v > 40 ? "pe-hi" : "";
+const peFmt = v => v == null || isNaN(v) ? "—" : `<span class="num ${peCls(v)}">${v.toFixed(1)}×</span>`;
+// index of the best value in a row: "low" = lowest positive number, "high" = highest number; -1 if fewer than 2 to compare
+function bestIdx(vals, dir) {
+  const v = vals.map((x, i) => [x, i]).filter(([x]) => x != null && !isNaN(x) && (dir === "high" || x > 0));
+  if (v.length < 2) return -1;
+  return v.reduce((a, b) => (dir === "low" ? b[0] < a[0] : b[0] > a[0]) ? b : a)[1];
+}
 const qty = v => +v.toFixed(8) + "";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 function ago(iso) {
@@ -1005,6 +1041,12 @@ function render() {
   $("#gainPct").innerHTML = `<span class="${cls(st.invested - st.cost)}">${pct(st.allPct)}</span> <span class="muted">on ${bm(st.cost, 0)} invested</span>`;
   const foreign = u.holdings.some(h => (h.cur || Q[h.symbol]?.currency) && (h.cur || Q[h.symbol]?.currency) !== BASE);
   $("#gainFx").innerHTML = foreign && st.rows.length ? `<span class="muted">Stocks</span> <span class="${cls(st.invested - st.cost - st.fxGain)}">${sBm(st.invested - st.cost - st.fxGain, 0)}</span> <span class="muted">· Currency</span> <span class="${cls(st.fxGain)}">${sBm(st.fxGain, 0)}</span>` : "";
+  const gr = st.rows.filter(r => r.gain != null);
+  if (gr.length >= 2) {
+    const best = gr.reduce((a, b) => b.gain > a.gain ? b : a), worst = gr.reduce((a, b) => b.gain < a.gain ? b : a);
+    const one = (lab, r) => `<span><span class="muted">${lab}</span> <span class="sym">${esc(r.h.symbol)}</span> <span class="num ${cls(r.gain)}">${sBm(r.gain, 0)}</span></span>`;
+    $("#gainBW").innerHTML = one("Best", best) + one("Worst", worst);
+  } else $("#gainBW").innerHTML = "";
   $("#fxNote").textContent = foreign ? `Foreign holdings converted to ${BASE} at today’s rate; gains use the rate on the day bought (or the day added to Folio).` : "";
   $("#pMood").innerHTML = st.mood == null ? `<span class="muted">${u.holdings.length ? "Working it out…" : "—"}</span>` : `<b>${Math.round(st.mood)}</b>${mchip(st.mood)}`;
 
@@ -1019,16 +1061,16 @@ function render() {
       <td><div class="sym">${esc(h.symbol)}</div><div class="nm">${esc(q.name && q.name !== h.symbol ? q.name : "")}${q.error ? '<span class="down">price unavailable</span>' : ""}</div></td>
       <td class="num hide-sm">${money(q.price, q.currency)}</td>
       <td><span class="pill ${cls(q.pct)}">${pct(q.pct)}</span></td>
-      <td class="hide-sm">${MOODS[h.symbol] == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:4px">${MOODS[h.symbol]}</span>${mchip(MOODS[h.symbol])}`}</td>
-      <td class="num hide-sm">${qty(h.shares)}</td>
-      <td class="num">${bm(val)}</td>
+      <td class="hide-sm">${MOODS[h.symbol] == null ? '<span class="muted">—</span>' : `<span class="num mnum" style="margin-right:4px">${MOODS[h.symbol]}</span><span title="Mood ${MOODS[h.symbol]}">${mchip(MOODS[h.symbol])}</span>`}</td>
+      <td class="num hide-sm shcol">${qty(h.shares)}</td>
+      <td class="num">${bm(val)}<div class="sub muted sh2">${qty(h.shares)} sh</div></td>
       <td class="num ${cls(gain)}">${sBm(gain)}<div class="sub">${pct(gainPct)}${Math.abs(fx) >= 0.5 ? ` <span class="muted" title="Part of the gain from the exchange rate">FX ${sBm(fx, 0)}</span>` : ""}</div></td>
       <td>${mine ? `<button class="wbtn" type="button" data-del="${i}" aria-label="Sell, edit or remove ${esc(h.symbol)}">Manage</button>` : ""}</td>
     </tr>`).join("") : `<tr><td colspan="8" class="empty">${mine ? "No holdings yet. Add what you own below: the ticker (or search by name), how many shares, and the average price you paid per share." : "No holdings yet."}</td></tr>`;
   const cc = u.cash || { amount: 0, currency: "USD" };
   if (mine || cc.amount > 0) $("#holdings").insertAdjacentHTML("beforeend", `<tr data-cash="1" style="cursor:${mine ? "pointer" : "default"}">
       <td><div class="sym">Cash</div><div class="nm">${esc(cc.currency)}${cc.currency !== BASE && cc.amount ? " · " + money(cc.amount, cc.currency) : ""}</div></td>
-      <td class="num hide-sm muted">—</td><td></td><td class="hide-sm"></td><td class="num hide-sm muted">—</td>
+      <td class="num hide-sm muted">—</td><td></td><td class="hide-sm"></td><td class="num hide-sm muted shcol">—</td>
       <td class="num">${bm(st.cash)}</td><td class="muted num">${st.total ? (st.cash / st.total * 100).toFixed(1) + "%" : ""}</td>
       <td>${mine ? `<button class="wbtn" type="button" data-cashedit="1">${cc.amount ? "Edit" : "+ Add cash"}</button>` : ""}</td></tr>`);
 
@@ -1401,7 +1443,7 @@ const WCOLS = [
   { k: "target", h: "Target buy", on: true, f: c => c.mine ? `<button type="button" class="tg${c.tg ? " set" : ""}" data-tg="${esc(c.s)}">${c.tg ? money(c.tg, c.q.currency) : "+ set"}</button>` : '<span class="muted">—</span>' },
   { k: "away", h: "Away", on: true, f: c => c.away == null ? '<span class="muted">—</span>' : c.away <= 0 ? '<span class="pill up">at target</span>' : `<span class="num muted">${pct(c.away)}</span>` },
   { k: "high", h: "From 52W high", on: true, f: c => c.w.fromHigh == null ? '<span class="muted">—</span>' : `<span class="num ${c.w.fromHigh > -2 ? "up" : c.w.fromHigh < -20 ? "down" : ""}">${c.w.fromHigh > -0.5 ? "at high" : pct(c.w.fromHigh)}</span>` },
-  { k: "fpe", h: "Fwd P/E", on: true, f: c => `<span class="num">${c.w.fpe ? c.w.fpe.toFixed(1) + "×" : "—"}</span>` },
+  { k: "fpe", h: "Fwd P/E", on: true, f: c => c.w.fpe ? peFmt(c.w.fpe) : `<span class="num">—</span>` },
   { k: "mood", h: "Mood", on: true, f: c => c.w.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:4px">${c.w.mood}</span>${mchip(c.w.mood)}` },
   { k: "earn", h: "Earnings", on: true, f: c => c.w.earnings ? `<span class="num muted">${new Date(c.w.earnings + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric" })}</span>` : '<span class="muted">—</span>' },
 ];
@@ -2069,7 +2111,8 @@ function renderStock() {
   S.chart = null;
   $("#sOut").innerHTML = `
   <div class="view">
-    <section class="card">
+    <nav class="jump" id="sJump" aria-label="Jump to section">${[["jOver", "Overview"], ["jFin", "Financials"], ["jSent", "Sentiment"], ["jVal", "Valuation &amp; DCF"], ["jNotes", "Notes"]].map(([id, l], i) => `<button type="button" data-j="${id}" class="${i ? "" : "on"}">${l}</button>`).join("")}</nav>
+    <section class="card" id="jOver">
       <div class="s-head">
         <div style="min-width:0">
           <h2>${esc(d.symbol)} <span class="muted" style="font-weight:400">${esc(d.name)}</span></h2>
@@ -2107,12 +2150,12 @@ function renderStock() {
       </section>
     </div>
 
-    <section class="card">
+    <section class="card" id="jFin">
       <div class="card-h"><h2>Key numbers</h2></div>
       <div class="stats">
         ${stat("Market value", bigCur(st.marketCap, st.capCurrency), st.capCurrency && st.capCurrency !== "USD" && st.marketCapUsd ? `<div class="muted" style="font-size:12px">≈ ${big(st.marketCapUsd)}</div>` : "")}
         ${stat("P/E (past year)", st.pe ? st.pe.toFixed(1) : "—")}
-        ${stat("P/E (next year)", st.fpe ? st.fpe.toFixed(1) : "—")}
+        ${stat("P/E (next year)", st.fpe ? peFmt(st.fpe) : "—")}
         ${stat("52-week range", st.low52 != null ? `${money(st.low52, q.currency)} – ${money(st.high52, q.currency)}` : "—", pos52 != null ? `<div class="range52"><i style="left:${pos52}%"></i></div>` : "")}
         ${stat("Volume vs average", st.volRatio ? `<span class="${st.volRatio > 1.5 ? "up" : ""}">${st.volRatio.toFixed(1)}×</span> <span class="muted" style="font-size:12px">${vol(st.volume)} / ${vol(st.avgVolume)}</span>` : "—")}
         ${stat("Analyst target", st.target ? `${money(st.target, q.currency)} <span class="${cls(upside)}" style="font-size:12px">${pct(upside)}</span>` : "—")}
@@ -2134,7 +2177,7 @@ function renderStock() {
       <div id="sPeers"><div class="empty"><span class="spin"></span> Finding peers…</div></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="jSent">
       <div class="card-h"><h2>Sentiment &amp; analyst consensus</h2><button class="btn" type="button" id="sShare">Share image</button></div>
       <div id="sSent"><div class="empty"><span class="spin"></span> Loading sentiment…</div></div>
     </section>
@@ -2162,7 +2205,7 @@ function renderStock() {
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="jNotes">
       <div class="card-h"><h2>Your research notes</h2><span class="muted" style="font-size:12px" id="sNoteSaved">Only you can see these</span></div>
       <div class="notes" id="sNotes"></div>
     </section>
@@ -2173,6 +2216,8 @@ function renderStock() {
     </section>
   </div>`;
   renderWhatIf(); renderPeers(); renderNotes(); loadVal(d.symbol); loadFin(d.symbol); loadDcf(d.symbol);
+  ($("#sWi") || $("#sDcf")).closest("section").id = "jVal";
+  $("#sJump").onclick = e => { const b = e.target.closest("button[data-j]"); if (b) document.getElementById(b.dataset.j)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   $("#sFilBtn").onclick = () => runFilings(d.symbol);
   $("#sAlertBtn").onclick = () => openAlerts(d.symbol, "price_below");
   $("#sCmpBtn").onclick = () => openCompare([d.symbol]);
@@ -2193,16 +2238,18 @@ function renderPeers() {
   const box = $("#sPeers"); if (!box || S.peers == null) return;
   const P = S.peers;
   if (P.length < 2) { box.innerHTML = `<div class="empty">No peer group found for ${esc(S.sym)}.</div>`; return; }
+  const bF = bestIdx(P.map(x => x.fpe), "low"), bU = bestIdx(P.map(x => x.upside), "high");
+  const selfRating = r => r || S.sent?.analyst?.rating || null;
   box.innerHTML = `<div class="tablewrap"><table class="cmp peers"><thead><tr><th>Stock</th><th>Today</th><th>1 month</th><th>Forward P/E</th><th>Mood</th><th class="hide-sm">Analysts</th><th class="hide-sm"></th></tr></thead><tbody>
-    ${P.map(x => `<tr data-s="${esc(x.symbol)}" class="${x.self ? "self" : ""}" style="cursor:${x.self ? "default" : "pointer"}">
+    ${P.map((x, i) => `<tr data-s="${esc(x.symbol)}" class="${x.self ? "self" : ""}" style="cursor:${x.self ? "default" : "pointer"}">
       <td><span class="sym">${esc(x.symbol)}</span><div class="nm">${esc(x.name)}</div></td>
       <td><span class="pill ${cls(x.day)}">${pct(x.day)}</span></td>
       <td><span class="pill ${cls(x.month)}">${pct(x.month)}</span></td>
-      <td class="num">${x.fpe ? x.fpe.toFixed(1) + "×" : "—"}</td>
+      <td class="num ${i === bF ? "best" : ""}" ${i === bF ? 'title="Cheapest of the group"' : ""}>${x.fpe ? x.fpe.toFixed(1) + "×" : "—"}</td>
       <td>${x.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:6px">${x.mood}</span>${mchip(x.mood)}`}</td>
-      <td class="hide-sm">${ratingChip(x.rating)}${x.upside != null ? ` <span class="muted" style="font-size:12px">${pct(x.upside)}</span>` : ""}</td>
+      <td class="hide-sm ${i === bU ? "best" : ""}" ${i === bU ? 'title="Most upside to the analysts’ average target"' : ""}>${ratingChip(x.self ? selfRating(x.rating) : x.rating)}${x.upside != null ? ` <span class="muted" style="font-size:12px">${pct(x.upside)}</span>` : ""}</td>
       <td class="hide-sm">${x.self ? "" : watchBtn(x.symbol)}</td></tr>`).join("")}</tbody></table></div>
-    <div class="note" style="padding-top:8px">Forward P/E = price ÷ next year’s expected earnings per share (lower = cheaper relative to profits). Analyst column shows consensus and average target vs today. Today’s moves are each market’s latest session.</div>`;
+    <div class="note" style="padding-top:8px">Forward P/E = price ÷ next year’s expected earnings per share (lower = cheaper relative to profits). Analyst column shows consensus and average target vs today. Green cell = best in the group (cheapest P/E, most upside). Today’s moves are each market’s latest session.</div>`;
   box.onclick = e => { const r = e.target.closest("tr[data-s]"); if (r && !r.classList.contains("self")) openStock(r.dataset.s); };
 }
 function renderWhatIf() {
@@ -2420,26 +2467,37 @@ function drawDcf(paths, N) {
 }
 
 
+// highlight the jump-bar tab for the section currently on screen
+addEventListener("scroll", () => {
+  const bar = $("#sJump"); if (!bar || !bar.offsetParent) return;
+  let on = "jOver";
+  for (const b of bar.children) { const el = document.getElementById(b.dataset.j); if (el && el.getBoundingClientRect().top < 120) on = b.dataset.j; }
+  if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) on = bar.lastElementChild.dataset.j;
+  for (const b of bar.children) b.classList.toggle("on", b.dataset.j === on);
+}, { passive: true });
+
 // ---------- batch 3: stock research ----------
-const rangeBar = (now, r, fmt) => {
+const rangeBar = (now, r, fmt, k = "") => {
   if (!r || r.low == null || now == null) return "";
   const lo = Math.min(r.low, now), hi = Math.max(r.high, now), sp = hi - lo || 1, P = v => ((v - lo) / sp * 100).toFixed(1);
-  return `<div class="rbar"><span class="md" style="left:${P(r.median)}%" title="5-year median ${fmt(r.median)}"></span><span class="nw" style="left:${P(now)}%" title="Today ${fmt(now)}"></span></div>
+  return `<div class="rbar"><span class="md" style="left:${P(r.median)}%" title="5-year median ${fmt(r.median)}"></span><span class="nw ${k}" style="left:${P(now)}%" title="Today ${fmt(now)}"></span></div>
     <div class="rlab"><span>${fmt(r.low)}</span><span>med ${fmt(r.median)}</span><span>${fmt(r.high)}</span></div>`;
 };
 async function loadVal(sym) {
   try {
     const v = await api("stock/valuation?symbol=" + encodeURIComponent(sym)); if (S.sym !== sym || !$("#sVal")) return;
     const c = v.current, r = v.ranges, x = n => n == null ? "—" : n.toFixed(1) + "×", dx = n => n == null ? "—" : n.toFixed(2);
-    const verdict = (now, rg) => { if (now == null || !rg || rg.low == null) return ""; const p = (now - rg.low) / ((rg.high - rg.low) || 1); return `<div class="muted" style="font-size:11px">${p < 0.2 ? "near the cheap end of its range" : p > 0.8 ? "near the expensive end" : now < rg.median ? "below its usual level" : "above its usual level"}</div>`; };
-    const cell = (label, now, rg, f) => `<div><span class="label">${label}</span><b>${f(now)}</b>${rg ? rangeBar(rg.now ?? now, rg, f) + verdict(rg.now ?? now, rg) : `<div class="muted" style="font-size:11px;margin-top:8px">${now == null ? "not available" : "no 5-year history"}</div>`}</div>`;
+    const status = (now, rg) => { if (now == null || !rg || rg.low == null) return null; const p = (now - rg.low) / ((rg.high - rg.low) || 1);
+      return p < 0.2 ? ["near the cheap end of its range", "good"] : p > 0.8 ? ["near the expensive end", "bad"] : now < rg.median ? ["below its usual level", "good"] : ["above its usual level", "warn"]; };
+    const verdict = st_ => st_ ? `<div class="vst ${st_[1]}">${st_[0]}</div>` : "";
+    const cell = (label, now, rg, f) => { const st_ = rg ? status(rg.now ?? now, rg) : null; return `<div><span class="label">${label}</span><b>${f(now)}</b>${rg ? rangeBar(rg.now ?? now, rg, f, st_?.[1] || "") + verdict(st_) : `<div class="muted" style="font-size:11px;margin-top:8px">${now == null ? "not available" : "no 5-year history"}</div>`}</div>`; };
     $("#sVal").innerHTML = `<div class="mults">
       ${cell("P/E (past 12 months)", c.pe ?? r.pe?.now, r.pe, x)}
       ${cell("P/E (next year)", c.fpe, null, x)}
       ${cell("EV / EBITDA", c.evEbitda ?? r.evEbitda?.now, r.evEbitda, x)}
       ${cell("Price / free cash flow", c.pfcf, r.pfcf, x)}
       ${cell("Debt / equity", c.de, r.de, dx)}</div>
-      <div class="note" style="padding-top:10px">Dot = today, tick = 5-year median. History uses each month’s price against the latest reported 12 months of profits, cash flow and debt. EV/EBITDA compares the whole company’s value (including debt) with its operating profit. Lower usually means cheaper.</div>`;
+      <div class="note" style="padding-top:10px">Dot = today (green = cheaper than usual, amber = above usual, red = near its most expensive), tick = 5-year median. History uses each month’s price against the latest reported 12 months of profits, cash flow and debt. EV/EBITDA compares the whole company’s value (including debt) with its operating profit. Lower usually means cheaper.</div>`;
   } catch { if ($("#sVal")) $("#sVal").innerHTML = `<div class="empty">Valuation history isn’t available for this one.</div>`; }
 }
 let finCharts = [];
@@ -2456,12 +2514,17 @@ function renderFin() {
   const cmp = v => v == null ? "—" : bigCur(v, cur);
   const last = rows[rows.length - 1], prev = rows.length > 1 ? rows[rows.length - 2] : null, first = rows[0];
   const g = (a, b) => a != null && b ? (a / Math.abs(b) - (b < 0 ? -1 : 1)) * 100 * (b < 0 ? -1 : 1) : null;
+  // year-over-year margin change: same quarter a year earlier, else (only 4 quarters reported) the last two fiscal years
+  const A = S.fin.annual || [];
+  const [ya, yb] = S.finMode === "annual" ? [last, prev] : rows.length > 4 ? [last, rows[rows.length - 5]] : [A[A.length - 1], A[A.length - 2]];
+  const mD = k => { if (!ya || !yb || ya[k] == null || yb[k] == null) return ""; const d = ya[k] - yb[k];
+    return ` <span class="mdelta ${cls(d)}" title="${esc(ya.period)} vs ${esc(yb.period)}, in percentage points">${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}% YoY</span>`; };
   box.innerHTML = `<div class="facts" style="padding:0 16px 10px">
       <span>Latest revenue <b>${cmp(last.revenue)}</b> ${prev ? `<span class="${cls(g(last.revenue, prev.revenue))}">${pct(g(last.revenue, prev.revenue))} vs prior ${S.finMode === "annual" ? "year" : "quarter"}</span>` : ""}</span>
       <span>Net income <b>${cmp(last.netIncome)}</b></span><span>Free cash flow <b>${cmp(last.fcf)}</b></span></div>
     <div class="fin-grid"><div><div class="chartbox" style="height:220px;padding:0"><canvas id="finBar" aria-label="Revenue, net income and free cash flow"></canvas></div></div>
       <div><div class="label">Margins</div><div class="chartbox" style="height:190px;padding:0"><canvas id="finMar" aria-label="Gross and operating margin"></canvas></div>
-        <div class="facts" style="margin-top:4px"><span>Gross <b>${last.grossMargin == null ? "—" : last.grossMargin.toFixed(1) + "%"}</b></span><span>Operating <b>${last.opMargin == null ? "—" : last.opMargin.toFixed(1) + "%"}</b></span><span class="muted">${esc(first.period)} → ${esc(last.period)}</span></div></div></div>
+        <div class="facts" style="margin-top:4px"><span>Gross <b>${last.grossMargin == null ? "—" : last.grossMargin.toFixed(1) + "%"}</b>${mD("grossMargin")}</span><span>Operating <b>${last.opMargin == null ? "—" : last.opMargin.toFixed(1) + "%"}</b>${mD("opMargin")}</span><span class="muted">${esc(first.period)} → ${esc(last.period)}</span></div></div></div>
     <div class="note" style="padding-top:8px">Amounts in ${esc(cur)}${S.finMode === "quarterly" ? ", by quarter-end month" : ", by fiscal year"}. Free cash flow = cash from operations minus capital spending.</div>`;
   if (!window.Chart) return;
   const tip = { backgroundColor: css("--surface"), titleColor: css("--muted"), bodyColor: css("--ink"), borderColor: css("--line"), borderWidth: 1 };
@@ -2569,20 +2632,20 @@ async function loadCompare() {
 function renderCompare() {
   const st = CMP.data.stocks;
   const x = n => n == null ? "—" : n.toFixed(1) + "×";
-  const row = (label, f) => `<tr><td>${label}</td>${st.map(s => `<td>${f(s)}</td>`).join("")}</tr>`;
+  const row = (label, f, k, dir) => { const bi = k ? bestIdx(st.map(s => s[k]), dir) : -1; return `<tr><td>${label}</td>${st.map((s, i) => `<td class="${i === bi ? "best" : ""}">${f(s)}</td>`).join("")}</tr>`; };
   $("#cmpBody").innerHTML = `<div class="chartbox" style="height:240px"><canvas id="cmpChart" aria-label="Normalized price comparison"></canvas></div>
     <div class="tablewrap"><table class="cmp"><thead><tr><th></th>${st.map((s, i) => `<th><span style="color:var(${CMPC[i]})">●</span> ${esc(s.symbol)}</th>`).join("")}</tr></thead><tbody>
       ${row("1-year return", s => `<span class="pill ${cls(s.ret1y)}">${pct(s.ret1y)}</span>`)}
       ${row("Stock mood", s => s.mood == null ? "—" : `<span class="num">${s.mood}</span> ${mchip(s.mood)}`)}
-      ${row("Forward P/E", s => `<span class="num">${x(s.fpe)}</span>`)}
-      ${row("P/E (past year)", s => `<span class="num">${x(s.pe)}</span>`)}
-      ${row("EV / EBITDA", s => `<span class="num">${x(s.evEbitda)}</span>`)}
-      ${row("Price / free cash flow", s => `<span class="num">${x(s.pfcf)}</span>`)}
-      ${row("Revenue growth (yr/yr)", s => `<span class="num ${cls(s.revGrowth)}">${pct(s.revGrowth)}</span>`)}
-      ${row("Operating margin", s => `<span class="num">${s.margin == null ? "—" : s.margin.toFixed(1) + "%"}</span>`)}
+      ${row("Forward P/E", s => `<span class="num">${x(s.fpe)}</span>`, "fpe", "low")}
+      ${row("P/E (past year)", s => `<span class="num">${x(s.pe)}</span>`, "pe", "low")}
+      ${row("EV / EBITDA", s => `<span class="num">${x(s.evEbitda)}</span>`, "evEbitda", "low")}
+      ${row("Price / free cash flow", s => `<span class="num">${x(s.pfcf)}</span>`, "pfcf", "low")}
+      ${row("Revenue growth (yr/yr)", s => `<span class="num ${cls(s.revGrowth)}">${pct(s.revGrowth)}</span>`, "revGrowth", "high")}
+      ${row("Operating margin", s => `<span class="num">${s.margin == null ? "—" : s.margin.toFixed(1) + "%"}</span>`, "margin", "high")}
       ${row("Analysts", s => ratingChip(s.rating))}
-      ${row("Upside to avg target", s => `<span class="num ${cls(s.upside)}">${pct(s.upside)}</span>`)}
-    </tbody></table></div><div class="note" style="padding-top:8px">Chart shows % change over the past year, all starting at 0 so different prices compare fairly.</div>`;
+      ${row("Upside to avg target", s => `<span class="num ${cls(s.upside)}">${pct(s.upside)}</span>`, "upside", "high")}
+    </tbody></table></div><div class="note" style="padding-top:8px">Chart shows % change over the past year, all starting at 0 so different prices compare fairly. Green cell = best in that row (lowest valuation multiple, highest growth, margin or upside).</div>`;
   if (CMP.chart) CMP.chart.destroy();
   if (!window.Chart) return;
   const base = st.reduce((a, s) => s.series.length > a.length ? s.series : a, []);
@@ -2769,7 +2832,7 @@ async function loadStockSent(sym) {
     const r = await api("stock/sentiment?symbol=" + encodeURIComponent(sym));
     if (S.sym !== sym || !$("#sSent")) return;
     const se = r.sentiment, a = r.analyst;
-    S.sent = r;
+    S.sent = r; renderPeers();
     const tot = a.counts ? Object.values(a.counts).reduce((x, y) => x + y, 0) : 0;
     $("#sSent").innerHTML = `
       <div class="grid2" style="gap:0">
@@ -2784,7 +2847,7 @@ async function loadStockSent(sym) {
         <div style="min-width:0">
           <div class="ind-h">
             <div class="top"><span class="label">Analyst consensus</span>${ratingChip(a.rating)}</div>
-            ${a.mean ? `<div class="facts"><span>Average rating <b>${a.mean.toFixed(2)}</b> (1 = strong buy, 5 = sell)</span><span><b>${a.analysts ?? tot}</b> analysts</span></div>` : `<div class="facts">No analyst coverage found.</div>`}
+            ${a.mean ? `<div class="facts"><span>Average rating <b>${a.mean.toFixed(2)}</b> (1 = strong buy, 5 = sell)</span><span><b>${a.analysts ?? tot}</b> analysts</span></div>` : tot ? `<div class="facts"><span><b>${tot}</b> analyst ratings</span></div>` : `<div class="facts">No analyst coverage found.</div>`}
             ${stackBar(a.counts)}
             ${a.counts ? `<div class="legend-c">${[["strongBuy", "Strong buy"], ["buy", "Buy"], ["hold", "Hold"], ["sell", "Sell"], ["strongSell", "Strong sell"]].map(([k, l]) => `<span><i style="background:${ratingCol[k]}"></i>${l} ${a.counts[k]}</span>`).join("")}</div>` : ""}
             ${a.target ? `<div class="facts"><span>Average price target <b>${money(a.target, S.data.quote.currency)}</b></span><span><b class="${cls(a.upside)}">${pct(a.upside)}</b> from the current price</span></div>` : ""}
@@ -2813,7 +2876,7 @@ function renderTargets(r, q, limit) {
   if (!r.rows.length) { box.innerHTML = `<div class="empty">No individual analyst ratings found for ${esc(r.symbol)}.</div>`; return; }
   const dt = d => new Date(d + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
   const rows = r.rows.slice(0, limit);
-  const act = a => `<span class="${a === "Upgrade" ? "up" : a === "Downgrade" ? "down" : ""}">${esc(a)}</span>`;
+  const act = a => `<span class="act ${/^up/i.test(a || "") ? "a-up" : /^down/i.test(a || "") ? "a-down" : /^init/i.test(a || "") ? "a-init" : "a-keep"}">${esc(a || "—")}</span>`;
   box.innerHTML = `
     <div class="card-h"><h2 style="font-size:13px">Analyst price targets</h2><span class="muted" style="font-size:12px">${r.rows.length} ratings since ${dt(r.since)}</span></div>
     <div class="tablewrap"><table class="pt">

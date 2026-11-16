@@ -158,3 +158,13 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 - Layout: Reset/AI suggest live in the card header (`#dHead`, shown once the DCF loads); 1Y/3Y/5Y sits on the chart header;
   global inputs in a 2-column `.dpanel`; explanation text in a collapsed `<details class="dmeth">`; warnings in `#dWarn`.
 
+
+## Highlighting & layout polish
+- `bestIdx(vals, "low"|"high")` + `td.best` marks the best cell per row in Compare drawer and peers table.
+- `peCls`/`peFmt`: forward P/E green <15x, amber >40x, red if negative (Key numbers, watchlist).
+- Valuation history dots/labels: good/warn/bad classes. Analyst action pills `.act a-up|a-down|a-init|a-keep`.
+- Financials: YoY margin delta badges (same quarter a year earlier, else the last two fiscal years).
+- Stock page sticky jump bar `#sJump` (anchors jOver, jFin, jSent, jVal, jNotes; active tab follows scroll).
+- Portfolio: best/worst contributor under Total gain; holdings + chart side by side at >=1180px (`.holdgrid`;
+  the Shares column and mood number hide there, shares show under Value).
+- Yahoo hiccups: `tinfo` and `analyst` drop blank answers from the cache; analyst mean is rebuilt from vote counts if missing.
