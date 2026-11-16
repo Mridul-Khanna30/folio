@@ -102,6 +102,21 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
   today's balance); gain % and today % are on invested money only.
 - Longer ranges: value-over-time 2Y and 5Y (weekly); price charts 2Y.
 
+### Added 16 Nov 2026 (fifth batch)
+- User asked to REMOVE the group leaderboard, group activity and group consensus from the Portfolio page (front end removed;
+  backend endpoints /api/group/returns and /api/activity still exist but are unused). Per-holding Mood column added instead.
+  Holdings and the single-asset chart are now full width (stacked).
+- Markets: Macro regime card + cross-asset correlation (`/api/macro`: regime from SPY vs 50/200d, VIX, 10y move over a month;
+  `REGIME_SECTORS` rule-of-thumb sector lists; 30-day correlation of SPY/QQQ/TLT/GLD/USO/BTC-USD). Yield curve (10Y minus 2Y,
+  2Y from Yahoo `2YY=F` futures) shown inside the 10-yr tile.
+- Share image: canvas-drawn 1200×675 PNG cards (`drawCard`) for the market fear & greed gauge and a stock's mood + "Buy now or wait?"
+  (includes the AI verdict if it was asked). Download or copy to clipboard.
+- Watchlist: column picker (localStorage `folio-wcols`), 7-day sparkline and distance from 52-week high (`/api/watchinfo` adds spark/high52/fromHigh).
+- CSV import (client-side parser `readHoldings`: Wealthsimple holdings, Questrade positions, Robinhood activity aggregated to positions,
+  Folio export, generic Symbol/Quantity/Average cost; TSX/TSXV/NEO/CSE exchange → .TO/.V/.NE/.CN; preview + ticker check; add or replace;
+  saved with `quiet`) and CSV export (incl. a CASH row).
+- `tcal()` wraps Yahoo calendars and doesn't cache empty answers (Yahoo sometimes returns {} when rate-limiting).
+
 ### Known data limits (tell the user honestly; don't invent data)
 - Yahoo lists the **firm**, not the individual analyst's name, for ratings.
 - Top movers are daily only; "this week" figures are the past 5 trading sessions.

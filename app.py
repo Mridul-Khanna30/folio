@@ -1481,6 +1481,19 @@ def diagnostics(member: str, key: str = Depends(current_user)):
 
 
 # ---------- personal events ----------
+def tcal(sym):
+    """Yahoo calendar (earnings / dividend dates). Empty answers (often a hiccup) aren't cached for long."""
+    def f():
+        c = yf.Ticker(sym).calendar or {}
+        if not c:
+            raise ValueError("empty calendar")
+        return c
+    try:
+        return cached(("cal", sym), 6 * 3600, f)
+    except Exception:
+        return {}
+
+
 @app.get("/api/myevents")
 def my_events(member: str, key: str = Depends(current_user)):
     k = member_key(member)
@@ -1491,7 +1504,7 @@ def my_events(member: str, key: str = Depends(current_user)):
         out = []
         try:
             t = yf.Ticker(sym)
-            c = cached(("cal", sym), 6 * 3600, lambda: t.calendar or {})
+            c = tcal(sym)
         except Exception:
             return out
         today = time.strftime("%Y-%m-%d")
@@ -1652,12 +1665,23 @@ def watchinfo(symbols: str, key: str = Depends(current_user)):
         se = stock_sentiment(sym)
         ed = None
         try:
-            c = cached(("cal", sym), 6 * 3600, lambda: yf.Ticker(sym).calendar or {})
+            c = tcal(sym)
             e = c.get("Earnings Date") or []
             ed = str(e[0]) if e else None
         except Exception:
             pass
-        return sym, {"fpe": fnum(i.get("forwardPE")), "mood": se["score"] if se else None, "earnings": ed}
+        q = one_quote(sym)
+        hi = fnum(i.get("fiftyTwoWeekHigh"))
+        if hi and i.get("currency") == "GBp":
+            hi /= 100
+        try:
+            h = cached(("spark7", sym), 900, lambda: [float(x) for x in yf.Ticker(sym).history(period="15d", interval="1d")["Close"].dropna().tolist()[-8:]])
+        except Exception:
+            h = []
+        if h and q.get("price"):
+            h[-1] = q["price"] if abs(h[-1] / q["price"] - 1) < 0.5 else h[-1]
+        return sym, {"fpe": fnum(i.get("forwardPE")), "mood": se["score"] if se else None, "earnings": ed, "spark": h,
+                     "high52": hi, "fromHigh": (q["price"] / hi - 1) * 100 if hi and q.get("price") else None}
     return dict(pool.map(one, syms))
 
 
@@ -2245,6 +2269,90 @@ def screen_nl(req: ScreenReq, key: str = Depends(current_user)):
 
 threading.Thread(target=alert_loop, daemon=True).start()
 threading.Thread(target=universe, daemon=True).start()
+
+
+# ---------- macro: regime, cross-asset correlation, yield curve ----------
+REGIME_SECTORS = {
+    "Goldilocks / Low vol": (["Technology", "Communication", "Consumer discretionary"], ["Utilities", "Consumer staples"],
+                             "Stocks rising, volatility low and yields steady: the classic friendly backdrop for growth stocks."),
+    "Reflation / Rising yields": (["Energy", "Financials", "Materials", "Industrials"], ["Utilities", "Real estate", "Long-duration tech"],
+                                  "Stocks rising alongside yields: investors expect stronger growth (and possibly inflation)."),
+    "Risk-on / Steady": (["Technology", "Consumer discretionary", "Industrials"], ["Consumer staples", "Utilities"],
+                         "A normal uptrend: stocks above their averages without unusual calm or stress."),
+    "Risk-off / Rising yields": (["Energy", "Consumer staples", "Health care"], ["Technology", "Real estate", "Utilities"],
+                                 "Stocks falling while yields climb: a stagflation-style squeeze that is hard on expensive growth stocks."),
+    "Risk-off / Falling yields": (["Utilities", "Consumer staples", "Health care", "Real estate"], ["Energy", "Financials", "Materials"],
+                                  "Stocks falling and money moving into bonds: a growth scare / flight to safety."),
+    "Risk-off / Defensive": (["Consumer staples", "Health care", "Utilities"], ["Consumer discretionary", "Technology"],
+                             "Stocks under pressure and volatility elevated, with yields not moving much."),
+    "Mixed / Transition": (["Health care", "Consumer staples"], [],
+                           "Signals disagree. Markets often chop around while the next trend forms."),
+}
+XASSETS = [("SPY", "Stocks"), ("QQQ", "Tech"), ("TLT", "Bonds"), ("GLD", "Gold"), ("USO", "Oil"), ("BTC-USD", "Bitcoin")]
+
+
+@app.get("/api/macro")
+def macro(key: str = Depends(current_user)):
+    def f():
+        d = yf.download(["SPY", "^VIX", "^TNX", "2YY=F", "^IRX"] + [s_ for s_, _ in XASSETS if s_ not in ("SPY",)] + [s_ for s_, _ in SECTORS],
+                        period="1y", interval="1d", progress=False, auto_adjust=True)["Close"]
+        spy, vix, y10, y2, y3m = (d[c].dropna() for c in ("SPY", "^VIX", "^TNX", "2YY=F", "^IRX"))
+        ma50, ma200 = spy.rolling(50).mean().iloc[-1], spy.rolling(200, min_periods=150).mean().iloc[-1]
+        px, v = float(spy.iloc[-1]), float(vix.iloc[-1])
+        dy = (float(y10.iloc[-1]) - float(y10.iloc[-22])) * 100  # bps over ~1 month
+        up = px > ma50 and px > ma200 and v < 20
+        down = (px < ma50 and v > 20) or v > 25 or px < ma200
+        rates = "rising" if dy >= 15 else "falling" if dy <= -15 else "steady"
+        if up and rates != "rising" and v < 16:
+            reg = "Goldilocks / Low vol"
+        elif up and rates == "rising":
+            reg = "Reflation / Rising yields"
+        elif up:
+            reg = "Risk-on / Steady"
+        elif down and rates == "rising":
+            reg = "Risk-off / Rising yields"
+        elif down and rates == "falling":
+            reg = "Risk-off / Falling yields"
+        elif down:
+            reg = "Risk-off / Defensive"
+        else:
+            reg = "Mixed / Transition"
+        good, bad, desc = REGIME_SECTORS[reg]
+        sec = []
+        for s_, label in SECTORS:
+            col = d[s_].dropna() if s_ in d else None
+            if col is not None and len(col) > 22:
+                sec.append({"label": label, "month": float(col.iloc[-1] / col.iloc[-22] - 1) * 100})
+        sec.sort(key=lambda x: -x["month"])
+        signals = [
+            {"name": "S&P 500 trend", "value": f"{(px / ma50 - 1) * 100:+.1f}% vs 50-day, {(px / ma200 - 1) * 100:+.1f}% vs 200-day",
+             "tone": "up" if px > ma50 and px > ma200 else "down" if px < ma200 else "mixed"},
+            {"name": "Volatility (VIX)", "value": f"{v:.1f}" + (" (calm)" if v < 16 else " (normal)" if v < 20 else " (elevated)" if v < 25 else " (stressed)"),
+             "tone": "up" if v < 16 else "mixed" if v < 22 else "down"},
+            {"name": "10-yr yield, past month", "value": f"{float(y10.iloc[-1]):.2f}% ({dy:+.0f} bps, {rates})", "tone": "down" if rates == "rising" else "up" if rates == "falling" else "mixed"},
+        ]
+        # cross-asset correlation, past 30 days of daily moves (trading days shared by all)
+        cols = {lab: d[s_] for s_, lab in XASSETS if s_ in d}
+        cdf = pd.DataFrame(cols)
+        cdf = cdf[cdf.index >= cdf.index[-1] - pd.Timedelta(days=30)].dropna().pct_change().dropna()
+        corr = cdf.corr()
+        labels = [lab for _, lab in XASSETS if lab in corr]
+        matrix = [[round(float(corr.loc[a, b]), 2) for b in labels] for a in labels]
+        moves30 = {lab: float((1 + cdf[lab]).prod() - 1) * 100 for lab in labels}
+        # yield curve
+        yc = pd.DataFrame({"y10": y10, "y2": y2, "y3m": y3m}).ffill().dropna()
+        spread = (yc["y10"] - yc["y2"])
+        sp = float(spread.iloc[-1])
+        curve = {"y10": float(yc["y10"].iloc[-1]), "y2": float(yc["y2"].iloc[-1]), "y3m": float(yc["y3m"].iloc[-1]),
+                 "spread": sp, "spread3m": float(yc["y10"].iloc[-1] - yc["y3m"].iloc[-1]),
+                 "status": "Normal" if sp > 0.1 else "Inverted" if sp < -0.1 else "Flat",
+                 "monthAgo": float(spread.iloc[-22]) if len(spread) > 22 else None,
+                 "spark": [round(float(x), 3) for x in spread.iloc[::3].tolist()],
+                 "since": spread.index[0].strftime("%Y-%m-%d")}
+        return {"regime": reg, "desc": desc, "favored": good, "lagging": bad, "signals": signals, "leaders": sec[:3], "laggards": sec[-3:][::-1],
+                "corr": {"labels": labels, "matrix": matrix, "days": len(cdf), "moves": moves30}, "curve": curve,
+                "asof": spy.index[-1].strftime("%Y-%m-%d"), "ts": time.time()}
+    return cached(("macro2",), 900, f)
 
 
 @app.get("/")

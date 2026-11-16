@@ -379,6 +379,29 @@ dialog::backdrop { background: rgb(0 0 0 / 0.35); }
 .scr-ex button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--muted); }
 .scr-ex button:hover { color: var(--accent); border-color: var(--accent); }
 .srt td { padding: 8px 10px; }
+.colpick { position: relative; }
+.colpick summary { list-style: none; } .colpick summary::-webkit-details-marker { display: none; }
+.colmenu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 6; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: grid; gap: 6px; min-width: 170px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.12); font-size: 13px; }
+.colmenu label { display: flex; gap: 8px; align-items: center; white-space: nowrap; cursor: pointer; }
+.colmenu input { accent-color: var(--accent); }
+.regime { padding: 0 16px 16px; display: grid; gap: 10px; }
+.regime .name { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.regime .sigs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+.regime .sigs li { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); padding-top: 5px; }
+.secchips { display: flex; flex-wrap: wrap; gap: 4px; }
+.secchips span { font-size: 12px; padding: 2px 8px; border-radius: 6px; }
+.cm { display: grid; grid-template-columns: 64px repeat(6, minmax(0, 1fr)); gap: 3px; padding: 0 16px 8px; font-size: 11px; }
+.cm div { display: grid; place-items: center; min-height: 34px; border-radius: 5px; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.cm .rh { justify-content: start; color: var(--muted); font-family: var(--sans); }
+.cm .ch { color: var(--muted); font-family: var(--sans); min-height: 20px; }
+.yc { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 11px; color: var(--muted); display: grid; gap: 2px; }
+.yc .row b { color: var(--ink); font-family: var(--mono); font-weight: 500; }
+.wt svg { width: 80px; height: 24px; display: block; }
+.shareimg { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; }
+.imp-drop { border: 1px dashed var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; font-size: 13px; }
+.imp-prev { max-height: 300px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+.imp-prev td, .imp-prev th { padding: 6px 10px; font-size: 12px; }
+dialog.wide { width: min(720px, calc(100vw - 32px)); }
 footer { font-size: 12px; color: var(--muted); text-align: center; }
 
 @media (max-width: 1100px) and (min-width: 881px) { .inds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -504,38 +527,13 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     <div id="stressOut" class="muted" style="font-size:13px;margin-top:8px">Claude looks at each holding’s business, sector, country, currency, valuation, debt and volatility, plus today’s market, and says how the portfolio would likely hold up.</div>
   </div>
 
-  <section class="card">
-    <div class="card-h"><h2>The group</h2>
-      <div class="ec-ctrl"><span class="muted hide-sm" style="font-size:12px">Click someone to see their portfolio</span>
-      <div class="seg" id="lbSeg"><button type="button" data-t="day">Today</button><button type="button" data-t="1W">1W</button><button type="button" data-t="1M">1M</button><button type="button" data-t="all" class="on">All time</button></div></div></div>
-    <div class="tablewrap">
-      <table class="lb">
-        <thead><tr><th>Member</th><th>Value</th><th id="lbCol">All time</th><th class="hide-sm">Mood</th><th class="hide-sm" style="text-align:left">Biggest holdings</th></tr></thead>
-        <tbody id="group"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <div class="grid2">
+  <div class="view" style="gap:16px">
     <section class="card">
-      <div class="card-h"><h2>Group activity</h2></div>
-      <label class="toggle"><input type="checkbox" id="shareAct"> <span>Share my buys and sells here. Shows tickers and % of portfolio, never dollar amounts.</span></label>
-      <ul class="feed" id="feed"><li class="muted">Loading…</li></ul>
-    </section>
-    <section class="card">
-      <div class="card-h"><h2>Group consensus</h2><span class="muted" style="font-size:12px">What the group owns most</span></div>
-      <div class="gm" id="gMood"></div>
-      <div class="tablewrap"><table class="cmp" id="gHeld"><thead><tr><th>Stock</th><th>Held by</th><th title="Share of all the group’s money">Share</th><th>Today</th><th class="hide-sm">Mood</th></tr></thead><tbody></tbody></table></div>
-    </section>
-  </div>
-
-  <div class="grid2">
-    <section class="card">
-      <div class="card-h"><h2 id="holdTitle">Holdings</h2><span class="muted" style="font-size:12px">Click a row to chart it · Manage to record a sale or fix a mistake</span></div>
+      <div class="card-h"><h2 id="holdTitle">Holdings</h2><span style="display:flex;gap:8px;align-items:center"><span class="muted hide-sm" style="font-size:12px">Click a row to chart it</span><button class="btn" type="button" id="impBtn">Import CSV</button><button class="btn" type="button" id="expBtn">Export CSV</button></span></div>
       <div class="tablewrap">
         <table>
           <thead><tr>
-            <th>Asset</th><th class="hide-sm">Price</th><th>Today</th><th class="hide-sm">Shares</th><th>Value</th><th>Gain</th><th></th>
+            <th>Asset</th><th class="hide-sm">Price</th><th>Today</th><th class="hide-sm">Mood</th><th class="hide-sm">Shares</th><th>Value</th><th>Gain</th><th></th>
           </tr></thead>
           <tbody id="holdings"></tbody>
         </table>
@@ -568,12 +566,13 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
   </div>
 
   <section class="card">
-    <div class="card-h"><h2>Watchlist</h2><span class="muted" style="font-size:12px">Set a target buy price to see how far away it is</span></div>
+    <div class="card-h"><h2>Watchlist</h2><span style="display:flex;gap:10px;align-items:center"><span class="muted hide-sm" style="font-size:12px">Set a target buy price to see how far away it is</span>
+      <details class="colpick"><summary class="btn">Columns</summary><div class="colmenu" id="wCols"></div></details></span></div>
     <form class="addrow" id="addW" autocomplete="off" style="border-top:0;padding-top:0">
       <div class="ac"><input class="field" id="wSym" placeholder="Add a ticker to watch" aria-label="Watch ticker"><ul id="wAc" hidden></ul></div>
       <button class="btn" type="submit">Watch</button>
     </form>
-    <div class="tablewrap"><table class="wt"><thead><tr><th>Asset</th><th>Price</th><th>Today</th><th>Target buy</th><th>Away</th><th class="hide-sm">Fwd P/E</th><th class="hide-sm">Mood</th><th class="hide-sm">Earnings</th><th></th></tr></thead><tbody id="watch"></tbody></table></div>
+    <div class="tablewrap"><table class="wt"><thead><tr id="wHead"></tr></thead><tbody id="watch"></tbody></table></div>
   </section>
 
   <div class="grid2">
@@ -614,6 +613,16 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <div class="cal-h" style="margin-bottom:8px"><h2>Coming up</h2><span class="muted" style="font-size:12px" id="calNote">What the market is waiting on · <button class="linkbtn" id="calMore" type="button">Show more</button></span></div>
       <div class="cal" id="mCal"><div class="empty" style="grid-column:1/-1"><span class="spin"></span> Loading the calendar…</div></div>
     </div>
+    <div class="grid2">
+      <section class="card">
+        <div class="card-h"><h2>Macro regime</h2><span class="muted" style="font-size:12px" id="mxAsof">From yields, volatility and index trends</span></div>
+        <div id="mxReg"><div class="empty"><span class="spin"></span> Reading the macro picture…</div></div>
+      </section>
+      <section class="card">
+        <div class="card-h"><h2>Cross-asset correlation</h2><span class="muted" style="font-size:12px" id="mxCorrNote">Past 30 days of daily moves</span></div>
+        <div id="mxCorr"><div class="empty"><span class="spin"></span></div></div>
+      </section>
+    </div>
     <div class="ai big">
       <div class="ai-h"><span class="label" id="mBriefLabel">AI market brief · today</span><button class="btn" id="mBriefBtn" type="button">Write the brief</button></div>
       <div id="mBrief" class="muted" style="font-size:13px;margin-top:6px">Claude reads today’s index, sector and mover data plus the latest market headlines and explains what drove the market.</div>
@@ -641,7 +650,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     <div class="vhead"><div><h1>Sentiment</h1><p id="fAsof">How fearful or greedy investors are right now, and what analysts think.</p></div></div>
     <div class="grid2">
       <section class="card">
-        <div class="card-h"><h2>Market fear &amp; greed</h2><span class="muted" style="font-size:12px">0 = extreme fear · 100 = extreme greed</span></div>
+        <div class="card-h"><h2>Market fear &amp; greed</h2><span style="display:flex;gap:8px;align-items:center"><span class="muted hide-sm" style="font-size:12px">0 = extreme fear · 100 = extreme greed</span><button class="btn" type="button" id="fShare">Share image</button></span></div>
         <div class="gauge" id="fGauge"><div class="empty"><span class="spin"></span> Working out the mood…</div></div>
         <div class="then" id="fThen"></div>
       </section>
@@ -753,6 +762,26 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     </form>
   </dialog>
 
+  <dialog id="shareDlg" class="wide">
+    <div class="dlg-h"><h2>Share image</h2><button class="x" style="visibility:visible" type="button" id="shareX" aria-label="Close">×</button></div>
+    <div class="dlg-b">
+      <img id="shareImg" class="shareimg" alt="Snapshot card preview">
+      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><span class="muted" id="shareMsg" style="font-size:12px;margin-right:auto;align-self:center"></span><button class="btn" type="button" id="shareCopy">Copy image</button><button class="btn primary" type="button" id="shareDl">Download PNG</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="impDlg" class="wide">
+    <div class="dlg-h"><h2>Import holdings from a CSV file</h2><button class="x" style="visibility:visible" type="button" id="impX" aria-label="Close">×</button></div>
+    <div class="dlg-b">
+      <div class="imp-drop">
+        <div>Export your positions from your broker and pick the file here. Folio understands <b>Wealthsimple</b> and <b>Questrade</b> holdings exports, <b>Robinhood</b> account activity, Folio’s own export, and most spreadsheets with columns like Symbol, Quantity and Average cost.</div>
+        <input type="file" id="impFile" accept=".csv,text/csv,text/plain">
+        <details><summary class="muted" style="font-size:12px;cursor:pointer">Or paste the text instead</summary><textarea class="field" id="impText" rows="5" style="width:100%;margin-top:6px" placeholder="Symbol,Quantity,Average cost&#10;AAPL,10,180&#10;SHOP.TO,5,95"></textarea><button class="btn" type="button" id="impParse" style="margin-top:6px">Read pasted text</button></details>
+      </div>
+      <div id="impOut"></div>
+    </div>
+  </dialog>
+
   <footer>Prices from Yahoo Finance; some exchanges are delayed up to 15 minutes. Not investment advice.</footer>
 </div>
 
@@ -771,7 +800,7 @@ let group = [];           // everyone
 let viewing = null;       // null = me, else member name
 let Q = {};               // symbol -> quote
 let sel = null, range = "1M", chart = null, timers = [];
-let BASE = "USD", FX = { USD: 1 }, MOODS = {}, GR = {}, lbT = "all", ACT = [];
+let BASE = "USD", FX = { USD: 1 }, MOODS = {};
 try { BASE = localStorage.getItem("folio-base") || "USD"; } catch {}
 const EC = { range: "6M", bench: "^GSPC", data: null, chart: null, who: null };
 
@@ -929,52 +958,30 @@ function render() {
       <td><div class="sym">${esc(h.symbol)}</div><div class="nm">${esc(q.name && q.name !== h.symbol ? q.name : "")}${q.error ? '<span class="down">price unavailable</span>' : ""}</div></td>
       <td class="num hide-sm">${money(q.price, q.currency)}</td>
       <td><span class="pill ${cls(q.pct)}">${pct(q.pct)}</span></td>
+      <td class="hide-sm">${MOODS[h.symbol] == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:4px">${MOODS[h.symbol]}</span>${mchip(MOODS[h.symbol])}`}</td>
       <td class="num hide-sm">${qty(h.shares)}</td>
       <td class="num">${bm(val)}</td>
       <td class="num ${cls(gain)}">${sBm(gain)}<div class="sub">${pct(gainPct)}${Math.abs(fx) >= 0.5 ? ` <span class="muted" title="Part of the gain from the exchange rate">FX ${sBm(fx, 0)}</span>` : ""}</div></td>
       <td>${mine ? `<button class="wbtn" type="button" data-del="${i}" aria-label="Sell, edit or remove ${esc(h.symbol)}">Manage</button>` : ""}</td>
-    </tr>`).join("") : `<tr><td colspan="7" class="empty">${mine ? "No holdings yet. Add what you own below: the ticker (or search by name), how many shares, and the average price you paid per share." : "No holdings yet."}</td></tr>`;
+    </tr>`).join("") : `<tr><td colspan="8" class="empty">${mine ? "No holdings yet. Add what you own below: the ticker (or search by name), how many shares, and the average price you paid per share." : "No holdings yet."}</td></tr>`;
   const cc = u.cash || { amount: 0, currency: "USD" };
   if (mine || cc.amount > 0) $("#holdings").insertAdjacentHTML("beforeend", `<tr data-cash="1" style="cursor:${mine ? "pointer" : "default"}">
       <td><div class="sym">Cash</div><div class="nm">${esc(cc.currency)}${cc.currency !== BASE && cc.amount ? " · " + money(cc.amount, cc.currency) : ""}</div></td>
-      <td class="num hide-sm muted">—</td><td></td><td class="num hide-sm muted">—</td>
+      <td class="num hide-sm muted">—</td><td></td><td class="hide-sm"></td><td class="num hide-sm muted">—</td>
       <td class="num">${bm(st.cash)}</td><td class="muted num">${st.total ? (st.cash / st.total * 100).toFixed(1) + "%" : ""}</td>
       <td>${mine ? `<button class="wbtn" type="button" data-cashedit="1">${cc.amount ? "Edit" : "+ Add cash"}</button>` : ""}</td></tr>`);
 
-  const wl = u.watchlist;
+  const wl = u.watchlist, cols = WCOLS.filter(c => wcolOn(c.k));
+  $("#wHead").innerHTML = `<th>Asset</th>${cols.map(c => `<th>${c.h}</th>`).join("")}<th></th>`;
   $("#watch").innerHTML = wl.length ? wl.map((s, i) => {
     const q = Q[s] || {}, w = WI[s] || {}, tg = mine ? NOTES[s]?.target : null;
-    const away = tg && q.price ? (q.price / tg - 1) * 100 : null;
-    const ed = w.earnings ? new Date(w.earnings + "T12:00:00") : null;
+    const ctx = { s, q, w, tg, mine, away: tg && q.price ? (q.price / tg - 1) * 100 : null };
     return `<tr data-s="${esc(s)}" class="${sel === s ? "sel" : ""}">
       <td><div class="sym">${esc(s)}</div><div class="nm">${esc(q.name && q.name !== s ? q.name : q.error ? "price unavailable" : "")}</div></td>
-      <td class="num">${money(q.price, q.currency)}</td>
-      <td><span class="pill ${cls(q.pct)}">${pct(q.pct)}</span></td>
-      <td>${mine ? `<button type="button" class="tg${tg ? " set" : ""}" data-tg="${esc(s)}">${tg ? money(tg, q.currency) : "+ set"}</button>` : '<span class="muted">—</span>'}</td>
-      <td>${away == null ? '<span class="muted">—</span>' : away <= 0 ? '<span class="pill up">at target</span>' : `<span class="num muted">${pct(away)}</span>`}</td>
-      <td class="num hide-sm">${w.fpe ? w.fpe.toFixed(1) + "×" : "—"}</td>
-      <td class="hide-sm">${w.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:4px">${w.mood}</span>${mchip(w.mood)}`}</td>
-      <td class="hide-sm num muted">${ed ? ed.toLocaleDateString([], { month: "short", day: "numeric" }) : "—"}</td>
+      ${cols.map(c => `<td>${c.f(ctx)}</td>`).join("")}
       <td>${mine ? `<button class="x" type="button" data-wdel="${i}" aria-label="Stop watching ${esc(s)}">×</button>` : ""}</td></tr>`;
-  }).join("") : `<tr><td colspan="9" class="empty">Nothing on this watchlist yet.</td></tr>`;
+  }).join("") : `<tr><td colspan="${cols.length + 2}" class="empty">Nothing on this watchlist yet.</td></tr>`;
 
-  const ret = (g, st) => lbT === "day" ? st.dayPct : lbT === "all" ? st.allPct : GR[g.name]?.[lbT] ?? null;
-  const board = group.map(g => ({ g, st: stats(g) })).map(x => ({ ...x, r: ret(x.g, x.st) }))
-    .sort((a, b) => (b.g.holdings.length > 0) - (a.g.holdings.length > 0) || (b.r ?? -1e9) - (a.r ?? -1e9));
-  $("#lbCol").textContent = { day: "Today", "1W": "Past week", "1M": "Past month", all: "All time" }[lbT];
-  for (const b of $("#lbSeg").children) b.classList.toggle("on", b.dataset.t === lbT);
-  $("#group").innerHTML = board.map(({ g, st, r }, i) => {
-    const top = st.rows.slice(0, 3).filter(r => r.val).map(r => `${esc(r.h.symbol)} ${(r.val / st.total * 100).toFixed(0)}%`).join(" · ");
-    const empty = !g.holdings.length;
-    return `<tr data-m="${esc(g.name)}" class="${(viewing ? viewing === g.name : isMe(g.name)) ? "sel" : ""}">
-      <td><span class="rank">${empty ? "" : i + 1}</span>${avatar(g.name)}<span>${esc(g.name)}</span>${isMe(g.name) ? '<span class="you">you</span>' : ""}</td>
-      <td class="num">${empty ? "—" : bm(st.total, 0)}</td>
-      <td>${empty ? '<span class="muted">no holdings yet</span>' : r == null ? '<span class="muted">…</span>' : `<span class="pill ${cls(r)}">${pct(r)}</span>`}</td>
-      <td class="hide-sm">${empty || st.mood == null ? '<span class="muted">—</span>' : mchip(st.mood)}</td>
-      <td class="tops hide-sm" style="text-align:left">${top || ""}</td></tr>`;
-  }).join("") || `<tr><td colspan="5" class="empty">Nobody here yet.</td></tr>`;
-  renderConsensus(board);
-  renderFeed();
   if (EC.data && EC.who === cur().name) drawEquity();
   updateChartHead();
 }
@@ -986,56 +993,11 @@ async function loadMoods() {
   if (!syms.length) return;
   try { Object.assign(MOODS, await api("moods?symbols=" + encodeURIComponent(syms.join(",")))); render(); } catch {}
 }
-async function loadReturns() { try { GR = await api("group/returns"); if (lbT !== "day" && lbT !== "all") render(); } catch {} }
-async function loadActivity() { try { ACT = await api("activity"); renderFeed(); } catch {} }
-
-function renderFeed() {
-  if (!me) return;
-  $("#shareAct").checked = !!me.shareActivity;
-  const verb = e => e.kind === "added" ? `bought <b class="sym" data-s="${esc(e.symbol)}">${esc(e.symbol)}</b>${e.weight != null ? ` <span class="muted">· now ${e.weight}% of their portfolio</span>` : ""}`
-    : e.kind === "sold" ? `sold all of <b class="sym" data-s="${esc(e.symbol)}">${esc(e.symbol)}</b>`
-    : `${e.kind === "trimmed" ? "trimmed" : "added to"} <b class="sym" data-s="${esc(e.symbol)}">${esc(e.symbol)}</b> <span class="${e.change > 0 ? "up" : "down"}">${pct(e.change)}</span> <span class="muted">shares${e.weight != null ? ` · now ${e.weight}% of their portfolio` : ""}</span>`;
-  $("#feed").innerHTML = ACT.length ? ACT.map(e => `<li>${avatar(e.name)}<div style="min-width:0"><div><b>${esc(e.name)}</b> ${verb(e)}</div><div class="meta">${ago(new Date(e.ts * 1000).toISOString())}</div></div></li>`).join("")
-    : `<li class="muted" style="display:block">No moves shared yet. Tick the box above to share yours; everyone else can opt in too.</li>`;
-}
-$("#shareAct").onchange = async e => {
-  try { me = await post("prefs", { shareActivity: e.target.checked }, "PUT"); } catch { e.target.checked = !e.target.checked; }
-};
-$("#feed").onclick = e => { const s = e.target.closest("[data-s]"); if (s) openStock(s.dataset.s); };
-
-function renderConsensus(board) {
-  const live = board.filter(x => x.g.holdings.length && x.st.total > 0);
-  const moods = live.map(x => x.st.mood).filter(v => v != null);
-  const gm = moods.length ? moods.reduce((a, b) => a + b, 0) / moods.length : null;
-  $("#gMood").innerHTML = `<span class="sc">${gm == null ? "—" : Math.round(gm)}</span>
-    <div class="top" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="label">Group mood</span>${gm == null ? "" : mchip(gm)}</div>
-    <span class="muted" style="font-size:12px">Average portfolio fear &amp; greed across ${live.length} member${live.length === 1 ? "" : "s"} with holdings</span>`;
-  const by = {}; let all = 0;
-  for (const { g, st } of live) for (const r of st.rows) {
-    if (!r.val) continue;
-    const s = r.h.symbol; by[s] = by[s] || { s, who: [], val: 0 }; by[s].who.push(g.name); by[s].val += r.val; all += r.val;
-  }
-  const rows = Object.values(by).sort((a, b) => b.who.length - a.who.length || b.val - a.val).slice(0, 8);
-  $("#gHeld tbody").innerHTML = rows.length ? rows.map(x => `<tr data-s="${esc(x.s)}" style="cursor:pointer">
-    <td><span class="sym">${esc(x.s)}</span></td>
-    <td><span class="stackav" title="${esc(x.who.join(", "))}">${x.who.slice(0, 5).map(avatar).join("")}</span> <span class="muted num">${x.who.length}</span></td>
-    <td class="num">${(x.val / all * 100).toFixed(1)}%</td>
-    <td><span class="pill ${cls(Q[x.s]?.pct)}">${pct(Q[x.s]?.pct)}</span></td>
-    <td class="hide-sm">${MOODS[x.s] == null ? '<span class="muted">—</span>' : mchip(MOODS[x.s])}</td></tr>`).join("")
-    : `<tr><td colspan="5" class="empty">Nobody has holdings yet.</td></tr>`;
-}
-$("#gHeld").onclick = e => { const r = e.target.closest("tr[data-s]"); if (r) openStock(r.dataset.s); };
-
 $("#baseSeg").onclick = e => {
   const b = e.target.closest("button"); if (!b) return;
   BASE = b.dataset.c; try { localStorage.setItem("folio-base", BASE); } catch {}
   render(); drawEquity();
 };
-$("#lbSeg").onclick = e => {
-  const b = e.target.closest("button"); if (!b) return;
-  lbT = b.dataset.t; render(); if ((lbT === "1W" || lbT === "1M") && !Object.keys(GR).length) loadReturns();
-};
-
 // equity curve
 async function loadEquity() {
   const u = cur(); if (!u) return;
@@ -1218,7 +1180,7 @@ const put = (p, body) => post(p, body, "PUT");
 
 // manage a holding: record a sale, or fix a mistake
 let mgI = null;
-const afterHoldingsChange = () => { render(); loadQuotes(); loadNews(); loadEquity(); loadActivity(); loadJournal(); loadDiag(); loadMyEvents(); loadMoods(); };
+const afterHoldingsChange = () => { render(); loadQuotes(); loadNews(); loadEquity(); loadJournal(); loadDiag(); loadMyEvents(); loadMoods(); };
 function openManage(i, mode = "sell") {
   mgI = i; const h = me.holdings[i], q = Q[h.symbol] || {}, c = q.currency || h.cur || "USD";
   $("#mgTitle").textContent = `${h.symbol}${q.name && q.name !== h.symbol ? " · " + q.name : ""}`;
@@ -1369,6 +1331,238 @@ $("#alertForm").onsubmit = async e => {
 $("#rules").onclick = async e => { const b = e.target.closest("[data-adel]"); if (b) { ALERTS = await api("alerts/" + b.dataset.adel, { method: "DELETE" }); renderAlerts(); } };
 $("#notifBtn").onclick = async () => { if (window.Notification) { await Notification.requestPermission(); renderAlerts(); } };
 
+
+// ---------- watchlist columns ----------
+const WCOLS = [
+  { k: "price", h: "Price", on: true, f: c => `<span class="num">${money(c.q.price, c.q.currency)}</span>` },
+  { k: "today", h: "Today", on: true, f: c => `<span class="pill ${cls(c.q.pct)}">${pct(c.q.pct)}</span>` },
+  { k: "spark", h: "7 days", on: true, f: c => { const v = c.w.spark || []; return v.length > 1 ? `<span style="display:inline-block;width:80px;height:24px">${sparkSvg(v, v[v.length - 1] >= v[0])}</span>` : '<span class="muted">—</span>'; } },
+  { k: "target", h: "Target buy", on: true, f: c => c.mine ? `<button type="button" class="tg${c.tg ? " set" : ""}" data-tg="${esc(c.s)}">${c.tg ? money(c.tg, c.q.currency) : "+ set"}</button>` : '<span class="muted">—</span>' },
+  { k: "away", h: "Away", on: true, f: c => c.away == null ? '<span class="muted">—</span>' : c.away <= 0 ? '<span class="pill up">at target</span>' : `<span class="num muted">${pct(c.away)}</span>` },
+  { k: "high", h: "From 52W high", on: true, f: c => c.w.fromHigh == null ? '<span class="muted">—</span>' : `<span class="num ${c.w.fromHigh > -2 ? "up" : c.w.fromHigh < -20 ? "down" : ""}">${c.w.fromHigh > -0.5 ? "at high" : pct(c.w.fromHigh)}</span>` },
+  { k: "fpe", h: "Fwd P/E", on: true, f: c => `<span class="num">${c.w.fpe ? c.w.fpe.toFixed(1) + "×" : "—"}</span>` },
+  { k: "mood", h: "Mood", on: true, f: c => c.w.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:4px">${c.w.mood}</span>${mchip(c.w.mood)}` },
+  { k: "earn", h: "Earnings", on: true, f: c => c.w.earnings ? `<span class="num muted">${new Date(c.w.earnings + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric" })}</span>` : '<span class="muted">—</span>' },
+];
+let WCOLSET = null;
+try { WCOLSET = JSON.parse(localStorage.getItem("folio-wcols") || "null"); } catch {}
+const wcolOn = k => WCOLSET ? WCOLSET.includes(k) : WCOLS.find(c => c.k === k).on;
+function renderColMenu() {
+  $("#wCols").innerHTML = WCOLS.map(c => `<label><input type="checkbox" data-col="${c.k}" ${wcolOn(c.k) ? "checked" : ""}> ${c.h}</label>`).join("");
+}
+$("#wCols").onchange = () => {
+  WCOLSET = [...$("#wCols").querySelectorAll("input:checked")].map(i => i.dataset.col);
+  try { localStorage.setItem("folio-wcols", JSON.stringify(WCOLSET)); } catch {}
+  render();
+};
+renderColMenu();
+
+// ---------- shareable snapshot cards ----------
+const lastVerdict = {};
+function wrapText(ctx, text, maxW) {
+  const words = String(text).split(/\s+/), lines = []; let line = "";
+  for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+  if (line) lines.push(line); return lines;
+}
+function moodHex(v) { return v == null ? "#3a414c" : v < 25 ? "#d0473b" : v < 45 ? "#c98a7f" : v < 55 ? "#5b6472" : v < 75 ? "#6fb894" : "#2fa874"; }
+function drawCard({ kicker, title, score, sub, comps, lines, chip, chipCol, footer }) {
+  const W = 1200, H = 675, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"), F = "Geist, system-ui, sans-serif", FM = "'Geist Mono', ui-monospace, monospace";
+  x.fillStyle = "#0f1216"; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#161a20"; x.beginPath(); x.roundRect(32, 32, W - 64, H - 64, 24); x.fill();
+  x.fillStyle = "#7d9cf0"; x.fillRect(64, 70, 14, 14);
+  x.fillStyle = "#e8ebf0"; x.font = `600 24px ${F}`; x.fillText("Folio", 88, 84);
+  x.fillStyle = "#8b95a5"; x.font = `400 20px ${F}`; x.textAlign = "right";
+  x.fillText(new Date().toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" }), W - 64, 84); x.textAlign = "left";
+  x.fillStyle = "#8b95a5"; x.font = `500 18px ${F}`; x.fillText(kicker.toUpperCase(), 64, 140);
+  x.fillStyle = "#e8ebf0"; x.font = `600 40px ${F}`; x.fillText(title, 64, 188);
+  // gauge
+  const cx = 250, cy = 430, R = 150;
+  const segs = [[0, 25, "#d0473b"], [25, 45, "#c98a7f"], [45, 55, "#5b6472"], [55, 75, "#6fb894"], [75, 100, "#2fa874"]];
+  x.lineWidth = 30; x.lineCap = "butt";
+  for (const [a, b, col] of segs) { x.strokeStyle = col; x.beginPath(); x.arc(cx, cy, R, Math.PI + (a + 0.6) / 100 * Math.PI, Math.PI + (b - 0.6) / 100 * Math.PI); x.stroke(); }
+  if (score != null) {
+    const t = Math.PI + score / 100 * Math.PI;
+    x.strokeStyle = "#e8ebf0"; x.lineWidth = 6; x.lineCap = "round"; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + (R - 30) * Math.cos(t), cy + (R - 30) * Math.sin(t)); x.stroke();
+    x.fillStyle = "#e8ebf0"; x.beginPath(); x.arc(cx, cy, 10, 0, Math.PI * 2); x.fill();
+  }
+  x.textAlign = "center"; x.fillStyle = "#e8ebf0"; x.font = `500 72px ${FM}`; x.fillText(score == null ? "—" : String(score), cx, cy + 82);
+  x.fillStyle = moodHex(score); x.font = `600 26px ${F}`; x.fillText(moodName(score), cx, cy + 118);
+  if (sub) { x.fillStyle = "#8b95a5"; x.font = `400 17px ${F}`; x.fillText(sub, cx, cy + 148); }
+  x.textAlign = "left";
+  // right column
+  let y = 236; const X = 500, RW = W - 64 - X;
+  if (chip) { x.font = `600 20px ${F}`; const w = x.measureText(chip).width + 28; x.fillStyle = chipCol || "#262c35"; x.beginPath(); x.roundRect(X, y, w, 38, 8); x.fill(); x.fillStyle = "#0f1216"; x.fillText(chip, X + 14, y + 26); y += 60; }
+  if (lines && lines.length) {
+    x.fillStyle = "#e8ebf0"; x.font = `400 21px ${F}`;
+    let n = 0;
+    for (const para of lines) { for (const l of wrapText(x, para, RW)) { if (n++ >= 6) break; x.fillText(l, X, y); y += 30; } y += 6; }
+    y += 10;
+  }
+  for (const cp of (comps || []).slice(0, lines && lines.length ? 4 : 6)) {
+    x.fillStyle = "#c3c9d2"; x.font = `400 18px ${F}`; x.fillText(cp.name, X, y);
+    x.textAlign = "right"; x.fillStyle = "#e8ebf0"; x.font = `500 18px ${FM}`; x.fillText(cp.score == null ? "—" : String(cp.score), W - 64, y); x.textAlign = "left";
+    x.fillStyle = "#262c35"; x.beginPath(); x.roundRect(X, y + 10, RW, 8, 4); x.fill();
+    x.fillStyle = moodHex(cp.score); x.beginPath(); x.roundRect(X, y + 10, Math.max(8, RW * (cp.score ?? 0) / 100), 8, 4); x.fill();
+    y += 46;
+  }
+  x.fillStyle = "#5b6472"; x.font = `400 15px ${F}`; x.fillText(footer || "Folio’s own fear & greed composite from Yahoo Finance data · Not investment advice", 64, H - 60);
+  return c;
+}
+function verdictParts(text) {
+  if (!text) return null;
+  const get = k => text.split("\n").map(l => l.trim()).filter(l => l.toUpperCase().startsWith(k + ":")).map(l => l.slice(k.length + 1).trim().replace(/\*\*/g, ""));
+  return { sig: get("SIGNAL")[0], sum: get("SUMMARY").join(" ") };
+}
+let shareCanvas = null, shareName = "folio.png";
+async function showShare(canvas, name) {
+  shareCanvas = canvas; shareName = name;
+  $("#shareImg").src = canvas.toDataURL("image/png"); $("#shareMsg").textContent = "1200 × 675, sized for X, Discord and group chats";
+  $("#shareCopy").hidden = !(navigator.clipboard && window.ClipboardItem);
+  $("#shareDlg").showModal();
+}
+$("#shareX").onclick = () => $("#shareDlg").close();
+$("#shareDl").onclick = () => { const a = document.createElement("a"); a.href = shareCanvas.toDataURL("image/png"); a.download = shareName; a.click(); };
+$("#shareCopy").onclick = async () => {
+  try { const blob = await new Promise(r => shareCanvas.toBlob(r, "image/png")); await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); $("#shareMsg").textContent = "Copied. Paste it into your chat."; }
+  catch { $("#shareMsg").textContent = "Your browser blocked copying. Use Download instead."; }
+};
+const sigCol = s => /positive/i.test(s || "") ? "#3cc48f" : /cautious/i.test(s || "") ? "#f0776b" : "#8b95a5";
+$("#fShare").onclick = async () => {
+  if (!F) return; await document.fonts.ready;
+  const m = F.market, v = verdictParts(lastVerdict["sentiment/brief"]);
+  showShare(drawCard({ kicker: "Market sentiment", title: "US market fear & greed", score: m.score,
+    sub: `a week ago ${Math.round(m.weekAgo)} · a month ago ${Math.round(m.monthAgo)}`, comps: m.components,
+    chip: v?.sig ? "Buy now? " + v.sig : null, chipCol: sigCol(v?.sig), lines: v?.sum ? [v.sum] : null }), `folio-fear-greed-${new Date().toISOString().slice(0, 10)}.png`);
+};
+$("#v-stock").addEventListener("click", async e => {
+  if (!e.target.closest("#sShare") || !S.data || !S.sent || S.sent.symbol !== S.data.symbol) return;
+  await document.fonts.ready;
+  const d = S.data, se = S.sent.sentiment, a = S.sent.analyst, v = verdictParts(lastVerdict["stock/verdict:" + d.symbol]);
+  const lines = [];
+  if (v?.sum) lines.push(v.sum);
+  lines.push(`Analysts: ${a.rating || "—"}${a.analysts ? ` (${a.analysts})` : ""}${a.target ? ` · avg target ${money(a.target, d.quote.currency)} (${pct(a.upside)})` : ""}`);
+  showShare(drawCard({ kicker: `${d.symbol} · ${money(d.quote.price, d.quote.currency)} (${pct(d.quote.pct)})`, title: `${d.name}: stock mood`.slice(0, 48), score: se?.score,
+    sub: se ? `a week ago ${Math.round(se.weekAgo ?? 0)} · a month ago ${Math.round(se.monthAgo ?? 0)}` : "", comps: se?.components,
+    chip: v?.sig ? "Buy now or wait? " + v.sig : null, chipCol: sigCol(v?.sig), lines,
+    footer: "Folio stock mood: trend, momentum, relative strength and volatility vs the past year · Not investment advice" }), `folio-${d.symbol}-${new Date().toISOString().slice(0, 10)}.png`);
+});
+
+// ---------- CSV import / export ----------
+function csvParse(text) {
+  const rows = []; let row = [], f = "", q = false;
+  text = text.replace(/^﻿/, "");
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === "," || ch === "\t" || ch === ";" && !text.includes(",")) { row.push(f); f = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(f); f = ""; if (row.some(x => x.trim())) rows.push(row); row = []; }
+    else f += ch;
+  }
+  row.push(f); if (row.some(x => x.trim())) rows.push(row);
+  return rows;
+}
+const numv = v => { if (v == null) return NaN; let t = String(v).trim(); const neg = /^\(.*\)$/.test(t) || t.startsWith("-"); t = t.replace(/[^0-9.]/g, ""); const n = parseFloat(t); return neg ? -n : n; };
+const EXCH = { TSX: ".TO", TSE: ".TO", XTSE: ".TO", "TSX-V": ".V", TSXV: ".V", XTSX: ".V", NEO: ".NE", "CBOE CANADA": ".NE", NEOE: ".NE", CSE: ".CN", XCNQ: ".CN" };
+function readHoldings(text) {
+  const rows = csvParse(text);
+  // find the header row (first row with a symbol-ish column)
+  const hi = rows.findIndex(r => r.some(c => /^(symbol|ticker|instrument|security symbol|stock symbol)$/i.test(c.trim())));
+  if (hi < 0) throw new Error("Couldn’t find a Symbol or Ticker column in that file.");
+  const H = rows[hi].map(h => h.trim()), body = rows.slice(hi + 1).filter(r => r.length >= 2);
+  const col = (...res) => { for (const re of res) { const i = H.findIndex(h => re.test(h)); if (i >= 0) return i; } return -1; };
+  const out = {}; let cash = null, fmt = "Spreadsheet";
+  if (col(/^trans code$/i) >= 0 && col(/^instrument$/i) >= 0) { // Robinhood activity
+    fmt = "Robinhood activity";
+    const ci = col(/^instrument$/i), ti = col(/^trans code$/i), qi = col(/^quantity$/i), pi = col(/^price$/i), di = col(/^activity date$/i, /date/i);
+    const txs = body.map(r => ({ s: (r[ci] || "").trim().toUpperCase(), t: (r[ti] || "").trim().toUpperCase(), q: numv(r[qi]), p: numv(r[pi]), d: r[di] }))
+      .filter(x => x.s && (x.t === "BUY" || x.t === "SELL") && x.q > 0).reverse(); // file is newest first
+    for (const x of txs) {
+      const h = out[x.s] || (out[x.s] = { symbol: x.s, shares: 0, cost: 0 });
+      if (x.t === "BUY") { h.cost = (h.cost * h.shares + x.p * x.q) / (h.shares + x.q); h.shares += x.q; }
+      else h.shares = Math.max(0, h.shares - x.q);
+    }
+  } else {
+    const si = col(/^(symbol|ticker|security symbol|stock symbol)$/i, /symbol|ticker/i);
+    const qi = col(/^(quantity|shares|qty|units|open quantity)$/i, /quantity|shares|qty|units/i);
+    const pi = col(/avg.*(price|cost)|average.*(price|cost)|cost per share|price paid|per share|^acb\/share/i);
+    const bi = col(/book value \(market\)/i, /^book value$/i, /book value|book cost|total cost|cost basis|^acb$/i);
+    const xi = col(/^exchange$/i, /^mic$/i, /exchange/i), ki = col(/currency/i), ni = col(/^note$|^thesis$/i), di = col(/date bought|purchase date|^date$/i);
+    if (qi < 0) throw new Error("Couldn’t find a Quantity or Shares column in that file.");
+    if (H.some(h => /book value \(market\)/i.test(h))) fmt = "Wealthsimple holdings";
+    else if (H.some(h => /^open quantity$/i.test(h))) fmt = "Questrade positions";
+    else if (H.includes("AvgCost") && H.includes("Shares")) fmt = "Folio export";
+    for (const r of body) {
+      let sym = (r[si] || "").trim().toUpperCase(); const q = numv(r[qi]);
+      if (!sym) continue;
+      if (/^(CASH|\$CASH|CAD|USD|EUR|GBP)$/.test(sym)) { if (q > 0) cash = { amount: q, currency: (ki >= 0 && /^(USD|CAD|EUR|GBP)$/i.test((r[ki] || "").trim()) ? r[ki].trim().toUpperCase() : (/^(CAD|USD|EUR|GBP)$/.test(sym) ? sym : "USD")) }; continue; }
+      if (!(q > 0)) continue;
+      const ex = xi >= 0 ? (r[xi] || "").trim().toUpperCase() : "";
+      if (EXCH[ex] && !sym.includes(".")) sym = sym.replace(/\./g, "-") + EXCH[ex];
+      let cost = pi >= 0 ? numv(r[pi]) : NaN;
+      if (!(cost >= 0) && bi >= 0) cost = Math.abs(numv(r[bi])) / q;
+      const h = out[sym] || (out[sym] = { symbol: sym, shares: 0, cost: 0 });
+      const c = cost >= 0 ? cost : 0;
+      h.cost = (h.cost * h.shares + c * q) / (h.shares + q); h.shares += q;
+      if (ni >= 0 && r[ni]) h.thesis = r[ni].slice(0, 600);
+      if (di >= 0 && /^\d{4}-\d{2}-\d{2}$/.test((r[di] || "").trim())) h.date = r[di].trim();
+    }
+  }
+  return { fmt, holdings: Object.values(out).filter(h => h.shares > 1e-9).map(h => ({ ...h, shares: +h.shares.toFixed(6), cost: +h.cost.toFixed(4) })), cash };
+}
+let IMP = null;
+async function previewImport(text) {
+  const out = $("#impOut");
+  try { IMP = readHoldings(text); } catch (err) { out.innerHTML = `<div class="err">${esc(err.message)}</div>`; return; }
+  if (!IMP.holdings.length && !IMP.cash) { out.innerHTML = `<div class="err">No positions found in that file.</div>`; return; }
+  out.innerHTML = `<div class="muted"><span class="spin"></span> Checking ${IMP.holdings.length} tickers…</div>`;
+  let qs = [];
+  try { qs = await api("quotes?symbols=" + encodeURIComponent(IMP.holdings.map(h => h.symbol).join(","))); } catch {}
+  const qm = Object.fromEntries(qs.map(q => [q.symbol, q]));
+  IMP.holdings.forEach(h => { h.ok = !!(qm[h.symbol] && !qm[h.symbol].error); h.q = qm[h.symbol] || {}; h.use = h.ok; });
+  out.innerHTML = `<div style="font-size:13px;margin-bottom:6px">Read as <b>${esc(IMP.fmt)}</b>: ${IMP.holdings.length} position${IMP.holdings.length === 1 ? "" : "s"}${IMP.cash ? ` and ${money(IMP.cash.amount, IMP.cash.currency)} cash` : ""}. Untick anything you don’t want.</div>
+    <div class="imp-prev"><table class="cmp"><thead><tr><th></th><th>Ticker</th><th>Shares</th><th>Avg price paid</th><th>Price now</th></tr></thead><tbody>
+    ${IMP.holdings.map((h, i) => `<tr><td><input type="checkbox" data-imp="${i}" ${h.use ? "checked" : ""}></td><td><b>${esc(h.symbol)}</b><div class="nm">${h.ok ? esc(h.q.name || "") : '<span class="down">not found on Yahoo: check the ticker</span>'}</div></td><td class="num">${qty(h.shares)}</td><td class="num">${money(h.cost, h.q.currency)}</td><td class="num">${h.ok ? money(h.q.price, h.q.currency) : "—"}</td></tr>`).join("")}
+    </tbody></table></div>
+    ${IMP.cash ? `<label class="toggle" style="padding:8px 0 0"><input type="checkbox" id="impCash" checked> Set my cash to ${money(IMP.cash.amount, IMP.cash.currency)}</label>` : ""}
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-top:10px">
+      <label class="muted" style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="radio" name="impMode" value="add" checked> Add to my holdings</label>
+      <label class="muted" style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="radio" name="impMode" value="replace"> Replace all my holdings</label>
+      <button class="btn primary" type="button" id="impGo">Import</button></div>`;
+  out.querySelectorAll("[data-imp]").forEach(cb => cb.onchange = () => { IMP.holdings[+cb.dataset.imp].use = cb.checked; });
+  $("#impGo").onclick = doImport;
+}
+async function doImport() {
+  const pick = IMP.holdings.filter(h => h.use).map(({ symbol, shares, cost, thesis, date }) => { const h = { symbol, shares, cost }; if (thesis) h.thesis = thesis; if (date) h.date = date; return h; });
+  const replace = document.querySelector("input[name=impMode]:checked").value === "replace";
+  if (replace && !confirm(`Replace all ${me.holdings.length} current holdings with ${pick.length} from the file?`)) return;
+  let list = replace ? [] : me.holdings.map(h => ({ ...h }));
+  for (const h of pick) {
+    const ex = list.find(x => x.symbol === h.symbol);
+    if (ex) { ex.cost = (ex.cost * ex.shares + h.cost * h.shares) / (ex.shares + h.shares); ex.shares = +(ex.shares + h.shares).toFixed(6); }
+    else list.push(h);
+  }
+  const cash = IMP.cash && $("#impCash")?.checked ? IMP.cash : null;
+  $("#impGo").disabled = true; $("#impGo").textContent = "Importing…";
+  try {
+    me = await post("state", { holdings: list, watchlist: me.watchlist, quiet: true, cash }, "PUT");
+    const g = group.find(x => isMe(x.name)); if (g) Object.assign(g, me);
+    $("#impDlg").close(); afterHoldingsChange();
+  } catch (err) { $("#impOut").insertAdjacentHTML("beforeend", `<div class="err">${esc(err.message)}</div>`); $("#impGo").disabled = false; $("#impGo").textContent = "Import"; }
+}
+$("#impBtn").onclick = () => { $("#impOut").innerHTML = ""; $("#impFile").value = ""; $("#impDlg").showModal(); };
+$("#impX").onclick = () => $("#impDlg").close();
+$("#impFile").onchange = async e => { const f = e.target.files[0]; if (f) previewImport(await f.text()); };
+$("#impParse").onclick = () => { const t = $("#impText").value.trim(); if (t) previewImport(t); };
+$("#expBtn").onclick = () => {
+  const u = cur(), q = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
+  const lines = [["Symbol", "Name", "Shares", "AvgCost", "Currency", "DateBought", "PriceNow", "Note"].join(",")];
+  for (const h of u.holdings) { const qq = Q[h.symbol] || {}; lines.push([h.symbol, q(qq.name || ""), h.shares, h.cost, qq.currency || h.cur || "", h.date || "", qq.price ?? "", q(viewing ? "" : h.thesis || "")].join(",")); }
+  if (u.cash?.amount) lines.push(["CASH", "Cash", u.cash.amount, "", u.cash.currency, "", "", ""].join(","));
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" }));
+  a.download = `folio-${(u.name || "portfolio").replace(/\W+/g, "-").toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+};
 // ---------- chart ----------
 let hist = [];
 function select(s) { sel = s; render(); loadHistory(); }
@@ -1470,7 +1664,6 @@ function view(name) {
   $("#stressOut").className = "muted"; $("#stressOut").textContent = "Pick a scenario above to see how these holdings would likely hold up.";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-$("#group").onclick = e => { const r = e.target.closest("tr[data-m]"); if (r) view(r.dataset.m); };
 $("#backMine").onclick = () => view(null);
 $("#holdings").onclick = async e => {
   const d = e.target.closest("[data-del]");
@@ -1485,7 +1678,7 @@ $("#watch").onclick = async e => {
   if (t && !viewing) { editTarget(t); return; }
   const r = e.target.closest("tr[data-s]"); if (r) select(r.dataset.s);
 };
-$("#refresh").onclick = async () => { await loadGroup(); loadQuotes(); loadHistory(); loadEquity(); loadActivity(); };
+$("#refresh").onclick = async () => { await loadGroup(); loadQuotes(); loadHistory(); loadEquity(); };
 
 function autocomplete(input, list) {
   let t, items = [], on = -1;
@@ -1525,7 +1718,7 @@ $("#addH").onsubmit = async e => {
   if (ex) { ex.cost = (ex.cost * ex.shares + cost * shares) / (ex.shares + shares); ex.shares += shares; }
   else { const h = { symbol, shares, cost }; if (date) h.date = date; const th = $("#hThesis").value.trim(); if (th) h.thesis = th; me.holdings.push(h); }
   e.target.reset();
-  await saveMe(); await loadQuotes(); select(symbol); loadNews(); loadEquity(); loadMoods(); loadActivity(); loadJournal(); loadDiag(); loadMyEvents();
+  await saveMe(); await loadQuotes(); select(symbol); loadNews(); loadEquity(); loadMoods(); loadJournal(); loadDiag(); loadMyEvents();
 };
 $("#addW").onsubmit = async e => {
   e.preventDefault();
@@ -1606,7 +1799,7 @@ const newsList = items => items.length ? items.map(n => `<li>
 let M = null, mPeriod = "day", mLoaded = 0;
 async function loadMarket(force) {
   if (!force && M && Date.now() - mLoaded < 120000) return renderMarket();
-  loadCal();
+  loadCal(); loadMacro();
   try { M = await api("market"); mLoaded = Date.now(); renderMarket(); }
   catch (err) { $("#mAsof").textContent = "Couldn’t load market data. " + err.message; }
 }
@@ -1626,7 +1819,7 @@ function renderMarket() {
   $("#mIdx").innerHTML = M.indexes.map(r => `<div class="tile">
     <span class="label">${esc(r.label)}</span>
     <div class="row"><span class="val num">${fmtIdx(r)}</span><span class="pill ${cls(r[k])}">${pct(r[k])}</span></div>
-    ${sparkSvg(r.spark, (r[k] ?? 0) >= 0)}</div>`).join("");
+    ${sparkSvg(r.spark, (r[k] ?? 0) >= 0)}${r.symbol === "^TNX" ? curveHtml() : ""}</div>`).join("");
   const maxAbs = Math.max(1, ...M.sectors.map(r => Math.abs(r[k] || 0)));
   $("#mSec").innerHTML = [...M.sectors].sort((a, b) => (b[k] ?? -99) - (a[k] ?? -99)).map(r => {
     const v = r[k] || 0, amt = Math.round(8 + Math.abs(v) / maxAbs * 40);
@@ -1642,6 +1835,45 @@ function renderMarket() {
   if (secOpen) renderSector();
 }
 
+
+// ---------- macro ----------
+let MX = null;
+async function loadMacro() {
+  if (MX && Date.now() - MX.got < 900000) return renderMacro();
+  try { MX = await api("macro"); MX.got = Date.now(); renderMacro(); if (M) renderMarket(); }
+  catch { $("#mxReg").innerHTML = `<div class="empty">Couldn’t read the macro data right now.</div>`; }
+}
+function renderMacro() {
+  const r = MX, tone = t => t === "up" ? "up" : t === "down" ? "down" : "muted";
+  const risk = /^Risk-off/.test(r.regime) ? "down" : /^(Goldilocks|Risk-on|Reflation)/.test(r.regime) ? "up" : "";
+  $("#mxReg").innerHTML = `<div class="regime">
+    <div><div class="name ${risk}">${esc(r.regime)}</div><div class="muted" style="font-size:13px;margin-top:2px">${esc(r.desc)}</div></div>
+    <ul class="sigs">${r.signals.map(x => `<li><span>${esc(x.name)}</span><span class="num ${tone(x.tone)}">${esc(x.value)}</span></li>`).join("")}</ul>
+    <div><div class="label" style="margin-bottom:4px">Historically tends to do well in this regime</div><div class="secchips">${r.favored.map(x => `<span style="background:var(--up-soft);color:var(--up)">${esc(x)}</span>`).join("")}</div></div>
+    ${r.lagging.length ? `<div><div class="label" style="margin-bottom:4px">Tends to lag</div><div class="secchips">${r.lagging.map(x => `<span style="background:var(--down-soft);color:var(--down)">${esc(x)}</span>`).join("")}</div></div>` : ""}
+    <div class="muted" style="font-size:12px">Actually leading the past month: ${r.leaders.map(x => `<b style="color:var(--ink)">${esc(x.label)}</b> <span class="up">${pct(x.month)}</span>`).join(", ")}. Lagging: ${r.laggards.map(x => `<b style="color:var(--ink)">${esc(x.label)}</b> <span class="${cls(x.month)}">${pct(x.month)}</span>`).join(", ")}.</div>
+    <div class="note" style="padding:0">Rules of thumb from past market cycles, not a forecast. Regime is set by the S&amp;P 500 vs its 50/200-day averages, the VIX, and the 10-year yield’s move over the past month.</div></div>`;
+  const c = r.corr, L = c.labels;
+  const bg = v => v >= 0 ? `color-mix(in srgb, var(--accent) ${Math.round(Math.abs(v) * 70)}%, var(--surface))` : `color-mix(in srgb, var(--a3) ${Math.round(Math.abs(v) * 70)}%, var(--surface))`;
+  const ink = v => Math.abs(v) > 0.6 ? "var(--surface)" : "var(--ink)";
+  $("#mxCorrNote").textContent = `Past 30 days (${c.days} shared trading days)`;
+  const pairs = [];
+  for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) pairs.push([L[i], L[j], c.matrix[i][j]]);
+  pairs.sort((a, b) => Math.abs(b[2]) - Math.abs(a[2]));
+  const sg = L.indexOf("Stocks"), gd = L.indexOf("Gold");
+  $("#mxCorr").innerHTML = `<div class="cm"><div></div>${L.map(l => `<div class="ch">${esc(l)}</div>`).join("")}
+    ${L.map((a, i) => `<div class="rh">${esc(a)}</div>${L.map((b, j) => i === j ? `<div style="background:var(--bg);color:var(--muted)">—</div>` : `<div style="background:${bg(c.matrix[i][j])};color:${ink(c.matrix[i][j])}" title="${esc(a)} vs ${esc(b)}">${c.matrix[i][j].toFixed(2)}</div>`).join("")}`).join("")}</div>
+    <div class="legend-c" style="padding:0 16px 8px"><span><i style="background:var(--accent)"></i>Move together (+1)</span><span><i style="background:var(--a3)"></i>Move opposite (−1)</span><span>0 = unrelated</span></div>
+    <div class="facts" style="padding:0 16px 8px">30-day moves: ${L.map(l => `<span>${esc(l)} <b class="${cls(c.moves[l])}">${pct(c.moves[l])}</b></span>`).join("")}</div>
+    <div class="note" style="padding:0 16px 14px">Strongest link: <b>${esc(pairs[0][0])}</b> & <b>${esc(pairs[0][1])}</b> (${pairs[0][2].toFixed(2)}). ${sg >= 0 && gd >= 0 ? (c.matrix[sg][gd] > 0.5 ? "Stocks and gold are moving together, so gold hasn’t been much of a hedge lately." : c.matrix[sg][gd] < -0.2 ? "Gold has been moving against stocks, acting as a hedge." : "Gold has mostly moved independently of stocks.") : ""}</div>`;
+}
+function curveHtml() {
+  if (!MX) return "";
+  const y = MX.curve, col = y.status === "Inverted" ? "down" : y.status === "Flat" ? "" : "up";
+  return `<div class="yc"><div class="row" style="display:flex;justify-content:space-between;gap:6px"><span>2Y–10Y spread <b>${y.spread >= 0 ? "+" : ""}${y.spread.toFixed(2)}</b></span><span class="${col}" style="font-weight:600">${y.status}</span></div>
+    <span style="display:block;height:22px">${sparkSvg(y.spark, y.spread >= 0)}</span>
+    <span>2-yr ${y.y2.toFixed(2)}% · 3-mo ${y.y3m.toFixed(2)}% · past year</span></div>`;
+}
 // calendar strip
 let CAL = null, calAll = false;
 async function loadCal() {
@@ -1820,7 +2052,7 @@ function renderStock() {
     </section>
 
     <section class="card">
-      <div class="card-h"><h2>Sentiment &amp; analyst consensus</h2></div>
+      <div class="card-h"><h2>Sentiment &amp; analyst consensus</h2><button class="btn" type="button" id="sShare">Share image</button></div>
       <div id="sSent"><div class="empty"><span class="spin"></span> Loading sentiment…</div></div>
     </section>
 
@@ -2180,6 +2412,7 @@ async function verdictInto(btn, out, path, body) {
   btn.disabled = true; out.className = "muted"; out.innerHTML = `<span class="spin"></span> Weighing the signals…`;
   try {
     const r = await post(path, body);
+    lastVerdict[path + (body.symbol ? ":" + body.symbol : "")] = r.text;
     out.className = "";
     out.innerHTML = verdictHtml(r.text) + `<div class="meta">Written by Claude at ${new Date(r.ts * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} from the data on this page. A summary of signals and opinions, not investment advice.</div>`;
     btn.textContent = "Ask again";
@@ -2278,6 +2511,7 @@ async function loadStockSent(sym) {
     const r = await api("stock/sentiment?symbol=" + encodeURIComponent(sym));
     if (S.sym !== sym || !$("#sSent")) return;
     const se = r.sentiment, a = r.analyst;
+    S.sent = r;
     const tot = a.counts ? Object.values(a.counts).reduce((x, y) => x + y, 0) : 0;
     $("#sSent").innerHTML = `
       <div class="grid2" style="gap:0">
@@ -2351,13 +2585,13 @@ async function start() {
   sel = me.holdings[0]?.symbol || me.watchlist[0] || null;
   render();
   await loadQuotes();
-  loadHistory(); loadNews(); loadEquity(); loadMoods(); loadReturns(); loadActivity();
+  loadHistory(); loadNews(); loadEquity(); loadMoods();
   loadDiag(); loadMyEvents(); loadJournal(); loadWatchInfo(); loadNotes(); loadTldr(); loadAlerts();
   route();
   timers.push(setInterval(() => { if (!document.hidden) loadQuotes(); }, 30000));
   timers.push(setInterval(() => { if (!document.hidden && location.hash === "#markets") loadMarket(true); }, 120000));
-  timers.push(setInterval(() => { if (!document.hidden) { loadGroup(); loadActivity(); } loadAlerts(); }, 60000));
-  timers.push(setInterval(() => { if (!document.hidden) { loadMoods(); loadReturns(); loadFx(); } }, 900000));
+  timers.push(setInterval(() => { if (!document.hidden) { loadGroup(); } loadAlerts(); }, 60000));
+  timers.push(setInterval(() => { if (!document.hidden) { loadMoods(); loadFx(); } }, 900000));
   timers.push(setInterval(() => { if (!document.hidden && (range === "1D" || range === "5D")) loadHistory(); }, 120000));
 }
 (async () => {
