@@ -159,7 +159,7 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 
 
 ## Highlighting & layout polish
-- `bestIdx(vals, "low"|"high")` + `td.best` marks the best cell per row in Compare drawer and peers table.
+- `bestIdx(vals, "low"|"high")` + `td.best` marks the best cell per row in the Compare drawer; the peers table only bolds the lowest forward P/E in emerald (`td.pbest`).
 - `peCls`/`peFmt`: forward P/E green <15x, amber >40x, red if negative (Key numbers, watchlist).
 - Valuation history dots/labels: good/warn/bad classes. Analyst action pills `.act a-up|a-down|a-init|a-keep`.
 - Financials: YoY margin delta badges (same quarter a year earlier, else the last two fiscal years).

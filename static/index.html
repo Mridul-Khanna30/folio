@@ -440,6 +440,14 @@ dialog::backdrop { background: rgb(0 0 0 / 0.35); }
 .rbar .nw.good { background: var(--up); } .rbar .nw.warn { background: var(--a3); } .rbar .nw.bad { background: var(--down); }
 .vst { font-size: 11px; margin-top: 2px; } .vst.good { color: var(--up); } .vst.warn { color: var(--a3); } .vst.bad { color: var(--down); }
 .pe-lo { color: var(--up); } .pe-hi { color: var(--a3); } .pe-neg { color: var(--down); }
+td.pbest { color: #34D399; font-weight: 700; }
+.avgpt { align-items: baseline; }
+.avgpt .ptv { font-size: 17px; font-weight: 700; color: var(--ink); font-family: var(--mono); margin-left: 4px; }
+.avgpt .ptd { font-weight: 700; font-family: var(--mono); margin-left: 4px; }
+.avgpt .ptd.pos { color: #34D399; } .avgpt .ptd.neg { color: #F87171; }
+:root[data-theme="light"] .avgpt .ptd.pos, :root[data-theme="light"] td.pbest { color: #059669; } :root[data-theme="light"] .avgpt .ptd.neg { color: #DC2626; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .avgpt .ptd.pos, :root:not([data-theme="dark"]) td.pbest { color: #059669; } :root:not([data-theme="dark"]) .avgpt .ptd.neg { color: #DC2626; } }
+@media (min-width: 881px) { .grid2.sentsplit { grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); } }
 td.best { background: color-mix(in srgb, var(--up) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--up) 30%, transparent); border-radius: 6px; }
 .act { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
 .act.a-up { color: var(--up); background: var(--up-soft); } .act.a-down { color: var(--down); background: var(--down-soft); }
@@ -2319,18 +2327,18 @@ function renderPeers() {
   const box = $("#sPeers"); if (!box || S.peers == null) return;
   const P = S.peers;
   if (P.length < 2) { box.innerHTML = `<div class="empty">No peer group found for ${esc(S.sym)}.</div>`; return; }
-  const bF = bestIdx(P.map(x => x.fpe), "low"), bU = bestIdx(P.map(x => x.upside), "high");
+  const bF = bestIdx(P.map(x => x.fpe), "low");
   const selfRating = r => r || S.sent?.analyst?.rating || null;
   box.innerHTML = `<div class="tablewrap"><table class="cmp peers"><thead><tr><th>Stock</th><th>Today</th><th>1 month</th><th>Forward P/E</th><th>Mood</th><th class="hide-sm">Analysts</th><th class="hide-sm"></th></tr></thead><tbody>
     ${P.map((x, i) => `<tr data-s="${esc(x.symbol)}" class="${x.self ? "self" : ""}" style="cursor:${x.self ? "default" : "pointer"}">
       <td><span class="sym">${esc(x.symbol)}</span><div class="nm">${esc(x.name)}</div></td>
       <td><span class="pill ${cls(x.day)}">${pct(x.day)}</span></td>
       <td><span class="pill ${cls(x.month)}">${pct(x.month)}</span></td>
-      <td class="num ${i === bF ? "best" : ""}" ${i === bF ? 'title="Cheapest of the group"' : ""}>${x.fpe ? x.fpe.toFixed(1) + "×" : "—"}</td>
+      <td class="num ${i === bF ? "pbest" : ""}" ${i === bF ? 'title="Lowest forward P/E in the group"' : ""}>${x.fpe ? x.fpe.toFixed(1) + "×" : "—"}</td>
       <td>${x.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:6px">${x.mood}</span>${mchip(x.mood)}`}</td>
-      <td class="hide-sm ${i === bU ? "best" : ""}" ${i === bU ? 'title="Most upside to the analysts’ average target"' : ""}>${ratingChip(x.self ? selfRating(x.rating) : x.rating)}${x.upside != null ? ` <span class="muted" style="font-size:12px">${pct(x.upside)}</span>` : ""}</td>
+      <td class="hide-sm">${ratingChip(x.self ? selfRating(x.rating) : x.rating)}${x.upside != null ? ` <span class="muted" style="font-size:12px">${pct(x.upside)}</span>` : ""}</td>
       <td class="hide-sm">${x.self ? "" : watchBtn(x.symbol)}</td></tr>`).join("")}</tbody></table></div>
-    <div class="note" style="padding-top:8px">Forward P/E = price ÷ next year’s expected earnings per share (lower = cheaper relative to profits). Analyst column shows consensus and average target vs today. Green cell = best in the group (cheapest P/E, most upside). Today’s moves are each market’s latest session.</div>`;
+    <div class="note" style="padding-top:8px">Forward P/E = price ÷ next year’s expected earnings per share (lower = cheaper relative to profits). Analyst column shows consensus and average target vs today. Today’s moves are each market’s latest session.</div>`;
   box.onclick = e => { const r = e.target.closest("tr[data-s]"); if (r && !r.classList.contains("self")) openStock(r.dataset.s); };
 }
 function renderWhatIf() {
@@ -2916,7 +2924,7 @@ async function loadStockSent(sym) {
     S.sent = r; renderPeers();
     const tot = a.counts ? Object.values(a.counts).reduce((x, y) => x + y, 0) : 0;
     $("#sSent").innerHTML = `
-      <div class="grid2" style="gap:0">
+      <div class="grid2 sentsplit" style="gap:0">
         <div style="min-width:0;border-right:1px solid var(--line)">
           <div class="ind-h">
             <div class="top"><span class="label">Stock mood</span><span class="sc">${se?.score ?? "—"}</span></div>
@@ -2931,7 +2939,7 @@ async function loadStockSent(sym) {
             ${a.mean ? `<div class="facts"><span>Average rating <b>${a.mean.toFixed(2)}</b> (1 = strong buy, 5 = sell)</span><span><b>${a.analysts ?? tot}</b> analysts</span></div>` : tot ? `<div class="facts"><span><b>${tot}</b> analyst ratings</span></div>` : `<div class="facts">No analyst coverage found.</div>`}
             ${stackBar(a.counts)}
             ${a.counts ? `<div class="legend-c">${[["strongBuy", "Strong buy"], ["buy", "Buy"], ["hold", "Hold"], ["sell", "Sell"], ["strongSell", "Strong sell"]].map(([k, l]) => `<span><i style="background:${ratingCol[k]}"></i>${l} ${a.counts[k]}</span>`).join("")}</div>` : ""}
-            ${a.target ? `<div class="facts"><span>Average price target <b>${money(a.target, S.data.quote.currency)}</b></span><span><b class="${cls(a.upside)}">${pct(a.upside)}</b> from the current price</span></div>` : ""}
+            ${a.target ? `<div class="facts avgpt"><span>Average price target <b class="ptv">${money(a.target, S.data.quote.currency)}</b> <b class="ptd ${a.upside >= 0 ? "pos" : "neg"}">${pct(a.upside)}</b></span><span>from the current price</span></div>` : ""}
           </div>
           <div class="ai big verdict" style="margin:4px 16px 16px">
             <div class="ai-h"><span class="label">Buy now or wait?</span><button class="btn primary" id="sVerBtn" type="button">Ask Claude</button></div>
