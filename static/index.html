@@ -483,11 +483,11 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
         <div class="ec-sum" id="ecSum"></div></div>
       <div class="ec-ctrl">
         <div class="seg" id="ecBench"><button type="button" data-b="^GSPC" class="on">vs S&amp;P 500</button><button type="button" data-b="^IXIC">vs Nasdaq</button><button type="button" data-b="none">Off</button></div>
-        <div class="tabs" id="ecTabs"><button type="button" data-r="1D">1D</button><button type="button" data-r="1M">1M</button><button type="button" data-r="6M" class="on">6M</button><button type="button" data-r="YTD">YTD</button><button type="button" data-r="1Y">1Y</button></div>
+        <div class="tabs" id="ecTabs"><button type="button" data-r="1D">1D</button><button type="button" data-r="1M">1M</button><button type="button" data-r="6M" class="on">6M</button><button type="button" data-r="YTD">YTD</button><button type="button" data-r="1Y">1Y</button><button type="button" data-r="2Y">2Y</button><button type="button" data-r="5Y">5Y</button></div>
       </div>
     </div>
     <div class="chartbox"><canvas id="ecChart" aria-label="Portfolio value chart"></canvas><div class="empty" id="ecEmpty" hidden></div></div>
-    <div class="note">Uses the holdings as they are today (Folio doesn’t know when each was bought or sold), so it shows how today’s mix has done. The benchmark line starts at the same value for a fair comparison.</div>
+    <div class="note">Uses the holdings as they are today (Folio doesn’t know when each was bought or sold), so it shows how today’s mix has done. Cash is included at today’s balance. The benchmark line starts at the same value for a fair comparison.</div>
   </section>
 
   <div class="ai big verdict" id="stressBox">
@@ -531,7 +531,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
 
   <div class="grid2">
     <section class="card">
-      <div class="card-h"><h2 id="holdTitle">Holdings</h2><span class="muted" style="font-size:12px">Click a row to chart it</span></div>
+      <div class="card-h"><h2 id="holdTitle">Holdings</h2><span class="muted" style="font-size:12px">Click a row to chart it · Manage to record a sale or fix a mistake</span></div>
       <div class="tablewrap">
         <table>
           <thead><tr>
@@ -559,7 +559,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
             <button class="btn" id="cIntel" type="button" style="margin-top:6px;font-size:12px;padding:3px 10px">Why is it moving?</button>
           </div>
           <div class="tabs" id="tabs" role="tablist">
-            <button type="button" data-r="1D">1D</button><button type="button" data-r="5D">5D</button><button type="button" data-r="1M" class="on">1M</button><button type="button" data-r="6M">6M</button><button type="button" data-r="1Y">1Y</button><button type="button" data-r="5Y">5Y</button>
+            <button type="button" data-r="1D">1D</button><button type="button" data-r="5D">5D</button><button type="button" data-r="1M" class="on">1M</button><button type="button" data-r="6M">6M</button><button type="button" data-r="1Y">1Y</button><button type="button" data-r="2Y">2Y</button><button type="button" data-r="5Y">5Y</button>
           </div>
         </div>
       </div>
@@ -711,12 +711,45 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     </div>
   </dialog>
 
-  <dialog id="closeDlg">
-    <div class="dlg-h"><h2 id="closeTitle">Close position</h2><button class="x" style="visibility:visible" type="button" id="closeX" aria-label="Cancel">×</button></div>
-    <form class="dlg-b" id="closeForm">
-      <div class="muted" style="font-size:13px" id="closeThesis"></div>
-      <label class="muted" style="font-size:12px;display:grid;gap:4px">One-sentence takeaway for your journal (optional)<input class="field" id="closeTake" maxlength="300" placeholder="What did you learn from this trade?"></label>
-      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" type="button" id="closeCancel">Cancel</button><button class="btn primary" type="submit">Remove holding</button></div>
+  <dialog id="mgDlg">
+    <div class="dlg-h"><h2 id="mgTitle">Manage holding</h2><button class="x" style="visibility:visible" type="button" id="mgX" aria-label="Close">×</button></div>
+    <div class="dlg-b">
+      <div class="tabs" id="mgTabs" style="width:100%"><button type="button" data-m="sell" class="on" style="flex:1;font-family:var(--sans)">I sold some or all</button><button type="button" data-m="fix" style="flex:1;font-family:var(--sans)">Fix a mistake</button></div>
+      <form id="sellForm" class="dlg-b" style="padding:0" autocomplete="off">
+        <div class="muted" style="font-size:13px" id="mgThesis"></div>
+        <div class="af" style="grid-template-columns:1fr 1fr">
+          <label class="muted" style="font-size:12px;display:grid;gap:4px">Shares sold<input class="field num" id="sellShares" type="number" step="any" min="0" required></label>
+          <label class="muted" style="font-size:12px;display:grid;gap:4px"><span id="sellPriceLab">Sale price per share</span><input class="field num" id="sellPrice" type="number" step="any" min="0" required></label>
+        </div>
+        <div class="presetrow" style="margin:0"><button type="button" id="sellAll">Sold all</button><button type="button" id="sellHalf">Sold half</button></div>
+        <label class="toggle" style="padding:0"><input type="checkbox" id="sellCash" checked> <span id="sellCashLab">Add the money to my cash</span></label>
+        <label class="muted" style="font-size:12px;display:grid;gap:4px">One-sentence takeaway for your journal (optional)<input class="field" id="sellTake" maxlength="300" placeholder="What did you learn from this trade?"></label>
+        <div class="muted" style="font-size:12px" id="sellSum"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" type="button" data-cancel>Cancel</button><button class="btn primary" type="submit">Record sale</button></div>
+      </form>
+      <form id="fixForm" class="dlg-b" style="padding:0" autocomplete="off" hidden>
+        <div class="af" style="grid-template-columns:1fr 1fr">
+          <label class="muted" style="font-size:12px;display:grid;gap:4px">Shares you own<input class="field num" id="fixShares" type="number" step="any" min="0" required></label>
+          <label class="muted" style="font-size:12px;display:grid;gap:4px"><span id="fixCostLab">Average price paid per share</span><input class="field num" id="fixCost" type="number" step="any" min="0" required></label>
+          <label class="muted" style="font-size:12px;display:grid;gap:4px">Date bought (optional)<input class="field num" id="fixDate" type="date"></label>
+        </div>
+        <label class="muted" style="font-size:12px;display:grid;gap:4px">Why you bought it (journal note)<input class="field" id="fixThesis" maxlength="600"></label>
+        <div class="muted" style="font-size:12px">Corrections don’t show in the group activity feed or your trade journal.</div>
+        <div style="display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap"><button class="btn" type="button" id="fixDel" style="color:var(--down)">Delete: added by mistake</button>
+          <span style="display:flex;gap:8px"><button class="btn" type="button" data-cancel>Cancel</button><button class="btn primary" type="submit">Save changes</button></span></div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="cashDlg">
+    <div class="dlg-h"><h2>Cash</h2><button class="x" style="visibility:visible" type="button" id="cashX" aria-label="Close">×</button></div>
+    <form class="dlg-b" id="cashForm" autocomplete="off">
+      <div class="muted" style="font-size:13px">How much uninvested cash do you hold in this account? It counts toward your portfolio value and the value-over-time chart.</div>
+      <div class="af" style="grid-template-columns:1fr auto">
+        <input class="field num" id="cashAmt" type="number" step="any" min="0" placeholder="0.00" aria-label="Cash amount" required>
+        <select class="field" id="cashCur" aria-label="Cash currency"><option>USD</option><option>CAD</option><option>EUR</option><option>GBP</option></select>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" type="button" id="cashCancel">Cancel</button><button class="btn primary" type="submit">Save</button></div>
     </form>
   </dialog>
 
@@ -853,8 +886,11 @@ function stats(u) {
     rows.push({ h, q, i, val, gain: val - c, gainPct: c ? (val / c - 1) * 100 : null, fx: fxp });
   });
   rows.sort((a, b) => (b.val ?? -1) - (a.val ?? -1));
-  const dayPct = total - day ? day / (total - day) * 100 : 0, allPct = cost ? (total / cost - 1) * 100 : 0;
-  return { total, day, cost, fxGain, byCls, rows, dayPct, allPct, mood: moodW ? moodV / moodW : null, moodCover: total ? moodW / total : 0 };
+  const invested = total;
+  const dayPct = invested - day ? day / (invested - day) * 100 : 0, allPct = cost ? (invested / cost - 1) * 100 : 0;
+  const c = u.cash || {}, cash = (c.amount || 0) * (FX[c.currency || "USD"] || 0) / B;
+  if (cash > 0) byCls.Cash = cash;
+  return { total: invested + cash, invested, cash, day, cost, fxGain, byCls, rows, dayPct, allPct, mood: moodW ? moodV / moodW : null, moodCover: invested ? moodW / invested : 0 };
 }
 
 // ---------- render ----------
@@ -872,13 +908,13 @@ function render() {
 
   const st = stats(u);
   $("#total").textContent = bm(st.total);
-  $("#count").textContent = u.holdings.length + (u.holdings.length === 1 ? " holding" : " holdings");
+  $("#count").textContent = u.holdings.length + (u.holdings.length === 1 ? " holding" : " holdings") + (st.cash > 0 ? ` + ${bm(st.cash, 0)} cash` : "");
   $("#day").innerHTML = `<span class="${cls(st.day)}">${sBm(st.day)}</span>`;
   $("#dayPct").innerHTML = `<span class="${cls(st.day)}">${pct(st.dayPct)}</span>`;
-  $("#gain").innerHTML = `<span class="${cls(st.total - st.cost)}">${sBm(st.total - st.cost)}</span>`;
-  $("#gainPct").innerHTML = `<span class="${cls(st.total - st.cost)}">${pct(st.allPct)}</span> <span class="muted">on ${bm(st.cost, 0)} invested</span>`;
+  $("#gain").innerHTML = `<span class="${cls(st.invested - st.cost)}">${sBm(st.invested - st.cost)}</span>`;
+  $("#gainPct").innerHTML = `<span class="${cls(st.invested - st.cost)}">${pct(st.allPct)}</span> <span class="muted">on ${bm(st.cost, 0)} invested</span>`;
   const foreign = u.holdings.some(h => (h.cur || Q[h.symbol]?.currency) && (h.cur || Q[h.symbol]?.currency) !== BASE);
-  $("#gainFx").innerHTML = foreign && st.rows.length ? `<span class="muted">Stocks</span> <span class="${cls(st.total - st.cost - st.fxGain)}">${sBm(st.total - st.cost - st.fxGain, 0)}</span> <span class="muted">· Currency</span> <span class="${cls(st.fxGain)}">${sBm(st.fxGain, 0)}</span>` : "";
+  $("#gainFx").innerHTML = foreign && st.rows.length ? `<span class="muted">Stocks</span> <span class="${cls(st.invested - st.cost - st.fxGain)}">${sBm(st.invested - st.cost - st.fxGain, 0)}</span> <span class="muted">· Currency</span> <span class="${cls(st.fxGain)}">${sBm(st.fxGain, 0)}</span>` : "";
   $("#fxNote").textContent = foreign ? `Foreign holdings converted to ${BASE} at today’s rate; gains use the rate on the day bought (or the day added to Folio).` : "";
   $("#pMood").innerHTML = st.mood == null ? `<span class="muted">${u.holdings.length ? "Working it out…" : "—"}</span>` : `<b>${Math.round(st.mood)}</b>${mchip(st.mood)}`;
 
@@ -896,8 +932,14 @@ function render() {
       <td class="num hide-sm">${qty(h.shares)}</td>
       <td class="num">${bm(val)}</td>
       <td class="num ${cls(gain)}">${sBm(gain)}<div class="sub">${pct(gainPct)}${Math.abs(fx) >= 0.5 ? ` <span class="muted" title="Part of the gain from the exchange rate">FX ${sBm(fx, 0)}</span>` : ""}</div></td>
-      <td>${mine ? `<button class="x" type="button" data-del="${i}" aria-label="Remove ${esc(h.symbol)}">×</button>` : ""}</td>
+      <td>${mine ? `<button class="wbtn" type="button" data-del="${i}" aria-label="Sell, edit or remove ${esc(h.symbol)}">Manage</button>` : ""}</td>
     </tr>`).join("") : `<tr><td colspan="7" class="empty">${mine ? "No holdings yet. Add what you own below: the ticker (or search by name), how many shares, and the average price you paid per share." : "No holdings yet."}</td></tr>`;
+  const cc = u.cash || { amount: 0, currency: "USD" };
+  if (mine || cc.amount > 0) $("#holdings").insertAdjacentHTML("beforeend", `<tr data-cash="1" style="cursor:${mine ? "pointer" : "default"}">
+      <td><div class="sym">Cash</div><div class="nm">${esc(cc.currency)}${cc.currency !== BASE && cc.amount ? " · " + money(cc.amount, cc.currency) : ""}</div></td>
+      <td class="num hide-sm muted">—</td><td></td><td class="num hide-sm muted">—</td>
+      <td class="num">${bm(st.cash)}</td><td class="muted num">${st.total ? (st.cash / st.total * 100).toFixed(1) + "%" : ""}</td>
+      <td>${mine ? `<button class="wbtn" type="button" data-cashedit="1">${cc.amount ? "Edit" : "+ Add cash"}</button>` : ""}</td></tr>`);
 
   const wl = u.watchlist;
   $("#watch").innerHTML = wl.length ? wl.map((s, i) => {
@@ -1024,14 +1066,14 @@ function drawEquity() {
   const val = pts.map(p => p[1] / B), bench = d.bench ? d.bench.map(p => p[1] / B) : null;
   const ch = val[val.length - 1] - val[0];
   $("#ecVal").innerHTML = `${bm(val[val.length - 1])} <span class="${cls(ch)}" style="font-size:14px">${sBm(ch)} (${pct(d.ret)})</span>`;
-  const lbl = { "1D": "today", "1M": "past month", "6M": "past 6 months", YTD: "this year", "1Y": "past year" }[EC.range];
+  const lbl = { "1D": "today", "1M": "past month", "6M": "past 6 months", YTD: "this year", "1Y": "past year", "2Y": "past 2 years", "5Y": "past 5 years" }[EC.range];
   if (bench) {
     const diff = d.ret - d.benchRet;
     $("#ecSum").innerHTML = `${lbl[0].toUpperCase() + lbl.slice(1)}: ${d.benchName} <b class="${cls(d.benchRet)}">${pct(d.benchRet)}</b>. ` +
       (Math.abs(diff) < 0.05 ? "Neck and neck with the market." : `${mine ? "You’re" : "They’re"} <b class="${cls(diff)}">${diff > 0 ? "beating" : "trailing"}</b> it by <b>${Math.abs(diff).toFixed(1)}</b> percentage points.`);
   } else $("#ecSum").textContent = lbl[0].toUpperCase() + lbl.slice(1);
   const intraday = EC.range === "1D";
-  const labels = pts.map(([t]) => new Date(t).toLocaleString([], intraday ? { hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", year: EC.range === "1Y" ? "2-digit" : undefined }));
+  const labels = pts.map(([t]) => new Date(t).toLocaleString([], intraday ? { hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", year: ["1Y", "2Y", "5Y"].includes(EC.range) ? "2-digit" : undefined }));
   const col = css(ch >= 0 ? "--up" : "--down");
   const ctx = $("#ecChart").getContext("2d");
   const g = ctx.createLinearGradient(0, 0, 0, 240); g.addColorStop(0, col + "33"); g.addColorStop(1, col + "00");
@@ -1147,7 +1189,7 @@ function renderJournal() {
       ${o.thesis ? `<div class="q"><b>Bought because:</b> ${esc(o.thesis)}</div>` : ""}</li>`).join("");
   const closed = J.closed.map(c => {
     const r = c.price && c.cost ? (c.price / c.cost - 1) * 100 : null;
-    return `<li><div class="jh"><span><b class="sym">${esc(c.symbol)}</b> <span class="muted" style="font-size:12px">${dt(c.opened)} → ${dt(c.closed)}</span></span>${r == null ? "" : `<span class="pill ${cls(r)}">${pct(r)}</span>`}</div>
+    return `<li><div class="jh"><span><b class="sym">${esc(c.symbol)}</b> <span class="muted" style="font-size:12px">${dt(c.opened)} → ${dt(c.closed)} · ${c.partial ? `sold ${qty(c.shares)} shares, ${qty(c.left)} kept` : `sold all ${qty(c.shares)}`}${c.price ? ` at ${money(c.price, c.currency)}` : ""}</span></span>${r == null ? "" : `<span class="pill ${cls(r)}">${pct(r)}</span>`}</div>
       ${c.thesis ? `<div class="q"><b>Bought because:</b> ${esc(c.thesis)}</div>` : ""}
       <div class="q"><b>Takeaway:</b> ${c.takeaway ? esc(c.takeaway) : `<button class="linkbtn" type="button" data-tk="${esc(c.id)}">+ add one</button>`}</div></li>`;
   }).join("");
@@ -1174,22 +1216,86 @@ $("#journal").onclick = async e => {
 };
 const put = (p, body) => post(p, body, "PUT");
 
-// closing a position asks for a takeaway
-let closing = null;
-function askClose(i) {
-  closing = i; const h = me.holdings[i];
-  $("#closeTitle").textContent = `Remove ${h.symbol}`;
-  $("#closeThesis").innerHTML = h.thesis ? `<b>You bought because:</b> ${esc(h.thesis)}` : "This moves it to the closed section of your trade journal.";
-  $("#closeTake").value = ""; $("#closeDlg").showModal(); $("#closeTake").focus();
+// manage a holding: record a sale, or fix a mistake
+let mgI = null;
+const afterHoldingsChange = () => { render(); loadQuotes(); loadNews(); loadEquity(); loadActivity(); loadJournal(); loadDiag(); loadMyEvents(); loadMoods(); };
+function openManage(i, mode = "sell") {
+  mgI = i; const h = me.holdings[i], q = Q[h.symbol] || {}, c = q.currency || h.cur || "USD";
+  $("#mgTitle").textContent = `${h.symbol}${q.name && q.name !== h.symbol ? " · " + q.name : ""}`;
+  $("#mgThesis").innerHTML = `You own <b class="num">${qty(h.shares)}</b> shares, bought at ${money(h.cost, c)} on average.${h.thesis ? `<br><b>You bought because:</b> ${esc(h.thesis)}` : ""}`;
+  $("#sellShares").value = h.shares; $("#sellShares").max = h.shares;
+  $("#sellPrice").value = q.price ? +q.price.toFixed(4) : ""; $("#sellPriceLab").textContent = `Sale price per share (${c})`;
+  $("#sellTake").value = "";
+  const mc = me.cash || { currency: "USD" };
+  $("#sellCashLab").textContent = `Add the money to my cash (${mc.currency})`;
+  $("#fixShares").value = h.shares; $("#fixCost").value = h.cost; $("#fixCostLab").textContent = `Average price paid per share (${c})`;
+  $("#fixDate").value = h.date || ""; $("#fixThesis").value = h.thesis || "";
+  mgMode(mode); sellSum(); $("#mgDlg").showModal();
 }
-const closeClose = () => { $("#closeDlg").close(); closing = null; };
-$("#closeX").onclick = closeClose; $("#closeCancel").onclick = closeClose;
-$("#closeForm").onsubmit = async e => {
-  e.preventDefault(); if (closing == null) return;
-  const h = me.holdings[closing], take = $("#closeTake").value.trim();
-  me.holdings.splice(closing, 1); closeClose(); render();
-  await saveMe(take ? { [h.symbol]: take } : null);
-  render(); loadNews(); loadEquity(); loadActivity(); loadJournal(); loadDiag(); loadMyEvents();
+function mgMode(m) {
+  for (const b of $("#mgTabs").children) b.classList.toggle("on", b.dataset.m === m);
+  $("#sellForm").hidden = m !== "sell"; $("#fixForm").hidden = m !== "fix";
+}
+function sellSum() {
+  const h = me.holdings[mgI]; if (!h) return;
+  const q = Q[h.symbol] || {}, c = q.currency || "USD", n = +$("#sellShares").value || 0, p = +$("#sellPrice").value || 0;
+  const pl = (p - h.cost) * n;
+  $("#sellSum").innerHTML = n > 0 && p > 0 ? `Sale proceeds <b>${money(n * p, c)}</b> · ${pl >= 0 ? "profit" : "loss"} <b class="${cls(pl)}">${money(Math.abs(pl), c)}</b> (${pct((p / h.cost - 1) * 100)})${n >= h.shares ? " · the position will be closed" : ` · ${qty(h.shares - n)} shares left`}` : "";
+}
+$("#mgTabs").onclick = e => { const b = e.target.closest("button"); if (b) mgMode(b.dataset.m); };
+$("#sellShares").oninput = sellSum; $("#sellPrice").oninput = sellSum;
+$("#sellAll").onclick = () => { $("#sellShares").value = me.holdings[mgI].shares; sellSum(); };
+$("#sellHalf").onclick = () => { $("#sellShares").value = +(me.holdings[mgI].shares / 2).toFixed(6); sellSum(); };
+$("#mgX").onclick = () => $("#mgDlg").close();
+document.querySelectorAll("#mgDlg [data-cancel]").forEach(b => b.onclick = () => $("#mgDlg").close());
+$("#sellForm").onsubmit = async e => {
+  e.preventDefault();
+  const h = me.holdings[mgI], q = Q[h.symbol] || {};
+  const n = Math.min(+$("#sellShares").value, h.shares), p = +$("#sellPrice").value, take = $("#sellTake").value.trim();
+  if (!(n > 0)) return;
+  let cash = null;
+  if ($("#sellCash").checked) {
+    const mc = me.cash || { amount: 0, currency: "USD" };
+    const usd = n * p * (q.usdRate ?? 1);
+    cash = { amount: +((mc.amount || 0) + usd / (FX[mc.currency] || 1)).toFixed(2), currency: mc.currency || "USD" };
+  }
+  if (n >= h.shares - 1e-9) me.holdings.splice(mgI, 1); else h.shares = +(h.shares - n).toFixed(8);
+  $("#mgDlg").close(); render();
+  me = await post("state", { holdings: me.holdings, watchlist: me.watchlist, takeaways: take ? { [h.symbol]: take } : null, sells: { [h.symbol]: p }, cash }, "PUT");
+  const g = group.find(x => isMe(x.name)); if (g) Object.assign(g, me);
+  afterHoldingsChange();
+};
+$("#fixForm").onsubmit = async e => {
+  e.preventDefault();
+  const h = me.holdings[mgI], sh = +$("#fixShares").value, cost = +$("#fixCost").value, date = $("#fixDate").value, th = $("#fixThesis").value.trim();
+  if (!(sh > 0)) return;
+  h.shares = sh; h.cost = cost;
+  if ((h.date || "") !== date) { if (date) h.date = date; else delete h.date; delete h.fx; h.opened = date || h.opened; }
+  if (th) h.thesis = th; else delete h.thesis;
+  $("#mgDlg").close(); render();
+  me = await post("state", { holdings: me.holdings, watchlist: me.watchlist, quiet: true }, "PUT");
+  const g = group.find(x => isMe(x.name)); if (g) Object.assign(g, me);
+  afterHoldingsChange();
+};
+$("#fixDel").onclick = async () => {
+  const h = me.holdings[mgI];
+  if (!confirm(`Delete ${h.symbol} completely? Use this only if it was added by mistake. (If you sold it, use “I sold some or all” instead so it goes in your journal.)`)) return;
+  me.holdings.splice(mgI, 1); $("#mgDlg").close(); render();
+  me = await post("state", { holdings: me.holdings, watchlist: me.watchlist, quiet: true }, "PUT");
+  const g = group.find(x => isMe(x.name)); if (g) Object.assign(g, me);
+  afterHoldingsChange();
+};
+
+// cash
+function openCash() { const c = me.cash || { amount: 0, currency: "USD" }; $("#cashAmt").value = c.amount || ""; $("#cashCur").value = c.currency || "USD"; $("#cashDlg").showModal(); $("#cashAmt").focus(); }
+$("#cashX").onclick = () => $("#cashDlg").close(); $("#cashCancel").onclick = () => $("#cashDlg").close();
+$("#cashForm").onsubmit = async e => {
+  e.preventDefault();
+  const cash = { amount: +$("#cashAmt").value || 0, currency: $("#cashCur").value };
+  $("#cashDlg").close();
+  me = await post("state", { holdings: me.holdings, watchlist: me.watchlist, quiet: true, cash }, "PUT");
+  const g = group.find(x => isMe(x.name)); if (g) Object.assign(g, me);
+  render(); loadEquity();
 };
 
 // watchlist research columns
@@ -1304,7 +1410,7 @@ function lineChart(cv, box, hist, q, range, old, events) {
   const base = range === "1D" && q.prev ? q.prev : hist[0][1];
   const col = css(hist[hist.length - 1][1] >= base ? "--up" : "--down");
   const intraday = range === "1D" || range === "5D";
-  const labels = hist.map(([t]) => new Date(t).toLocaleString([], intraday ? { weekday: range === "5D" ? "short" : undefined, hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", year: range === "5Y" ? "2-digit" : undefined }));
+  const labels = hist.map(([t]) => new Date(t).toLocaleString([], intraday ? { weekday: range === "5D" ? "short" : undefined, hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", year: range === "5Y" || range === "2Y" ? "2-digit" : undefined }));
   const ctx = cv.getContext("2d");
   const g = ctx.createLinearGradient(0, 0, 0, 240);
   g.addColorStop(0, col + "33"); g.addColorStop(1, col + "00");
@@ -1368,7 +1474,8 @@ $("#group").onclick = e => { const r = e.target.closest("tr[data-m]"); if (r) vi
 $("#backMine").onclick = () => view(null);
 $("#holdings").onclick = async e => {
   const d = e.target.closest("[data-del]");
-  if (d && !viewing) { askClose(+d.dataset.del); return; }
+  if (d && !viewing) { openManage(+d.dataset.del); return; }
+  if (e.target.closest("tr[data-cash]")) { if (!viewing) openCash(); return; }
   const r = e.target.closest("tr[data-s]"); if (r) select(r.dataset.s);
 };
 $("#watch").onclick = async e => {
@@ -1701,7 +1808,7 @@ function renderStock() {
       </section>
       <section class="card">
         <div class="chart-head"><div class="row"><span class="label">Price</span>
-          <div class="tabs" id="sTabs">${["1D", "5D", "1M", "6M", "1Y", "5Y"].map(r => `<button type="button" data-r="${r}" class="${r === S.range ? "on" : ""}">${r}</button>`).join("")}</div></div></div>
+          <div class="tabs" id="sTabs">${["1D", "5D", "1M", "6M", "1Y", "2Y", "5Y"].map(r => `<button type="button" data-r="${r}" class="${r === S.range ? "on" : ""}">${r}</button>`).join("")}</div></div></div>
         <div class="chartbox"><canvas id="sChart" aria-label="Price chart"></canvas><div class="empty" id="sEmpty" hidden></div></div>
         <div class="ev-legend" id="sEvLeg"></div>
       </section>

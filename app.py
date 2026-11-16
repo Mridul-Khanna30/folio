@@ -141,7 +141,7 @@ def quotes(symbols: str):
 
 RANGES = {
     "1D": ("1d", "5m"), "5D": ("5d", "30m"), "1M": ("1mo", "1d"),
-    "6M": ("6mo", "1d"), "1Y": ("1y", "1d"), "5Y": ("5y", "1wk"),
+    "6M": ("6mo", "1d"), "1Y": ("1y", "1d"), "2Y": ("2y", "1d"), "5Y": ("5y", "1wk"),
 }
 
 
@@ -254,7 +254,7 @@ def public(key, owner=True):
     u = users[key]
     hold = u["holdings"] if owner else [{k: v for k, v in h.items() if k != "thesis"} for h in u["holdings"]]
     return {"name": u["name"], "holdings": hold, "watchlist": u["watchlist"], "joined": u.get("joined"),
-            "baskets": u.get("baskets", []), "shareActivity": bool(u.get("shareActivity"))}
+            "baskets": u.get("baskets", []), "cash": u.get("cash") or {"amount": 0, "currency": "USD"}, "shareActivity": bool(u.get("shareActivity"))}
 
 
 class Creds(BaseModel):
@@ -320,6 +320,17 @@ class State(BaseModel):
     holdings: list[Holding] = Field(max_length=200)
     watchlist: list[str] = Field(max_length=100)
     takeaways: dict[str, str] | None = None  # symbol -> one-line lesson, when a position is closed
+    sells: dict[str, float] | None = None  # symbol -> sale price per share, when the user records a sale
+    quiet: bool = False  # correcting a mistake: no activity-feed post or journal entry
+    cash: "Cash | None" = None
+
+
+class Cash(BaseModel):
+    amount: float = Field(ge=0, le=1e12)
+    currency: str = Field("USD", pattern="^(USD|CAD|EUR|GBP)$")
+
+
+State.model_rebuild()
 
 
 BASES = ["USD", "CAD", "EUR", "GBP"]
@@ -408,18 +419,26 @@ def put_state(s: State, key: str = Depends(current_user)):
         h.setdefault("opened", h.get("date") or time.strftime("%Y-%m-%d"))
     with lock:
         old = users[key]["holdings"]
-        keep = {h["symbol"] for h in new}
-        for h in old:
-            if h["symbol"] not in keep:
-                q = one_quote(h["symbol"])
-                users[key].setdefault("journal", []).append({
-                    "id": uuid.uuid4().hex[:10], "symbol": h["symbol"], "opened": h.get("opened") or h.get("date"),
-                    "closed": time.strftime("%Y-%m-%d"), "shares": h["shares"], "cost": h["cost"], "price": q.get("price"),
-                    "currency": q.get("currency"), "thesis": h.get("thesis") or "",
-                    "takeaway": ((s.takeaways or {}).get(h["symbol"]) or "")[:300]})
+        newsh = {h["symbol"]: h["shares"] for h in new}
+        for h in ([] if s.quiet else old):
+            sym = h["symbol"]
+            sold = h["shares"] - newsh.get(sym, 0)
+            if sold <= 1e-9:
+                continue
+            q = one_quote(sym)
+            price = (s.sells or {}).get(sym) or q.get("price")
+            users[key].setdefault("journal", []).append({
+                "id": uuid.uuid4().hex[:10], "symbol": sym, "opened": h.get("opened") or h.get("date"),
+                "closed": time.strftime("%Y-%m-%d"), "shares": sold, "cost": h["cost"], "price": price,
+                "partial": sym in newsh, "left": newsh.get(sym),
+                "currency": q.get("currency"), "thesis": h.get("thesis") or "",
+                "takeaway": ((s.takeaways or {}).get(sym) or "")[:300]})
         users[key]["holdings"] = new
         users[key]["watchlist"] = [w.upper()[:20] for w in s.watchlist]
-        log_activity(key, old, new)
+        if not s.quiet:
+            log_activity(key, old, new)
+        if s.cash is not None:
+            users[key]["cash"] = s.cash.model_dump()
         save_json(USERS_FILE, users)
     return public(key)
 
@@ -1072,7 +1091,13 @@ def raw_currency(sym):
         return "USD"
 
 
-PRANGES = {"1D": ("1d", "5m"), "1M": ("1mo", "1d"), "6M": ("6mo", "1d"), "YTD": ("ytd", "1d"), "1Y": ("1y", "1d")}
+PRANGES = {"1D": ("1d", "5m"), "1M": ("1mo", "1d"), "6M": ("6mo", "1d"), "YTD": ("ytd", "1d"), "1Y": ("1y", "1d"),
+           "2Y": ("2y", "1d"), "5Y": ("5y", "1wk")}
+
+
+def cash_usd(u):
+    c = u.get("cash") or {}
+    return (c.get("amount") or 0) * (fx_to_usd(c.get("currency") or "USD") or 0)
 
 
 def value_frame(holdings, period, interval, extra=()):
@@ -1095,7 +1120,7 @@ def value_frame(holdings, period, interval, extra=()):
         c = c.replace("GBp", "GBP")
         if c == "USD":
             rate = 1.0
-        elif interval == "1d" and f"{c}USD=X" in df:
+        elif interval in ("1d", "1wk") and f"{c}USD=X" in df:
             rate = df[f"{c}USD=X"].bfill()
         else:
             rate = fx_to_usd(c) or 0
@@ -1114,7 +1139,8 @@ def portfolio_history(member: str, range: str = "6M", bench: str = "^GSPC", key:
     holdings = users[k]["holdings"]
     if not holdings:
         return {"points": [], "bench": None}
-    sig = tuple(sorted((h["symbol"], h["shares"]) for h in holdings))
+    cash = cash_usd(users[k])
+    sig = (tuple(sorted((h["symbol"], h["shares"]) for h in holdings)), round(cash, 2))
     def f():
         period, interval = PRANGES[range]
         b = [] if bench == "none" else [bench]
@@ -1124,11 +1150,11 @@ def portfolio_history(member: str, range: str = "6M", bench: str = "^GSPC", key:
         if range == "1D":  # keep the latest trading day only
             last_day = tot.index[-1].normalize() if len(tot) else None
             tot = tot[tot.index.normalize() == last_day] if last_day is not None else tot
-        tot = tot[tot > 0]
+        tot = tot[tot > 0] + cash  # cash counted at today's balance throughout
         if len(tot) < 2:
             return {"points": [], "bench": None}
         out = {"points": [[int(t.timestamp() * 1000), round(float(v), 2)] for t, v in tot.items()],
-               "ret": float(tot.iloc[-1] / tot.iloc[0] - 1) * 100, "bench": None, "benchName": None}
+               "ret": float(tot.iloc[-1] / tot.iloc[0] - 1) * 100, "bench": None, "benchName": None, "cash": cash}
         if b and bench in df:
             bs = df[bench].reindex(tot.index).ffill().bfill()
             if bs.notna().all() and bs.iloc[0]:
@@ -1137,12 +1163,12 @@ def portfolio_history(member: str, range: str = "6M", bench: str = "^GSPC", key:
                 out["benchRet"] = float(bs.iloc[-1] / bs.iloc[0] - 1) * 100
                 out["benchName"] = "S&P 500" if bench == "^GSPC" else "Nasdaq"
         return out
-    return cached(("phist", sig, range, bench), 120 if range == "1D" else 900, f)
+    return cached(("phist", sig, range, bench), 120 if range == "1D" else 3600 if range in ("2Y", "5Y") else 900, f)
 
 
 @app.get("/api/group/returns")
 def group_returns(key: str = Depends(current_user)):
-    snap = {k: tuple(sorted((h["symbol"], h["shares"]) for h in u["holdings"])) for k, u in users.items()}
+    snap = {k: (tuple(sorted((h["symbol"], h["shares"]) for h in u["holdings"])), round(cash_usd(u), 2)) for k, u in users.items()}
     def f():
         allh = [h for u in users.values() for h in u["holdings"]]
         if not allh:
@@ -1154,7 +1180,7 @@ def group_returns(key: str = Depends(current_user)):
             try:
                 vals, _ = value_frame(u["holdings"], "3mo", "1d")
                 tot = vals.dropna().sum(axis=1)
-                tot = tot[tot > 0]
+                tot = tot[tot > 0] + cash_usd(u)
                 last = tot.index[-1]
                 r = {}
                 for lab, days in (("1W", 7), ("1M", 30)):

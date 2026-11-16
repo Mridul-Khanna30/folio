@@ -93,6 +93,15 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 - Markets: plain-English screener (`/api/screen`): Claude turns the query into JSON filters over `universe()` (~130 stocks: sector-fund
   top holdings, industry members, everything the group holds/watches), applied server-side.
 
+### Added 16 Nov 2026 (fourth batch)
+- Holdings rows have a "Manage" button: dialog with "I sold some or all" (shares + sale price; optional add proceeds to cash;
+  takeaway → journal entry, partial sales recorded with `partial`/`left`; sent as `sells` in PUT /api/state) and "Fix a mistake"
+  (edit shares/cost/date/note or delete; sent with `quiet: true` = no activity post, no journal entry; changing the date drops `fx` so it's refilled).
+- Cash: `users[k].cash = {amount, currency}` (USD/CAD/EUR/GBP), set via the Cash row in holdings (PUT /api/state with `cash`).
+  Counts in portfolio value, allocation ("Cash"), leaderboard value and the value-over-time chart (`cash_usd()`, constant at
+  today's balance); gain % and today % are on invested money only.
+- Longer ranges: value-over-time 2Y and 5Y (weekly); price charts 2Y.
+
 ### Known data limits (tell the user honestly; don't invent data)
 - Yahoo lists the **firm**, not the individual analyst's name, for ratings.
 - Top movers are daily only; "this week" figures are the past 5 trading sessions.
