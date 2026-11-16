@@ -236,6 +236,13 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .vcols ul { margin: 0; padding-left: 18px; }
 .legend-c { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--muted); }
 .legend-c i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+.pt-wrap { border-top: 1px solid var(--line); }
+.pt td { white-space: nowrap; }
+.pt tbody tr { cursor: default; }
+.pt .firm { font-weight: 500; }
+.pt th:nth-child(2), .pt th:nth-child(3), .pt th:nth-child(4), .pt td:nth-child(2), .pt td:nth-child(3), .pt td:nth-child(4) { text-align: left; }
+.pt .grade { font-size: 12px; color: var(--muted); }
+.pt-more { padding: 10px 16px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
 footer { font-size: 12px; color: var(--muted); text-align: center; }
 
 @media (max-width: 1100px) and (min-width: 881px) { .inds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -1143,9 +1150,46 @@ async function loadStockSent(sym) {
             <div id="sVer" class="muted" style="font-size:13px;margin-top:6px">Claude weighs the analyst consensus, valuation, the stock’s mood, upcoming earnings and the news, then lays out the case for and against buying at today’s price.</div>
           </div>
         </div>
-      </div>`;
+      </div>
+      <div class="pt-wrap" id="sTargets"><div class="empty"><span class="spin"></span> Loading analyst price targets…</div></div>`;
+    loadTargets(sym, S.data.quote);
     $("#sVerBtn").onclick = () => verdictInto($("#sVerBtn"), $("#sVer"), "stock/verdict", { symbol: sym });
   } catch { if ($("#sSent")) $("#sSent").innerHTML = `<div class="empty">Sentiment data isn’t available for ${esc(sym)}.</div>`; }
+}
+
+async function loadTargets(sym, q) {
+  try {
+    const r = await api("stock/targets?symbol=" + encodeURIComponent(sym));
+    if (S.sym !== sym || !$("#sTargets")) return;
+    renderTargets(r, q, 15);
+  } catch { if ($("#sTargets")) $("#sTargets").innerHTML = `<div class="empty">Analyst price targets aren’t available right now.</div>`; }
+}
+function renderTargets(r, q, limit) {
+  const box = $("#sTargets"); if (!box) return;
+  if (!r.rows.length) { box.innerHTML = `<div class="empty">No individual analyst ratings found for ${esc(r.symbol)}.</div>`; return; }
+  const dt = d => new Date(d + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  const rows = r.rows.slice(0, limit);
+  const act = a => `<span class="${a === "Upgrade" ? "up" : a === "Downgrade" ? "down" : ""}">${esc(a)}</span>`;
+  box.innerHTML = `
+    <div class="card-h"><h2 style="font-size:13px">Analyst price targets</h2><span class="muted" style="font-size:12px">${r.rows.length} ratings since ${dt(r.since)}</span></div>
+    <div class="tablewrap"><table class="pt">
+      <thead><tr><th>Date</th><th>Firm</th><th>Action</th><th>Rating</th><th>Price target</th><th>vs today</th><th>Target date</th></tr></thead>
+      <tbody>${rows.map(x => {
+        const up = x.target && q.price ? (x.target / q.price - 1) * 100 : null;
+        const ptc = x.target && x.prior ? (x.target / x.prior - 1) * 100 : null;
+        const grade = x.from && x.to && x.from !== x.to ? `${esc(x.from)} → <b>${esc(x.to)}</b>` : esc(x.to || x.from || "—");
+        return `<tr>
+          <td class="num">${dt(x.date)}</td>
+          <td class="firm">${esc(x.firm)}</td>
+          <td>${act(x.action)}</td>
+          <td class="grade">${grade}</td>
+          <td class="num">${x.target ? money(x.target, q.currency) : "—"}${x.prior ? `<div class="sub muted">was ${money(x.prior, q.currency)} <span class="${cls(ptc)}">${pct(ptc)}</span></div>` : ""}</td>
+          <td>${up == null ? '<span class="muted">—</span>' : `<span class="pill ${cls(up)}">${pct(up)}</span>`}</td>
+          <td class="num muted">${x.targetFor ? dt(x.targetFor) : "—"}</td></tr>`;
+      }).join("")}</tbody></table></div>
+    <div class="pt-more"><span>Price targets are 12-month targets, so the target date is one year after the rating. Yahoo Finance lists the firm, not the individual analyst.</span>
+      ${r.rows.length > limit ? `<button class="btn" type="button" id="ptMore">Show all ${r.rows.length}</button>` : ""}</div>`;
+  const m = $("#ptMore"); if (m) m.onclick = () => renderTargets(r, q, r.rows.length);
 }
 
 // ---------- boot ----------

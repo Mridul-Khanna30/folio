@@ -837,6 +837,43 @@ def stock_sent(symbol: str, key: str = Depends(current_user)):
     return {"symbol": sym, "sentiment": stock_sentiment(sym), "analyst": {**a, "rating": rating_label(a.get("mean"))}}
 
 
+ACTION = {"up": "Upgrade", "down": "Downgrade", "main": "Maintains", "init": "Initiates", "reit": "Reiterates"}
+
+
+@app.get("/api/stock/targets")
+def stock_targets(symbol: str, key: str = Depends(current_user)):
+    """Individual analyst rating / price-target actions, at least the past 12 months."""
+    sym = symbol.strip().upper()[:20]
+    def f():
+        try:
+            u = yf.Ticker(sym).upgrades_downgrades
+        except Exception:
+            u = None
+        if u is None or u.empty:
+            return {"symbol": sym, "rows": [], "since": None}
+        u = u.sort_index(ascending=False)
+        cut = pd.Timestamp.now() - pd.Timedelta(days=366)
+        recent = u[u.index >= cut]
+        if len(recent) < 10:  # thinly covered stock: fall back to the latest 10 actions
+            recent = u.head(max(10, len(recent)))
+        rows = []
+        for ts, r in recent.iterrows():
+            cur, prior = fnum(r.get("currentPriceTarget")), fnum(r.get("priorPriceTarget"))
+            cur = cur or None
+            prior = prior or None
+            rows.append({
+                "date": ts.strftime("%Y-%m-%d"),
+                "targetFor": (ts + pd.DateOffset(years=1)).strftime("%Y-%m-%d") if cur else None,
+                "firm": r.get("Firm") or "",
+                "action": ACTION.get(r.get("Action"), r.get("Action") or ""),
+                "from": r.get("FromGrade") or "", "to": r.get("ToGrade") or "",
+                "ptAction": r.get("priceTargetAction") or "",
+                "target": cur, "prior": prior,
+            })
+        return {"symbol": sym, "rows": rows, "since": rows[-1]["date"] if rows else None}
+    return cached(("targets", sym), 3600, f)
+
+
 @app.post("/api/stock/verdict")
 def stock_verdict(req: WhyReq, key: str = Depends(current_user)):
     sym = req.symbol.strip().upper()
