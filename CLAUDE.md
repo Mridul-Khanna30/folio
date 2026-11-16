@@ -151,4 +151,6 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
   each year's per-share flow by (1+d)^t. Discount tooltip shows CAPM (rf + beta [0.6-2] x 5% ERP, clamped 7-14%).
 - 5x5 sensitivity (discount +-2pp x base growth +-5pp) at the bottom. `POST /api/stock/dcf/suggest` (AI, JSON out, clamped,
   cached 30 min per symbol/start/tv) fills all three cases plus a one-sentence reason each.
+- Expected value badge = 25% bear + 50% base + 25% bull fair value. SBC box is hidden in earnings modes. Sensitivity cells
+  show 2 decimals; clicking one sets the discount rate and the base case's years 1-5 growth.
 

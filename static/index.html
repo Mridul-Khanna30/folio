@@ -319,7 +319,11 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .dsl .dtip:hover .dtipbox, .dsl .dtip:focus .dtipbox { display: block; }
 .dsens { padding: 14px 16px 0; }
 .dsm { border-collapse: separate; border-spacing: 2px; font-size: 12px; }
-.dsm td { min-width: 64px; }
+.dsm td { min-width: 72px; cursor: pointer; }
+.dsm td:hover, .dsm td:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.dev { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: 12px; color: var(--muted); margin: 2px 0 6px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); width: fit-content; max-width: 100%; }
+.dev b { font-family: var(--mono); font-weight: 500; color: var(--ink); font-size: 14px; }
+.dev .pill { font-size: 11px; }
 .dinfo { display: inline-grid; place-items: center; width: 13px; height: 13px; border-radius: 50%; border: 1px solid currentColor; font: italic 600 9px/1 Georgia, serif; vertical-align: 1px; margin-left: 2px; }
 .dsm th { font-weight: 500; color: var(--muted); padding: 4px 6px; text-align: center; font-family: var(--mono); white-space: nowrap; }
 .dsm thead th:first-child, .dsm tbody th { text-align: left; font-family: var(--sans); }
@@ -2211,6 +2215,7 @@ const DCF = { base: null, set: null, chart: null };
 const DCF_CASES = [["bear", "Bear", "--down"], ["base", "Base", "--accent"], ["bull", "Bull", "--up"]];
 const DCF_STARTS = [["fcf", "Free cash flow (past 12 months)", "fcfPs"], ["fcf3", "3-year average free cash flow", "fcf3Ps"],
   ["ni", "Earnings (past 12 months)", "niPs"], ["fwd", "Forward earnings (analysts, next year)", "fwdPs"], ["rev", "Revenue × target FCF margin", "revPs"]];
+const money2 = (v, cur) => { try { return v.toLocaleString("en-US", { style: "currency", currency: cur || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }); } catch { return v.toFixed(2) + " " + cur; } };
 const dcfEarn = st => st === "ni" || st === "fwd";
 async function loadDcf(sym) {
   DCF.base = null;
@@ -2255,6 +2260,7 @@ function renderDcf() {
   box.innerHTML = `
     <div class="dtop">
       <div class="dnow"><span class="label">Today’s price</span><b>${money(b.price, cur)}</b>
+        <div class="dev" id="dEv" title="Probability-weighted fair value: 25% bear + 50% base + 25% bull"></div>
         <div class="muted" style="font-size:12px" id="dImplied"></div></div>
       ${DCF_CASES.map(([k, n, c]) => `<div class="dcase" style="--c:var(${c})"><span class="label"><i></i>${n} case</span>
         <div class="drow"><span class="muted">Fair value today</span><span id="dfv-${k}"></span></div>
@@ -2267,14 +2273,14 @@ function renderDcf() {
           <label>Start from <select id="dStart">${DCF_STARTS.map(([v, lab, f]) => `<option value="${v}" ${s.start === v ? "selected" : ""} ${b[f] == null ? "disabled" : ""}>${lab}${v === "rev" ? ` (${b.revPs == null ? "n/a" : money(b.revPs, cur)} sales/share)` : ` (${b[f] == null ? "n/a" : money(b[f], cur)}/share)`}</option>`).join("")}</select></label>
           ${s.start === "rev" ? `<label class="dsl" style="min-width:170px"><span>Target FCF margin <b id="dv-margin">${s.margin.toFixed(1)}%</b></span>
             <input type="range" id="dMargin" min="1" max="60" step="0.5" value="${s.margin}" aria-label="Target free cash flow margin" title="Free cash flow as a share of sales once the business matures. Recent years: ${b.hist.map(h => `${h.year} ${h.fcf ?? "—"}%`).join(", ")}"></label>` : ""}
-          <label class="dchk" title="${earn ? "Earnings already count stock-based pay as a cost" : "Free cash flow adds back stock-based pay because it isn’t cash, but it dilutes owners. Ticking this treats it as a real cost."}"><input type="checkbox" id="dSbc" ${s.sbc && !earn ? "checked" : ""} ${earn ? "disabled" : ""}> Deduct stock-based pay (SBC)<span class="muted">${b.sbcPs ? ` ${money(b.sbcPs, cur)}/share` : " none reported"}</span></label>
+          ${earn ? `<span class="muted" style="font-size:11px;align-self:center">Earnings already count stock-based pay as a cost</span>` : `<label class="dchk" title="Free cash flow adds back stock-based pay because it isn’t cash, but it dilutes owners. Ticking this treats it as a real cost."><input type="checkbox" id="dSbc" ${s.sbc ? "checked" : ""}> Deduct stock-based pay (SBC)<span class="muted">${b.sbcPs ? ` ${money(b.sbcPs, cur)}/share` : " none reported"}</span></label>`}
         </div>
         <div class="drow2">
           <label>Terminal value <span class="tabs" id="dTv"><button type="button" data-v="growth" class="${s.tv === "growth" ? "on" : ""}">Perpetuity growth</button><button type="button" data-v="exit" class="${s.tv === "exit" ? "on" : ""}">Exit multiple (yr 10)</button></span></label>
           <label class="dsl" style="min-width:160px"><span>Share count / yr <b id="dv-dil">${(s.dil > 0 ? "+" : "") + s.dil.toFixed(1)}%</b></span>
             <input type="range" id="dDil" min="-6" max="6" step="0.1" value="${s.dil}" aria-label="Yearly change in share count" title="+ = new shares issued (dilution), − = buybacks. Recent trend: ${(b.dilution > 0 ? "+" : "") + (b.dilution ?? 0).toFixed(1)}% a year"></label>
           <label class="dsl" style="min-width:160px"><span><span class="dtip" tabindex="0">Discount rate <i class="dinfo">i</i><span class="dtipbox" role="tooltip">${esc(capm)}</span></span> <b id="dv-disc">${s.disc.toFixed(1)}%</b></span>
-            <input type="range" id="dDisc" min="5" max="16" step="0.5" value="${s.disc}" aria-label="Discount rate"></label>
+            <input type="range" id="dDisc" min="3" max="18" step="0.5" value="${s.disc}" aria-label="Discount rate"></label>
         </div>
         <div class="drow2">
           <label>Look ahead <span class="tabs" id="dYrs">${[1, 3, 5].map(y => `<button type="button" data-y="${y}" class="${y === N ? "on" : ""}">${y}Y</button>`).join("")}</span></label>
@@ -2294,7 +2300,7 @@ function renderDcf() {
     <div class="note" id="dNote" style="padding-top:8px"></div>`;
   const re = () => { saveDcf(); renderDcf(); };
   $("#dStart").onchange = e => { s.start = e.target.value; re(); };
-  $("#dSbc").onchange = e => { s.sbc = e.target.checked; updDcf(); };
+  if ($("#dSbc")) $("#dSbc").onchange = e => { s.sbc = e.target.checked; updDcf(); };
   if ($("#dMargin")) $("#dMargin").oninput = e => { s.margin = +e.target.value; $("#dv-margin").textContent = s.margin.toFixed(1) + "%"; updDcf(); };
   $("#dTv").onclick = e => { const bt = e.target.closest("button"); if (!bt) return; s.tv = bt.dataset.v; re(); };
   $("#dDil").oninput = e => { s.dil = +e.target.value; $("#dv-dil").textContent = (s.dil > 0 ? "+" : "") + s.dil.toFixed(1) + "%"; updDcf(); };
@@ -2333,7 +2339,7 @@ function updDcf() {
     fwd: "analysts’ expected earnings per share for next year (usually their adjusted figure)", rev: `sales per share × a ${s.margin.toFixed(1)}% free cash flow margin` }[s.start];
   if (!(s0 > 0)) {
     for (const [k] of DCF_CASES) { $(`#dfv-${k}`).innerHTML = "—"; $(`#dfp-${k}`).innerHTML = "—"; }
-    $("#dImplied").textContent = ""; $("#dSens").innerHTML = "";
+    $("#dImplied").textContent = ""; $("#dSens").innerHTML = ""; $("#dEv").innerHTML = "";
     $("#dNote").innerHTML = `Starting from ${startName}${s.sbc && !earn ? ", minus stock-based pay," : ""} gives ${s0 == null ? "nothing (not available)" : money(s0, cur)}, so there’s nothing to grow. Try another “Start from” option${s.sbc && !earn ? " or untick the stock-based pay box" : ""}.`;
     DCF.chart?.destroy(); DCF.chart = null; return;
   }
@@ -2344,17 +2350,26 @@ function updDcf() {
     $(`#dfv-${k}`).innerHTML = fv > 0 ? `<b>${money(fv, cur)}</b> <span class="pill ${cls(up)}">${pct(up)}</span>` : "<b>below zero</b>";
     $(`#dfp-${k}`).innerHTML = fp > 0 ? `<b>${money(fp, cur)}</b> <span class="muted" title="Yearly return from today's price">${yr >= 0 ? "+" : "−"}${Math.abs(yr).toFixed(1)}%/yr</span>` : "<b>below zero</b>";
   }
+  const ev = 0.25 * paths.bear[0] + 0.5 * paths.base[0] + 0.25 * paths.bull[0], evu = (ev / b.price - 1) * 100;
+  $("#dEv").innerHTML = `<span>Expected value</span> <b>${money(ev, cur)}</b> <span class="pill ${cls(evu)}">${pct(evu)}</span><span class="muted">25/50/25</span>`;
   // reverse DCF: what years-1-5 growth does today's price assume (base case's other settings)?
   const bc = s.base, cg = g => ({ ...bc, g1: g, g2: bc.g2auto ? (g + bc.gt) / 2 : bc.g2 }), f = g => dcfOf(s, cg(g), s.disc, 0) - b.price;
   let lo = -40, hi = 120, imp = null;
   if (f(lo) < 0 && f(hi) > 0) { for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; f(m) > 0 ? hi = m : lo = m; } imp = (lo + hi) / 2; }
-  $("#dImplied").innerHTML = imp == null ? "" : `Today’s price assumes about <b class="num" style="color:var(--ink)">${imp.toFixed(1)}%</b> yearly growth for 5 years`;
+  $("#dImplied").innerHTML = imp == null ? "" : `Today’s price assumes about <b class="num" style="color:var(--ink)">${imp.toFixed(1)}%</b> yearly growth in ${{ fcf: "free cash flow", fcf3: "free cash flow", ni: "earnings", fwd: "earnings", rev: "free cash flow" }[s.start]} for 5 years`;
   // sensitivity: discount rate (rows) × years 1-5 growth (columns), base case
   const rs = [-2, -1, 0, 1, 2].map(x => s.disc + x).filter(r => r > 1), gs = [-5, -2.5, 0, 2.5, 5].map(x => bc.g1 + x);
-  $("#dSens").innerHTML = `<div class="tablewrap"><table class="dsm"><thead><tr><th title="Rows: discount rate. Columns: growth in years 1–5.">Discount ↓ Growth →</th>${gs.map(g => `<th class="${g === bc.g1 ? "cur" : ""}">${g.toFixed(1)}%</th>`).join("")}</tr></thead><tbody>
+  $("#dSens").innerHTML = `<div class="tablewrap"><table class="dsm"><thead><tr><th title="Rows: discount rate. Columns: growth in years 1–5.">Discount ↓ · Yrs 1–5 growth →</th>${gs.map(g => `<th class="${g === bc.g1 ? "cur" : ""}">${g.toFixed(1)}%</th>`).join("")}</tr></thead><tbody>
     ${rs.map(r => `<tr><th class="${r === s.disc ? "cur" : ""}">${r.toFixed(1)}%</th>${gs.map(g => { const v = dcfOf(s, cg(g), r, 0), u = (v / b.price - 1) * 100;
-      return `<td class="${v >= b.price ? "hi" : "lo"} ${r === s.disc && g === bc.g1 ? "me" : ""}" title="${pct(u)} vs today’s price">${v > 0 ? money(v, cur).replace(/\.\d+$/, m => Math.abs(v) >= 100 ? "" : m) : "&lt;0"}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>
-    <div class="muted" style="font-size:11px;margin-top:4px">Green = worth more than today’s price of ${money(b.price, cur)}, red = less. Outlined = your base-case settings.</div>`;
+      return `<td class="${v >= b.price ? "hi" : "lo"} ${r === s.disc && g === bc.g1 ? "me" : ""}" data-r="${r}" data-g="${g}" tabindex="0" title="${pct(u)} vs today’s price · click to use ${r.toFixed(1)}% discount and ${g.toFixed(1)}% growth">${v > 0 ? money2(v, cur) : "&lt;0"}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>
+    <div class="muted" style="font-size:11px;margin-top:4px">Green = worth more than today’s price of ${money(b.price, cur)}, red = less. Outlined = your base-case settings. Click a cell to use it.</div>`;
+  $("#dSens").onclick = $("#dSens").onkeydown = e => {
+    const td = e.target.closest("td[data-r]"); if (!td || (e.type === "keydown" && e.key !== "Enter" && e.key !== " ")) return;
+    e.preventDefault(); const bc2 = s.base;
+    s.disc = +td.dataset.r; bc2.g1 = Math.max(-20, Math.min(50, +td.dataset.g));
+    if (bc2.g2auto) bc2.g2 = Math.round((bc2.g1 + bc2.gt) / 2 * 2) / 2;
+    bc2.why = ""; saveDcf(); renderDcf();
+  };
   const tvTxt = s.tv === "exit" ? `then assume the shares are sold in year 10 at each case’s multiple of that year’s ${earn ? "earnings" : "cash flow"}` : "then at the long-run rate forever";
   $("#dNote").innerHTML = `How it works: start from ${esc(b.symbol)}’s ${startName}${s.sbc && !earn ? `, minus stock-based pay (${money(b.sbcPs, cur)})` : ""} = ${money(s0, cur)}. Grow it at each case’s rates for 10 years, ${tvTxt}. Spread it over ${s.dil > 0 ? `${s.dil.toFixed(1)}% more shares each year (dilution)` : s.dil < 0 ? `${Math.abs(s.dil).toFixed(1)}% fewer shares each year (buybacks)` : "an unchanged share count"}. Discount every future year back to today at ${s.disc.toFixed(1)}% a year, then ${nc >= 0 ? "add net cash" : "subtract net debt"} (${money(Math.abs(nc), cur)}/share). “Price in ${N} years” is what the shares would be worth then if the market valued them fairly; it doesn’t include dividends.
     Default growth comes from ${b.growthFrom.length ? esc(b.growthFrom.join(", ")) : "a generic 6%"}; hover “Discount rate (i)” for how the default rate is built.
