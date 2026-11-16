@@ -100,7 +100,7 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 - Cash: `users[k].cash = {amount, currency}` (USD/CAD/EUR/GBP), set via the Cash row in holdings (PUT /api/state with `cash`).
   Counts in portfolio value, allocation ("Cash"), leaderboard value and the value-over-time chart (`cash_usd()`, constant at
   today's balance); gain % and today % are on invested money only.
-- Longer ranges: value-over-time 2Y and 5Y (weekly); price charts 2Y.
+- Value-over-time ranges: 1D, 1W (30-min), 1M, 3M, 6M, YTD, 1Y, 2Y, 5Y (weekly); price charts also have 2Y.
 
 ### Added 16 Nov 2026 (fifth batch)
 - User asked to REMOVE the group leaderboard, group activity and group consensus from the Portfolio page (front end removed;

@@ -1091,7 +1091,7 @@ def raw_currency(sym):
         return "USD"
 
 
-PRANGES = {"1D": ("1d", "5m"), "1M": ("1mo", "1d"), "6M": ("6mo", "1d"), "YTD": ("ytd", "1d"), "1Y": ("1y", "1d"),
+PRANGES = {"1D": ("1d", "5m"), "1W": ("5d", "30m"), "1M": ("1mo", "1d"), "3M": ("3mo", "1d"), "6M": ("6mo", "1d"), "YTD": ("ytd", "1d"), "1Y": ("1y", "1d"),
            "2Y": ("2y", "1d"), "5Y": ("5y", "1wk")}
 
 
@@ -1145,7 +1145,7 @@ def portfolio_history(member: str, range: str = "6M", bench: str = "^GSPC", key:
         period, interval = PRANGES[range]
         b = [] if bench == "none" else [bench]
         vals, df = value_frame(holdings, period, interval, b)
-        vals = vals.bfill() if range == "1D" else vals
+        vals = vals.bfill() if range in ("1D", "1W") else vals
         tot = vals.dropna().sum(axis=1)
         if range == "1D":  # keep the latest trading day only
             last_day = tot.index[-1].normalize() if len(tot) else None
@@ -1163,7 +1163,7 @@ def portfolio_history(member: str, range: str = "6M", bench: str = "^GSPC", key:
                 out["benchRet"] = float(bs.iloc[-1] / bs.iloc[0] - 1) * 100
                 out["benchName"] = "S&P 500" if bench == "^GSPC" else "Nasdaq"
         return out
-    return cached(("phist", sig, range, bench), 120 if range == "1D" else 3600 if range in ("2Y", "5Y") else 900, f)
+    return cached(("phist", sig, range, bench), 120 if range == "1D" else 300 if range == "1W" else 3600 if range in ("2Y", "5Y") else 900, f)
 
 
 @app.get("/api/group/returns")

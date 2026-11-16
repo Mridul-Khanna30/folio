@@ -506,7 +506,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
         <div class="ec-sum" id="ecSum"></div></div>
       <div class="ec-ctrl">
         <div class="seg" id="ecBench"><button type="button" data-b="^GSPC" class="on">vs S&amp;P 500</button><button type="button" data-b="^IXIC">vs Nasdaq</button><button type="button" data-b="none">Off</button></div>
-        <div class="tabs" id="ecTabs"><button type="button" data-r="1D">1D</button><button type="button" data-r="1M">1M</button><button type="button" data-r="6M" class="on">6M</button><button type="button" data-r="YTD">YTD</button><button type="button" data-r="1Y">1Y</button><button type="button" data-r="2Y">2Y</button><button type="button" data-r="5Y">5Y</button></div>
+        <div class="tabs" id="ecTabs"><button type="button" data-r="1D">1D</button><button type="button" data-r="1W">1W</button><button type="button" data-r="1M">1M</button><button type="button" data-r="3M">3M</button><button type="button" data-r="6M" class="on">6M</button><button type="button" data-r="YTD">YTD</button><button type="button" data-r="1Y">1Y</button><button type="button" data-r="2Y">2Y</button><button type="button" data-r="5Y">5Y</button></div>
       </div>
     </div>
     <div class="chartbox"><canvas id="ecChart" aria-label="Portfolio value chart"></canvas><div class="empty" id="ecEmpty" hidden></div></div>
@@ -1028,14 +1028,14 @@ function drawEquity() {
   const val = pts.map(p => p[1] / B), bench = d.bench ? d.bench.map(p => p[1] / B) : null;
   const ch = val[val.length - 1] - val[0];
   $("#ecVal").innerHTML = `${bm(val[val.length - 1])} <span class="${cls(ch)}" style="font-size:14px">${sBm(ch)} (${pct(d.ret)})</span>`;
-  const lbl = { "1D": "today", "1M": "past month", "6M": "past 6 months", YTD: "this year", "1Y": "past year", "2Y": "past 2 years", "5Y": "past 5 years" }[EC.range];
+  const lbl = { "1D": "today", "1W": "past week", "3M": "past 3 months", "1M": "past month", "6M": "past 6 months", YTD: "this year", "1Y": "past year", "2Y": "past 2 years", "5Y": "past 5 years" }[EC.range];
   if (bench) {
     const diff = d.ret - d.benchRet;
     $("#ecSum").innerHTML = `${lbl[0].toUpperCase() + lbl.slice(1)}: ${d.benchName} <b class="${cls(d.benchRet)}">${pct(d.benchRet)}</b>. ` +
       (Math.abs(diff) < 0.05 ? "Neck and neck with the market." : `${mine ? "You’re" : "They’re"} <b class="${cls(diff)}">${diff > 0 ? "beating" : "trailing"}</b> it by <b>${Math.abs(diff).toFixed(1)}</b> percentage points.`);
   } else $("#ecSum").textContent = lbl[0].toUpperCase() + lbl.slice(1);
-  const intraday = EC.range === "1D";
-  const labels = pts.map(([t]) => new Date(t).toLocaleString([], intraday ? { hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", year: ["1Y", "2Y", "5Y"].includes(EC.range) ? "2-digit" : undefined }));
+  const intraday = EC.range === "1D" || EC.range === "1W";
+  const labels = pts.map(([t]) => new Date(t).toLocaleString([], intraday ? { weekday: EC.range === "1W" ? "short" : undefined, hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric", year: ["1Y", "2Y", "5Y"].includes(EC.range) ? "2-digit" : undefined }));
   const col = css(ch >= 0 ? "--up" : "--down");
   const ctx = $("#ecChart").getContext("2d");
   const g = ctx.createLinearGradient(0, 0, 0, 240); g.addColorStop(0, col + "33"); g.addColorStop(1, col + "00");
