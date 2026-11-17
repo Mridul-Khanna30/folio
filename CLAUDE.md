@@ -172,3 +172,4 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
   Sectors, Country, Currency, Asset type. `breakdown()` keeps the top 7 slices (cash counts as one) and groups the rest as "Other".
   Holdings rows get matching dots (`BRK.dots`); hovering a row, legend item or slice highlights the others (`brkHighlight`).
   Concentration/correlation warnings (`#warns`) sit at the bottom of the card.
+- `mv(score)`: colour classes for 0-100 mood / fear & greed numbers (<25 deep red, <40 soft red, >60 soft green, >75 deep green), used on every score display. Valuation history numbers take their status colour.

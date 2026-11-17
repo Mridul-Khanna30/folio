@@ -261,6 +261,8 @@ tr:hover .x, li:hover .x, .x:focus-visible { visibility: visible; }
 .summary.four { grid-template-columns: 1.3fr 1fr 1fr 1fr; }
 .prow { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .prow .seg button { padding: 4px 10px; font-family: var(--mono); font-size: 12px; }
+.mv-1 { color: var(--down) !important; font-weight: 700; } .mv-2 { color: color-mix(in srgb, var(--down) 70%, var(--ink)) !important; }
+.mv-4 { color: color-mix(in srgb, var(--up) 70%, var(--ink)) !important; } .mv-5 { color: var(--up) !important; font-weight: 700; }
 .moodbig { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
 .moodbig b { font-family: var(--mono); font-size: 20px; font-weight: 500; }
 .ec-head { padding: 14px 16px 0; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
@@ -971,6 +973,8 @@ const bm = (v, d = 2) => v == null || isNaN(v) ? "—" : money(v, BASE).replace(
 const sBm = (v, d = 2) => v == null || isNaN(v) ? "—" : sign(v) + bm(Math.abs(v), d);
 const baseRate = () => FX[BASE] || 1;  // USD per 1 unit of base
 const cls = v => v > 0 ? "up" : v < 0 ? "down" : "muted";
+// colour for 0-100 mood / fear & greed scores: deep red when very low, deep green when very high, plain in the middle
+const mv = v => v == null || isNaN(v) ? "" : v < 25 ? "mv-1" : v < 40 ? "mv-2" : v > 75 ? "mv-5" : v > 60 ? "mv-4" : "";
 // forward P/E colour: cheap (<15x) green, very expensive (>40x) amber, negative (losses) red
 const peCls = v => v == null || isNaN(v) ? "" : v <= 0 ? "pe-neg" : v < 15 ? "pe-lo" : v > 40 ? "pe-hi" : "";
 const peFmt = v => v == null || isNaN(v) ? "—" : `<span class="num ${peCls(v)}">${v.toFixed(1)}×</span>`;
@@ -1097,7 +1101,7 @@ function render() {
     $("#gainBW").innerHTML = one("Best", best) + one("Worst", worst);
   } else $("#gainBW").innerHTML = "";
   $("#fxNote").textContent = foreign ? `Foreign holdings converted to ${BASE} at today’s rate; gains use the rate on the day bought (or the day added to Folio).` : "";
-  $("#pMood").innerHTML = st.mood == null ? `<span class="muted">${u.holdings.length ? "Working it out…" : "—"}</span>` : `<b>${Math.round(st.mood)}</b>${mchip(st.mood)}`;
+  $("#pMood").innerHTML = st.mood == null ? `<span class="muted">${u.holdings.length ? "Working it out…" : "—"}</span>` : `<b class="${mv(st.mood)}">${Math.round(st.mood)}</b>${mchip(st.mood)}`;
 
   const by = allocBy(st, u);
   const parts = Object.entries(by).sort((a, b) => b[1] - a[1]);
@@ -1109,7 +1113,7 @@ function render() {
       <td><div class="sym"><i class="hdot" style="background:var(${BRK.dots[h.symbol] || "--a6"})"></i>${esc(h.symbol)}</div><div class="nm">${esc(q.name && q.name !== h.symbol ? q.name : "")}${q.error ? '<span class="down">price unavailable</span>' : ""}</div></td>
       <td class="num hide-sm">${money(q.price, q.currency)}</td>
       <td><span class="pill ${cls(q.pct)}">${pct(q.pct)}</span></td>
-      <td class="hide-sm">${MOODS[h.symbol] == null ? '<span class="muted">—</span>' : `<span class="num mnum" style="margin-right:4px">${MOODS[h.symbol]}</span><span title="Mood ${MOODS[h.symbol]}">${mchip(MOODS[h.symbol])}</span>`}</td>
+      <td class="hide-sm">${MOODS[h.symbol] == null ? '<span class="muted">—</span>' : `<span class="num mnum ${mv(MOODS[h.symbol])}" style="margin-right:4px">${MOODS[h.symbol]}</span><span title="Mood ${MOODS[h.symbol]}">${mchip(MOODS[h.symbol])}</span>`}</td>
       <td class="num hide-sm shcol">${qty(h.shares)}</td>
       <td class="num">${bm(val)}<div class="sub muted sh2">${qty(h.shares)} sh</div></td>
       <td class="num ${cls(gain)}">${sBm(gain)}<div class="sub">${pct(gainPct)}${Math.abs(fx) >= 0.5 ? ` <span class="muted" title="Part of the gain from the exchange rate">FX ${sBm(fx, 0)}</span>` : ""}</div></td>
@@ -1551,7 +1555,7 @@ const WCOLS = [
   { k: "away", h: "Away", on: true, f: c => c.away == null ? '<span class="muted">—</span>' : c.away <= 0 ? '<span class="pill up">at target</span>' : `<span class="num muted">${pct(c.away)}</span>` },
   { k: "high", h: "From 52W high", on: true, f: c => c.w.fromHigh == null ? '<span class="muted">—</span>' : `<span class="num ${c.w.fromHigh > -2 ? "up" : c.w.fromHigh < -20 ? "down" : ""}">${c.w.fromHigh > -0.5 ? "at high" : pct(c.w.fromHigh)}</span>` },
   { k: "fpe", h: "Fwd P/E", on: true, f: c => c.w.fpe ? peFmt(c.w.fpe) : `<span class="num">—</span>` },
-  { k: "mood", h: "Mood", on: true, f: c => c.w.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:4px">${c.w.mood}</span>${mchip(c.w.mood)}` },
+  { k: "mood", h: "Mood", on: true, f: c => c.w.mood == null ? '<span class="muted">—</span>' : `<span class="num ${mv(c.w.mood)}" style="margin-right:4px">${c.w.mood}</span>${mchip(c.w.mood)}` },
   { k: "earn", h: "Earnings", on: true, f: c => c.w.earnings ? `<span class="num muted">${new Date(c.w.earnings + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric" })}</span>` : '<span class="muted">—</span>' },
 ];
 let WCOLSET = null;
@@ -2357,7 +2361,7 @@ function renderPeers() {
       <td><span class="pill ${cls(x.day)}">${pct(x.day)}</span></td>
       <td><span class="pill ${cls(x.month)}">${pct(x.month)}</span></td>
       <td class="num ${i === bF ? "pbest" : ""}" ${i === bF ? 'title="Lowest forward P/E in the group"' : ""}>${x.fpe ? x.fpe.toFixed(1) + "×" : "—"}</td>
-      <td>${x.mood == null ? '<span class="muted">—</span>' : `<span class="num" style="margin-right:6px">${x.mood}</span>${mchip(x.mood)}`}</td>
+      <td>${x.mood == null ? '<span class="muted">—</span>' : `<span class="num ${mv(x.mood)}" style="margin-right:6px">${x.mood}</span>${mchip(x.mood)}`}</td>
       <td class="hide-sm">${ratingChip(x.self ? selfRating(x.rating) : x.rating)}${x.upside != null ? ` <span class="muted" style="font-size:12px">${pct(x.upside)}</span>` : ""}</td>
       <td class="hide-sm">${x.self ? "" : watchBtn(x.symbol)}</td></tr>`).join("")}</tbody></table></div>
     <div class="note" style="padding-top:8px">Forward P/E = price ÷ next year’s expected earnings per share (lower = cheaper relative to profits). Analyst column shows consensus and average target vs today. Today’s moves are each market’s latest session.</div>`;
@@ -2601,7 +2605,7 @@ async function loadVal(sym) {
     const status = (now, rg) => { if (now == null || !rg || rg.low == null) return null; const p = (now - rg.low) / ((rg.high - rg.low) || 1);
       return p < 0.2 ? ["near the cheap end of its range", "good"] : p > 0.8 ? ["near the expensive end", "bad"] : now < rg.median ? ["below its usual level", "good"] : ["above its usual level", "warn"]; };
     const verdict = st_ => st_ ? `<div class="vst ${st_[1]}">${st_[0]}</div>` : "";
-    const cell = (label, now, rg, f) => { const st_ = rg ? status(rg.now ?? now, rg) : null; return `<div><span class="label">${label}</span><b>${f(now)}</b>${rg ? rangeBar(rg.now ?? now, rg, f, st_?.[1] || "") + verdict(st_) : `<div class="muted" style="font-size:11px;margin-top:8px">${now == null ? "not available" : "no 5-year history"}</div>`}</div>`; };
+    const cell = (label, now, rg, f) => { const st_ = rg ? status(rg.now ?? now, rg) : null; return `<div><span class="label">${label}</span><b class="${st_ ? "vst " + st_[1] : label.includes("next year") ? peCls(now) : ""}" style="font-size:inherit;margin-top:2px">${f(now)}</b>${rg ? rangeBar(rg.now ?? now, rg, f, st_?.[1] || "") + verdict(st_) : `<div class="muted" style="font-size:11px;margin-top:8px">${now == null ? "not available" : "no 5-year history"}</div>`}</div>`; };
     $("#sVal").innerHTML = `<div class="mults">
       ${cell("P/E (past 12 months)", c.pe ?? r.pe?.now, r.pe, x)}
       ${cell("P/E (next year)", c.fpe, null, x)}
@@ -2747,7 +2751,7 @@ function renderCompare() {
   $("#cmpBody").innerHTML = `<div class="chartbox" style="height:240px"><canvas id="cmpChart" aria-label="Normalized price comparison"></canvas></div>
     <div class="tablewrap"><table class="cmp"><thead><tr><th></th>${st.map((s, i) => `<th><span style="color:var(${CMPC[i]})">●</span> ${esc(s.symbol)}</th>`).join("")}</tr></thead><tbody>
       ${row("1-year return", s => `<span class="pill ${cls(s.ret1y)}">${pct(s.ret1y)}</span>`)}
-      ${row("Stock mood", s => s.mood == null ? "—" : `<span class="num">${s.mood}</span> ${mchip(s.mood)}`)}
+      ${row("Stock mood", s => s.mood == null ? "—" : `<span class="num ${mv(s.mood)}">${s.mood}</span> ${mchip(s.mood)}`)}
       ${row("Forward P/E", s => `<span class="num">${x(s.fpe)}</span>`, "fpe", "low")}
       ${row("P/E (past year)", s => `<span class="num">${x(s.pe)}</span>`, "pe", "low")}
       ${row("EV / EBITDA", s => `<span class="num">${x(s.evEbitda)}</span>`, "evEbitda", "low")}
@@ -2783,7 +2787,7 @@ async function runScreen(q) {
         ${r.results.map(x => `<tr data-s="${esc(x.symbol)}" style="cursor:pointer"><td><span class="sym">${esc(x.symbol)}</span><div class="nm">${esc(x.name)}${x.industry ? " · " + esc(x.industry) : ""}</div></td>
           <td><span class="pill ${cls(x.day)}">${pct(x.day)}</span></td><td><span class="pill ${cls(x.month)}">${pct(x.month)}</span></td>
           <td class="num">${x.fpe ? x.fpe.toFixed(1) + "×" : "—"}</td>
-          <td>${x.mood == null ? "—" : `<span class="num" style="margin-right:4px">${x.mood}</span>${mchip(x.mood)}`}</td>
+          <td>${x.mood == null ? "—" : `<span class="num ${mv(x.mood)}" style="margin-right:4px">${x.mood}</span>${mchip(x.mood)}`}</td>
           <td>${ratingChip(x.rating)}</td><td class="hide-sm num ${cls(x.upside)}">${pct(x.upside)}</td>
           <td class="hide-sm num muted">${x.marketCapB ? "$" + (x.marketCapB >= 1000 ? (x.marketCapB / 1000).toFixed(2) + "T" : x.marketCapB.toFixed(0) + "B") : "—"}</td><td>${watchBtn(x.symbol)}</td></tr>`).join("")}
       </tbody></table></div>` : `<div class="empty">Nothing matches. Try loosening a condition.</div>`}
@@ -2861,10 +2865,10 @@ async function loadSent(force) {
 function renderSent() {
   const m = F.market;
   $("#fAsof").textContent = `How fearful or greedy investors are, and what analysts think. Data as of the ${new Date(m.asof + "T12:00:00").toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })} close.`;
-  $("#fGauge").innerHTML = `${gaugeSvg(m.score)}<div class="score">${m.score}</div><div class="mood">${mchip(m.score)}</div>`;
-  const then = (l, v) => `<div><small>${l}</small><b>${v == null ? "—" : Math.round(v)}</b>${v == null ? "" : `<small>${moodName(v)}</small>`}</div>`;
+  $("#fGauge").innerHTML = `${gaugeSvg(m.score)}<div class="score ${mv(m.score)}">${m.score}</div><div class="mood">${mchip(m.score)}</div>`;
+  const then = (l, v) => `<div><small>${l}</small><b class="${mv(v)}">${v == null ? "—" : Math.round(v)}</b>${v == null ? "" : `<small>${moodName(v)}</small>`}</div>`;
   $("#fThen").innerHTML = then("Previous close", m.prevClose) + then("1 week ago", m.weekAgo) + then("1 month ago", m.monthAgo) + then("1 year ago", m.yearAgo);
-  $("#fComps").innerHTML = m.components.map(c => `<li><span>${esc(c.name)}</span><span class="num" style="text-align:right">${c.score ?? "—"}</span>${meter(c.score)}<span class="d">${esc(c.desc)} · ${moodName(c.score)}</span></li>`).join("");
+  $("#fComps").innerHTML = m.components.map(c => `<li><span>${esc(c.name)}</span><span class="num ${mv(c.score)}" style="text-align:right">${c.score ?? "—"}</span>${meter(c.score)}<span class="d">${esc(c.desc)} · ${moodName(c.score)}</span></li>`).join("");
   if (window.Chart) {
     if (fChart) fChart.destroy();
     const h = m.history;
@@ -2885,7 +2889,7 @@ function indCard(i, ci) {
     const se = i.sentiment || {}, co = i.consensus;
     return `<section class="card ind">
       <div class="ind-h">
-        <div class="top"><h3>${esc(i.name)}</h3><span style="display:flex;gap:6px;align-items:center"><span class="sc">${se.score ?? "—"}</span>${ci != null ? `<button class="x" type="button" data-bdel="${ci}" aria-label="Delete basket ${esc(i.name)}" title="Delete this basket">×</button>` : ""}</span></div>
+        <div class="top"><h3>${esc(i.name)}</h3><span style="display:flex;gap:6px;align-items:center"><span class="sc ${mv(se.score)}">${se.score ?? "—"}</span>${ci != null ? `<button class="x" type="button" data-bdel="${ci}" aria-label="Delete basket ${esc(i.name)}" title="Delete this basket">×</button>` : ""}</span></div>
         <div class="top">${mchip(se.score)}<span class="muted" style="font-size:12px">a week ago ${se.weekAgo == null ? "—" : Math.round(se.weekAgo)} · a month ago ${se.monthAgo == null ? "—" : Math.round(se.monthAgo)}</span></div>
         ${meter(se.score)}
         <div class="facts"><span>1 week <b class="${cls(i.week)}">${pct(i.week)}</b></span><span>1 month <b class="${cls(i.month)}">${pct(i.month)}</b></span></div>
@@ -2949,11 +2953,11 @@ async function loadStockSent(sym) {
       <div class="grid2 sentsplit" style="gap:0">
         <div style="min-width:0;border-right:1px solid var(--line)">
           <div class="ind-h">
-            <div class="top"><span class="label">Stock mood</span><span class="sc">${se?.score ?? "—"}</span></div>
+            <div class="top"><span class="label">Stock mood</span><span class="sc ${mv(se?.score)}">${se?.score ?? "—"}</span></div>
             <div class="top">${mchip(se?.score)}<span class="muted" style="font-size:12px">${se ? `a week ago ${Math.round(se.weekAgo ?? 0)} · a month ago ${Math.round(se.monthAgo ?? 0)}` : "Not enough price history"}</span></div>
             ${meter(se?.score)}
           </div>
-          <ul class="comps">${(se?.components || []).map(c => `<li><span>${esc(c.name)}</span><span class="num" style="text-align:right">${c.score ?? "—"}</span>${meter(c.score)}<span class="d">${esc(c.desc)}</span></li>`).join("")}</ul>
+          <ul class="comps">${(se?.components || []).map(c => `<li><span>${esc(c.name)}</span><span class="num ${mv(c.score)}" style="text-align:right">${c.score ?? "—"}</span>${meter(c.score)}<span class="d">${esc(c.desc)}</span></li>`).join("")}</ul>
         </div>
         <div style="min-width:0">
           <div class="ind-h">
