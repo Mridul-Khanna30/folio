@@ -592,7 +592,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
 
   <div class="prow">
     <span class="muted" style="font-size:12px" id="fxNote"></span>
-    <div class="seg" id="baseSeg" aria-label="Show amounts in"><button type="button" data-c="USD">USD</button><button type="button" data-c="CAD">CAD</button><button type="button" data-c="EUR">EUR</button><button type="button" data-c="GBP">GBP</button></div>
+    <div class="seg" id="baseSeg" aria-label="Show amounts in"><button type="button" data-c="USD">USD</button><button type="button" data-c="CAD">CAD</button></div>
   </div>
   <section class="summary four" aria-label="Portfolio summary">
     <div>
@@ -938,6 +938,7 @@ let Q = {};               // symbol -> quote
 let sel = null, range = "1M", chart = null, timers = [];
 let BASE = "USD", FX = { USD: 1 }, MOODS = {};
 try { BASE = localStorage.getItem("folio-base") || "USD"; } catch {}
+if (BASE !== "USD" && BASE !== "CAD") BASE = "USD";  // only USD and CAD are offered
 const EC = { range: "6M", bench: "^GSPC", data: null, chart: null, who: null };
 
 // ---------- theme ----------

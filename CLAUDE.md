@@ -58,7 +58,7 @@ Group server commands: `box shared restart|logs|stop|start folio`. Anyone on the
 - `#stock`: search any ticker. Returns (1D-1Y), vs S&P and sector, "Why is it moving?" AI, chart, **Sentiment & analyst consensus** (stock mood score, rating breakdown, average target, "Buy now or wait?" AI, then the **analyst price target table**: every rating action in the past 12 months with date, firm, action, rating change, target (and previous target), upside vs today, and target date = rating date + 12 months), key numbers, about, headlines.
 
 ### Added 16 Nov 2026 (second feature batch)
-- Portfolio: base currency switch USD/CAD/EUR/GBP (localStorage `folio-base`; `/api/fx`). Holdings now store `cur` + `fx`
+- Portfolio: base currency switch USD/CAD (EUR/GBP removed at user request) (localStorage `folio-base`; `/api/fx`). Holdings now store `cur` + `fx`
   (USD per unit of the holding's currency and each base currency on the purchase date, or the day added). Optional "date bought"
   in the add form. Gains split into stock vs currency (`stats()` in the front end). `backfill_fx()` fills old holdings at startup.
 - Portfolio mood = value-weighted stock mood (`/api/moods`). Value-over-time chart with S&P/Nasdaq overlay (`/api/portfolio/history`,

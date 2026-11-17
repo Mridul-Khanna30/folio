@@ -10,7 +10,7 @@ build step. Market data comes from Yahoo Finance via `yfinance`; filings from SE
 
 ### Portfolio
 - Holdings with live prices, today's move, gain/loss, mood (fear & greed) per holding, and a cash balance
-- Base currency switch (USD / CAD / EUR / GBP), with gains split into stock move vs. currency move
+- Base currency switch (USD / CAD), with gains split into stock move vs. currency move
 - Portfolio breakdown donut: by holding, sector, country, currency or asset type (top 7 + "Other"),
   linked by hover to the holdings table
 - Concentration and correlation warnings (any sector over 35%, pairs of holdings moving in lockstep)
